@@ -1,0 +1,7 @@
+.DS_Store
+*.apk
+*.wgt
+*.ipk
+*.log
+.idea/
+.vscode/
