@@ -62,7 +62,8 @@
 | **Android Mobil / Tablet** | Android 6.0 ve üzeri | `.apk` | ✅ Yayında (Kararlı) |
 | **Samsung Smart TV** | Tizen OS 4.0 ve üzeri | `.wgt` | 🚀 Özel DUID / Beta |
 | **LG Smart TV** | webOS 4.0 ve üzeri | `.ipk` | 🚧 Geliştirme Aşamasında |
-| **Apple TV & iPadOS** | tvOS / iPadOS 16+ | App Store | ⏳ Planlandı |
+| **iOS (iPhone & iPad)** | iOS 16 ve üzeri | App Store | ⏳ Planlandı |
+| **Apple TV (tvOS)** | tvOS 16 ve üzeri | App Store | ⏳ Planlandı |
 
 ---
 
