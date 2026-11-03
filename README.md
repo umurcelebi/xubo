@@ -73,7 +73,7 @@ Her sürüm, bütünlüğü ve güvenliği doğrulamak adına SHA-256 kriptograf
 
 - **Paket Adı:** `com.xubo.iptv`
 - **Son Sürüm:** `v1.2.6 (Build 150)`
-- **SHA-256:** `00fddd5cfe05eca21c56d56b5df933e8a0c9c026d2fc86e1c1eb3e4a6979fe88`
+- **SHA-256:** `c9a2c6d384eb5b191f41d03d060b1101b7a0bb6862294e5cb28b45fd37e9df14`
 
 ---
 
