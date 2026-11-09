@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="tr" data-title-key="privacy_page_title">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    (function() {
+      var p = new URLSearchParams(window.location.search).get('lang');
+      var l = p || localStorage.getItem('xubo_site_lang');
+      if (!l) {
+        var bl = (navigator.language || '').toLowerCase();
+        l = bl.startsWith('tr') ? 'tr' : 'en';
+      }
+      if (l === 'en' || l === 'tr') {
+        document.documentElement.lang = l;
+      }
+    })();
+  </script>
+  <title>Gizlilik Politikası — XUBO IPTV Player</title>
+  <meta name="description" content="XUBO IPTV Player kullanıcı gizliliği, veri güvenliği ve yerel depolama politikası.">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="assets/css/xubo.css">
+  <style>
+    /* Instant CSS toggle before JS execution */
+    html[lang="en"] [data-lang-block="tr"] {
+      display: none !important;
+    }
+    html[lang="tr"] [data-lang-block="en"] {
+      display: none !important;
+    }
+
+    .policy-wrapper {
+      padding-top: 16px;
+      padding-bottom: 72px;
+    }
+
+    .policy-back-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--amber-bright);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 24px;
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .policy-back-link:hover {
+      color: #fde68a;
+      transform: translateX(-3px);
+    }
+
+    .policy-hero {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .policy-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-lg);
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), transparent 60%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .policy-hero h1 {
+      font-size: clamp(28px, 4.5vw, 40px);
+      font-weight: 850;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      margin: 14px 0 8px;
+      line-height: 1.2;
+    }
+
+    .policy-date {
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .policy-notice {
+      background: rgba(245, 158, 11, 0.07);
+      border: 1px solid var(--amber-border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin: 28px 0;
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .policy-notice strong {
+      color: var(--amber-bright);
+    }
+
+    .policy-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .policy-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      padding: 28px 32px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .policy-card:hover {
+      border-color: var(--border-glass-hover);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .policy-header-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .policy-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid var(--amber-border);
+      color: var(--amber-bright);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .policy-card h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 750;
+      color: var(--text-primary);
+      letter-spacing: -0.015em;
+    }
+
+    .policy-card p {
+      margin: 0 0 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .policy-card ul {
+      margin: 8px 0 16px;
+      padding-left: 20px;
+      color: var(--text-secondary);
+    }
+
+    .policy-card li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .policy-card li::marker {
+      color: var(--amber);
+    }
+
+    .policy-card a {
+      color: var(--amber-bright);
+      text-decoration: underline;
+    }
+
+    .policy-card a:hover {
+      color: #fde68a;
+    }
+
+    @media (max-width: 640px) {
+      .policy-hero {
+        padding: 24px 20px;
+      }
+      .policy-card {
+        padding: 22px 20px;
+      }
+    }
+  </style>
+  <script src="assets/js/xubo.js" defer></script>
+</head>
+<body>
+
+  <!-- Floating Capsule Navigation -->
+  <div class="nav-wrapper">
+    <header class="floating-nav">
+      <a href="./" class="nav-brand" aria-label="XUBO">
+        <img src="assets/img/xubo-icon.png" alt="XUBO Logo" width="34" height="34">
+        <span>XUBO</span>
+        <span class="pulse-indicator">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          v1.2.6 BETA
+        </span>
+      </a>
+
+      <nav class="nav-menu" aria-label="Menü">
+        <a class="nav-opt" href="./#ekranlar" data-i18n="nav_screens">Arayüz</a>
+        <a class="nav-opt" href="./#ozellikler" data-i18n="nav_architecture">Mimarisi</a>
+        <a class="nav-opt" href="./#ekosistem" data-i18n="nav_devices">Tüm Platformlar</a>
+        
+        <!-- Language Switcher -->
+        <div class="lang-switcher" aria-label="Dil Seçimi">
+          <button type="button" class="lang-btn is-active" data-lang="tr" aria-pressed="true">TR</button>
+          <span class="lang-sep" aria-hidden="true">|</span>
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+
+        <a class="btn-nav-cta" href="indir.html" data-i18n="nav_beta_cta">Beta İndir</a>
+      </nav>
+    </header>
+  </div>
+
+  <div class="wrap" style="padding-top: 16px;">
+    <main id="icerik" class="policy-wrapper">
+      <div>
+        <a href="./" class="policy-back-link">
+          <span data-i18n="nav_back_home">← XUBO Tanıtım Sayfasına Dön</span>
+        </a>
+      </div>
+
+      <!-- Hero Card -->
+      <div class="policy-hero">
+        <div class="hero-pill-badge" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--amber-bright);" data-i18n="privacy_badge">
+          Gizlilik & Güvenlik
+        </div>
+        <h1 data-i18n="privacy_h1">XUBO Gizlilik Politikası</h1>
+        <p class="policy-date" data-i18n="privacy_date">
+          Yürürlük Tarihi: 31 Ekim 2026
+        </p>
+      </div>
+
+      <!-- ===================================================================
+           TÜRKÇE İÇERİK BLOĞU (TR)
+           =================================================================== -->
+      <div data-lang-block="tr">
+        <div class="policy-notice">
+          <strong>Önemli Bilgilendirme:</strong> XUBO bağımsız bir medya oynatıcı arayüzüdür. XUBO; IPTV aboneliği, televizyon kanalları, filmler, diziler veya diğer medya içeriklerini sağlamaz, satmaz, barındırmaz veya yeniden dağıtmaz.
+        </div>
+
+        <div class="policy-grid">
+          <!-- 1. XUBO Hakkında -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">01</span>
+              <h2>XUBO Hakkında</h2>
+            </div>
+            <p>
+              XUBO, kullanıcıların kendi yasal IPTV veya medya servislerine bağlanmalarını sağlayan bağımsız ve kullanıcı odaklı bir medya oynatıcısıdır.
+            </p>
+            <p>
+              Kullanıcılar, kendi uyumlu medya servislerine erişim sağlamaktan ve bu servis tarafından sunulan içeriklere erişim yetkisine sahip olduklarından emin olmaktan bizzat sorumludur.
+            </p>
+          </article>
+
+          <!-- 2. Sağladığınız Bilgiler -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">02</span>
+              <h2>Sağladığınız Bilgiler</h2>
+            </div>
+            <p>
+              Kullanıcı tarafından seçilen bir IPTV veya medya servisine bağlanabilmek için XUBO, kullanıcının girdiği şu bilgileri işleyebilir:
+            </p>
+            <ul>
+              <li>Sunucu veya sağlayıcı adresi (URL / M3U adresi)</li>
+              <li>Kullanıcı adı (Username)</li>
+              <li>Şifre (Password)</li>
+              <li>Profil veya hesap adı</li>
+            </ul>
+            <p>
+              Bu bilgiler yalnızca kullanıcının tercih ettiği servisle doğrudan bağlantı kurmak, bağlantıyı sürdürmek ve uygulamanın istenen oynatma ve rehber işlevlerini yerine getirmek amacıyla kullanılır.
+            </p>
+          </article>
+
+          <!-- 3. Yerel Uygulama Verileri -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">03</span>
+              <h2>Yerel Uygulama Verileri</h2>
+            </div>
+            <p>
+              XUBO, akıcı bir kullanım sunabilmek amacıyla uygulama verilerini kullanıcının kendi cihazında yerel olarak (Local Storage ve IndexedDB) saklar.
+            </p>
+            <p>
+              Kullanılan özelliklere bağlı olarak yerel olarak saklanan bilgiler şunları içerebilir:
+            </p>
+            <ul>
+              <li>Kayıtlı profiller ve hesap bilgileri</li>
+              <li>Sağlayıcı veya sunucu erişim parametreleri</li>
+              <li>Giriş kimlik bilgileri</li>
+              <li>Favori kanal, film ve dizi listeleri</li>
+              <li>İzleme geçmişi (Watch history)</li>
+              <li>Oynatma ilerleme durumu ve kalınan yer bilgisi (Resume state)</li>
+              <li>Uygulama tercihleri, görünüm ve arayüz ayarları</li>
+            </ul>
+            <p>
+              Bu bilgiler yalnızca uygulama işlevselliğini sağlamak ve kullanıcının yerel deneyiminin sürekliliğini korumak amacıyla kullanılır. <strong>XUBO, bu bilgileri toplamak veya saklamak için herhangi bir merkezi sunucu veya XUBO kullanıcı hesabı sistemi işletmez.</strong>
+            </p>
+          </article>
+
+          <!-- 4. Kimlik Doğrulama Bilgileri -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">04</span>
+              <h2>Kimlik Doğrulama Bilgileri</h2>
+            </div>
+            <p>
+              XUBO'ya girilen kimlik bilgileri, doğrudan kullanıcının yapılandırdığı IPTV veya medya sağlayıcısı ile iletişim kurmak üzere kullanılır.
+            </p>
+            <p>
+              XUBO bu bilgileri asla satmaz, kiralamaz, reklam veya pazarlama amacıyla kullanmaz. Kimlik bilgileri cihaz üzerinde işletim sisteminin sunduğu güvenli depolama mekanizmaları kullanılarak yerel olarak korunur.
+            </p>
+          </article>
+
+          <!-- 5. Üçüncü Taraf Servislerle İletişim -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">05</span>
+              <h2>Üçüncü Taraf Servislerle İletişim</h2>
+            </div>
+            <p>
+              Kullanıcı bir medya sağlayıcısı yapılandırdığında XUBO, aşağıdaki işlevleri gerçekleştirmek üzere ağ üzerinden doğrudan o sağlayıcı ile iletişim kurar:
+            </p>
+            <ul>
+              <li>Kullanıcı hesabının doğrulanması</li>
+              <li>Kategori, canlı yayın, film ve dizi listelerinin alınması</li>
+              <li>Mevcut olduğunda Elektronik Program Rehberi (EPG) bilgilerinin çekilmesi</li>
+              <li>Sağlandığında film ve dizi afişlerinin, logoların ve meta verilerin yüklenmesi</li>
+              <li>Seçilen medya akışlarının istenmesi ve oynatılması</li>
+            </ul>
+            <p>
+              Bu isteklerin gerçekleştirilmesi için gereken bilgiler, doğrudan kullanıcının tanımladığı servise iletilir. Bu üçüncü taraf servisler XUBO'dan tamamen bağımsız olarak çalışır ve kendi gizlilik politikalarına, güvenlik uygulamalarına ve veri saklama kurallarına tabidir.
+            </p>
+          </article>
+
+          <!-- 6. Analitik ve Reklamcılık -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">06</span>
+              <h2>Analitik ve Reklamcılık</h2>
+            </div>
+            <p>
+              XUBO herhangi bir reklam ağı işletmez ve kişisel bilgileri reklamcılara veya veri simsarlarına kesinlikle satmaz.
+            </p>
+            <p>
+              XUBO; kullanıcı kimlik bilgilerini, izleme etkinliklerini, favorileri veya oynatma geçmişini hedefli reklamcılık amacıyla kullanmaz ve bu bilgileri pazarlama amacıyla geliştiriciye kasıtlı olarak iletmez.
+            </p>
+          </article>
+
+          <!-- 7. Medya İçeriği -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">07</span>
+              <h2>Medya İçeriği</h2>
+            </div>
+            <p>
+              XUBO tarafından görüntülenen medya listeleri ve akışları, kullanıcının kendi yapılandırdığı servislerden kaynaklanır.
+            </p>
+            <p>
+              XUBO, bu servislerin içeriklerini, yayın kalitesini, gizlilik veya güvenlik uygulamalarını kontrol etmez. Kullanıcıların, tercih ettikleri IPTV sağlayıcısının şartlarını ve gizlilik bildirimlerini incelemesi tavsiye edilir.
+            </p>
+          </article>
+
+          <!-- 8. Veri Paylaşımı -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">08</span>
+              <h2>Veri Paylaşımı</h2>
+            </div>
+            <p>
+              XUBO hiçbir kişisel veriyi satmaz ve ilişkisiz üçüncü taraflarla paylaşmaz.
+            </p>
+            <p>
+              Bilgiler, yalnızca kullanıcının talep ettiği oynatma ve arayüz işlevlerinin yerine getirilmesi amacıyla, doğrudan kullanıcının seçtiği sağlayıcı sunucularına iletilir.
+            </p>
+          </article>
+
+          <!-- 9. Veri Saklama ve Silme -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">09</span>
+              <h2>Veri Saklama ve Silme</h2>
+            </div>
+            <p>
+              XUBO tarafından tutulan uygulama verileri öncelikli olarak kullanıcının kendi cihazında yerel olarak saklanır.
+            </p>
+            <p>
+              Kullanıcılar, uygulama içerisindeki profil yönetimi veya ayarlar bölümünden kayıtlı profillerini ve bunlara bağlı tüm yerel verileri diledikleri an silebilirler.
+            </p>
+            <p>
+              Ayrıca cihaz ayarlarından uygulamanın verilerini temizleyerek veya uygulamayı kaldırarak cihazdaki tüm verileri kalıcı olarak yok edebilirsiniz. Sağlayıcınızın kendi sisteminde tuttuğu veriler ise ilgili sağlayıcının kontrolündedir.
+            </p>
+          </article>
+
+          <!-- 10. Güvenlik -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">10</span>
+              <h2>Güvenlik</h2>
+            </div>
+            <p>
+              XUBO, işletim sistemi platformunun sunduğu güvenlik mekanizmalarını ve yerel şifreleme olanaklarını kullanacak şekilde tasarlanmıştır.
+            </p>
+            <p>
+              Ağ güvenliği aynı zamanda kullanıcının bağlandığı servisin sunduğu bağlantı yöntemine (HTTPS / TLS) bağlıdır. Kullanıcıların güvenilir sağlayıcıları ve HTTPS destekli güvenli bağlantıları tercih etmesi önemle tavsiye edilir.
+            </p>
+          </article>
+
+          <!-- 11. Çocukların Gizliliği -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">11</span>
+              <h2>Çocukların Gizliliği</h2>
+            </div>
+            <p>
+              XUBO, çocuklardan bilerek kişisel veri toplamak amacıyla tasarlanmamıştır. XUBO kendisi içerik barındırmadığından, erişilen içeriklerin yaşa uygunluğu kullanıcının bağladığı sağlayıcıya bağlıdır.
+            </p>
+            <p>
+              XUBO, ebeveynlerin yetişkin kategorilerini veya özel listeleri 4 haneli bir PIN kodu ile kilitleyebileceği dahili <strong>Ebeveyn Kontrolü</strong> korumasına sahiptir; ebeveynler bu araçlarla çocukları için güvenli bir izleme alanı oluşturabilir.
+            </p>
+          </article>
+
+          <!-- 12. Değişiklikler -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">12</span>
+              <h2>Gizlilik Politikasındaki Değişiklikler</h2>
+            </div>
+            <p>
+              Bu Gizlilik Politikası; yeni XUBO özellikleri, veri işleme uygulamaları veya yasal gereksinimler doğrultusunda güncellenebilir.
+            </p>
+            <p>
+              En güncel sürüm her zaman bu web adresinde yayınlanacaktır.
+            </p>
+          </article>
+
+          <!-- 13. İletişim -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">13</span>
+              <h2>İletişim</h2>
+            </div>
+            <p>
+              XUBO gizlilik uygulamaları ile ilgili her türlü soru, öneri veya destek talebiniz için doğrudan iletişime geçebilirsiniz:
+            </p>
+            <p>
+              <strong>E-posta:</strong> <a href="mailto:umurcelebi@gmail.com">umurcelebi@gmail.com</a>
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           ENGLISH CONTENT BLOCK (EN)
+           =================================================================== -->
+      <div data-lang-block="en">
+        <div class="policy-notice">
+          <strong>Important Notice:</strong> XUBO is solely an independent media player interface. XUBO does not provide, sell, host, or redistribute IPTV subscriptions, television channels, movies, series, or other media content.
+        </div>
+
+        <div class="policy-grid">
+          <!-- 1. About XUBO -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">01</span>
+              <h2>About XUBO</h2>
+            </div>
+            <p>
+              XUBO allows users to connect to their own compatible IPTV or media service.
+            </p>
+            <p>
+              Users are responsible for obtaining access to their own compatible media service and for ensuring that they are authorized to access the content provided by that service.
+            </p>
+          </article>
+
+          <!-- 2. Information You Provide -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">02</span>
+              <h2>Information You Provide</h2>
+            </div>
+            <p>
+              To connect to a user-selected IPTV or media service, XUBO may process information entered by the user, including:
+            </p>
+            <ul>
+              <li>Server or provider URL</li>
+              <li>Username</li>
+              <li>Password</li>
+              <li>Profile name</li>
+            </ul>
+            <p>
+              This information is used only to establish and maintain the connection to the service selected by the user and to provide the application's requested playback and guide functionality.
+            </p>
+          </article>
+
+          <!-- 3. Local Application Data -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">03</span>
+              <h2>Local Application Data</h2>
+            </div>
+            <p>
+              XUBO may store application data locally on the user's device (Local Storage and IndexedDB) in order to provide its functionality.
+            </p>
+            <p>
+              Depending on the features used, locally stored information may include:
+            </p>
+            <ul>
+              <li>Saved profiles and provider information</li>
+              <li>Login credentials</li>
+              <li>Favorites lists</li>
+              <li>Watch history</li>
+              <li>Playback progress and resume information</li>
+              <li>Application preferences, appearance, and settings</li>
+            </ul>
+            <p>
+              This information is used to provide application functionality and continuity of the user's local experience. <strong>XUBO does not operate a central XUBO account system for collecting or storing this information.</strong>
+            </p>
+          </article>
+
+          <!-- 4. Authentication Credentials -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">04</span>
+              <h2>Authentication Credentials</h2>
+            </div>
+            <p>
+              Credentials entered into XUBO are used to authenticate directly with the IPTV or media service configured by the user.
+            </p>
+            <p>
+              XUBO does not sell, rent, or use these credentials for advertising or marketing purposes. Credentials may be stored locally on the device using platform-provided secure storage facilities where applicable.
+            </p>
+          </article>
+
+          <!-- 5. Communication With Third-Party Services -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">05</span>
+              <h2>Communication With Third-Party Services</h2>
+            </div>
+            <p>
+              When a user configures a media provider, XUBO communicates with that provider over the network in order to perform functions such as:
+            </p>
+            <ul>
+              <li>Authenticating the user's account</li>
+              <li>Retrieving categories and media listings</li>
+              <li>Retrieving electronic program guide (EPG) information when available</li>
+              <li>Retrieving movie and series metadata and poster artwork</li>
+              <li>Requesting and playing media streams selected by the user</li>
+            </ul>
+            <p>
+              Information required to perform these requests is transmitted directly to the service configured by the user. These third-party services operate independently of XUBO and may have their own privacy policies, security practices, and data retention rules.
+            </p>
+          </article>
+
+          <!-- 6. Analytics and Advertising -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">06</span>
+              <h2>Analytics and Advertising</h2>
+            </div>
+            <p>
+              XUBO does not operate its own advertising network and does not sell personal information to advertisers or data brokers.
+            </p>
+            <p>
+              XUBO does not use user credentials, viewing activity, favorites, or playback history for targeted advertising, nor does it intentionally transmit this information to the publisher for marketing purposes.
+            </p>
+          </article>
+
+          <!-- 7. Media Content -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">07</span>
+              <h2>Media Content</h2>
+            </div>
+            <p>
+              Media listings and streams displayed by XUBO originate from services configured by the user.
+            </p>
+            <p>
+              XUBO does not control the content, availability, privacy practices, or security practices of those services. Users should review the privacy policy and terms of their selected IPTV or media provider.
+            </p>
+          </article>
+
+          <!-- 8. Data Sharing -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">08</span>
+              <h2>Data Sharing</h2>
+            </div>
+            <p>
+              XUBO does not sell personal information and does not intentionally disclose personal information to unrelated third parties.
+            </p>
+            <p>
+              Information may be transmitted to the user's selected provider only as required to provide functionality requested by the user.
+            </p>
+          </article>
+
+          <!-- 9. Data Retention and Deletion -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">09</span>
+              <h2>Data Retention and Deletion</h2>
+            </div>
+            <p>
+              Application information stored by XUBO is primarily stored locally on the user's device.
+            </p>
+            <p>
+              Users can remove saved profiles and associated application data through the application's available profile management and settings options.
+            </p>
+            <p>
+              Users may also remove locally stored application data by clearing data or uninstalling the application through the operating system. Information retained independently by an IPTV or media provider is controlled by that provider.
+            </p>
+          </article>
+
+          <!-- 10. Security -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">10</span>
+              <h2>Security</h2>
+            </div>
+            <p>
+              XUBO is designed to use platform security mechanisms and secure local storage facilities where applicable.
+            </p>
+            <p>
+              Network security also depends on the server and connection method provided by the user's selected media service. Users should use trusted service providers and secure HTTPS connections whenever supported.
+            </p>
+          </article>
+
+          <!-- 11. Children's Privacy -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">11</span>
+              <h2>Children's Privacy</h2>
+            </div>
+            <p>
+              XUBO is not designed to intentionally collect personal information from children. Because XUBO does not provide media content itself, the suitability of media accessible through a configured provider is determined by that provider.
+            </p>
+            <p>
+              XUBO features a 4-digit PIN-protected <strong>Parental Control</strong> system allowing parents to restrict adult categories or custom playlists, ensuring a safe and supervised viewing environment.
+            </p>
+          </article>
+
+          <!-- 12. Changes to This Privacy Policy -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">12</span>
+              <h2>Changes to This Privacy Policy</h2>
+            </div>
+            <p>
+              This Privacy Policy may be updated when XUBO features, data practices, or legal requirements change.
+            </p>
+            <p>
+              The latest version will always be made available at this Privacy Policy URL.
+            </p>
+          </article>
+
+          <!-- 13. Contact -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">13</span>
+              <h2>Contact</h2>
+            </div>
+            <p>
+              For privacy-related questions or support regarding XUBO, please contact:
+            </p>
+            <p>
+              <strong>Email:</strong> <a href="mailto:umurcelebi@gmail.com">umurcelebi@gmail.com</a>
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Legal Box -->
+      <div class="legal-box" style="margin-top: 40px;" data-i18n="legal_text">
+        Önemli Yasal Bilgilendirme: XUBO yalnızca bağımsız bir medya oynatıcı arayüzüdür. Uygulama içerisinde hazır yayın, kanal, film veya dizi bulunmaz ve satılmaz. Hizmetten yararlanmak için kendi yasal IPTV aboneliğinizi kullanmanız gerekir.
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="global-footer">
+      <div class="footer-inner">
+        <div data-i18n="footer_copy">
+          © 2026 Umur Çelebi. XUBO IPTV Player — Tüm hakları saklıdır.
+        </div>
+        <div class="footer-links">
+          <a href="./" data-i18n="nav_home">XUBO Tanıtım</a>
+          <a href="https://umurcelebi.github.io/" target="_blank" rel="noopener">umurcelebi.github.io</a>
+          <a href="indir.html" data-i18n="footer_quick_dl">Hızlı İndirme</a>
+          <a href="privacy.html" data-i18n="footer_privacy">Gizlilik Politikası</a>
+          <a href="terms.html" data-i18n="footer_terms">Kullanım Koşulları</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>

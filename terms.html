@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="tr" data-title-key="terms_page_title">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    (function() {
+      var p = new URLSearchParams(window.location.search).get('lang');
+      var l = p || localStorage.getItem('xubo_site_lang');
+      if (!l) {
+        var bl = (navigator.language || '').toLowerCase();
+        l = bl.startsWith('tr') ? 'tr' : 'en';
+      }
+      if (l === 'en' || l === 'tr') {
+        document.documentElement.lang = l;
+      }
+    })();
+  </script>
+  <title>Kullanım Koşulları & Yasal Uyarı — XUBO IPTV Player</title>
+  <meta name="description" content="XUBO IPTV Player kullanım koşulları, lisans sözleşmesi, telif hakları ve yasal sorumluluk reddi bildirimi.">
+  <link rel="icon" href="favicon.png" type="image/png">
+  <link rel="stylesheet" href="assets/css/xubo.css">
+  <style>
+    /* Instant CSS toggle before JS execution */
+    html[lang="en"] [data-lang-block="tr"] {
+      display: none !important;
+    }
+    html[lang="tr"] [data-lang-block="en"] {
+      display: none !important;
+    }
+
+    .policy-wrapper {
+      padding-top: 16px;
+      padding-bottom: 72px;
+    }
+
+    .policy-back-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--amber-bright);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 24px;
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .policy-back-link:hover {
+      color: #fde68a;
+      transform: translateX(-3px);
+    }
+
+    .policy-hero {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .policy-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-lg);
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.4), transparent 60%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .policy-hero h1 {
+      font-size: clamp(28px, 4.5vw, 40px);
+      font-weight: 850;
+      letter-spacing: -0.025em;
+      color: var(--text-primary);
+      margin: 14px 0 8px;
+      line-height: 1.2;
+    }
+
+    .policy-date {
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .policy-notice {
+      background: rgba(245, 158, 11, 0.07);
+      border: 1px solid var(--amber-border);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin: 28px 0;
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .policy-notice strong {
+      color: var(--amber-bright);
+    }
+
+    .policy-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .policy-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-glass);
+      border-radius: var(--radius-md);
+      padding: 28px 32px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .policy-card:hover {
+      border-color: var(--border-glass-hover);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .policy-header-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .policy-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid var(--amber-border);
+      color: var(--amber-bright);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .policy-card h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 750;
+      color: var(--text-primary);
+      letter-spacing: -0.015em;
+    }
+
+    .policy-card p {
+      margin: 0 0 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .policy-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .policy-card ul {
+      margin: 8px 0 16px;
+      padding-left: 20px;
+      color: var(--text-secondary);
+    }
+
+    .policy-card li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .policy-card li::marker {
+      color: var(--amber);
+    }
+
+    .policy-card a {
+      color: var(--amber-bright);
+      text-decoration: underline;
+    }
+
+    .policy-card a:hover {
+      color: #fde68a;
+    }
+
+    @media (max-width: 640px) {
+      .policy-hero {
+        padding: 24px 20px;
+      }
+      .policy-card {
+        padding: 22px 20px;
+      }
+    }
+  </style>
+  <script src="assets/js/xubo.js" defer></script>
+</head>
+<body>
+
+  <!-- Floating Capsule Navigation -->
+  <div class="nav-wrapper">
+    <header class="floating-nav">
+      <a href="./" class="nav-brand" aria-label="XUBO">
+        <img src="assets/img/xubo-icon.png" alt="XUBO Logo" width="34" height="34">
+        <span>XUBO</span>
+        <span class="pulse-indicator">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          v1.2.6 BETA
+        </span>
+      </a>
+
+      <nav class="nav-menu" aria-label="Menü">
+        <a class="nav-opt" href="./#ekranlar" data-i18n="nav_screens">Arayüz</a>
+        <a class="nav-opt" href="./#ozellikler" data-i18n="nav_architecture">Mimarisi</a>
+        <a class="nav-opt" href="./#ekosistem" data-i18n="nav_devices">Tüm Platformlar</a>
+        <a class="nav-opt" href="privacy.html" data-i18n="nav_privacy">Gizlilik</a>
+        
+        <!-- Language Switcher -->
+        <div class="lang-switcher" aria-label="Dil Seçimi">
+          <button type="button" class="lang-btn is-active" data-lang="tr" aria-pressed="true">TR</button>
+          <span class="lang-sep" aria-hidden="true">|</span>
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+
+        <a class="btn-nav-cta" href="indir.html" data-i18n="nav_beta_cta">Beta İndir</a>
+      </nav>
+    </header>
+  </div>
+
+  <div class="wrap" style="padding-top: 16px;">
+    <main id="icerik" class="policy-wrapper">
+      <div>
+        <a href="./" class="policy-back-link">
+          <span data-i18n="nav_back_home">← XUBO Tanıtım Sayfasına Dön</span>
+        </a>
+      </div>
+
+      <!-- Hero Card -->
+      <div class="policy-hero">
+        <div class="hero-pill-badge" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--amber-bright);" data-i18n="terms_badge">
+          Yasal Koşullar & Lisans
+        </div>
+        <h1 data-i18n="terms_h1">XUBO Kullanım Koşulları & Yasal Uyarı</h1>
+        <p class="policy-date" data-i18n="terms_date">
+          Yürürlük Tarihi: 6 Kasım 2026
+        </p>
+      </div>
+
+      <!-- ===================================================================
+           TÜRKÇE İÇERİK BLOĞU (TR)
+           =================================================================== -->
+      <div data-lang-block="tr">
+        <div class="policy-notice">
+          <strong>Önemli Yasal Sorumluluk Reddi (Disclaimer):</strong> XUBO IPTV Player, kullanıcının kendi yasal IPTV yayın akışlarını veya M3U oynatma listelerini oynatmasını sağlayan tarafsız bir medya oynatıcı istemcisidir. XUBO hiçbir şekilde medya içeriği, televizyon kanalı, radyo yayını, film veya dizi barındırmaz, satmaz, dağıtmaz, iletmez veya sağlamaz. Telif hakkı sahibinin açık izni olmaksızın korunan materyallerin akışını kesinlikle onaylamıyoruz.
+        </div>
+
+        <div class="policy-grid">
+          <!-- 1. Şartların Kabulü -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">01</span>
+              <h2>Şartların Kabulü</h2>
+            </div>
+            <p>
+              XUBO IPTV Player uygulamasını ("Uygulama") herhangi bir platformda (iOS, iPadOS, macOS, tvOS, Android TV veya web) indirerek, kurarak, erişerek veya kullanarak, işbu Kullanım Koşulları'nı ("Koşullar") tamamen okuduğunuzu, anladığınızı ve bunlara yasal olarak bağlı kalmayı kabul etmiş sayılırsınız.
+            </p>
+            <p>
+              Bu Koşulları kabul etmiyorsanız, Uygulamayı cihazınıza yüklememeli ve kullanmamalısınız.
+            </p>
+          </article>
+
+          <!-- 2. Yazılımın Niteliği -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">02</span>
+              <h2>Yazılımın Niteliği: Yalnızca Medya Oynatıcı</h2>
+            </div>
+            <p>
+              XUBO, teknik olarak VLCKit ve AVPlayer temelli, bağımsız bir kullanıcı arayüzü ve medya oynatıcı yazılımıdır.
+            </p>
+            <ul>
+              <li>Uygulama herhangi bir içerik kütüphanesine, yayın sunucusuna veya medya akışına önceden tanımlı olarak sahip değildir.</li>
+              <li>Uygulama paketinin içinde hiçbir ses, görüntü, video akışı, M3U listesi, kanal logosu veya telifli program verisi bulunmaz.</li>
+              <li>XUBO, hiçbir üçüncü taraf IPTV sağlayıcısı, sunucusu veya içerik dağıtıcısı ile ilişkili, bağlantılı veya ortak değildir.</li>
+            </ul>
+          </article>
+
+          <!-- 3. Kullanıcı Yükümlülükleri ve Telif Hakları -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">03</span>
+              <h2>Kullanıcı Yükümlülükleri ve Telif Hakları</h2>
+            </div>
+            <p>
+              Uygulamayı kullanan her kullanıcı şunları açıkça beyan ve taahhüt eder:
+            </p>
+            <ul>
+              <li>Uygulamaya girilen sunucu adresleri (Xtream Codes API), M3U/M3U8 çalma listeleri ve erişim bilgileri tamamen kullanıcının kendi sorumluluğundadır.</li>
+              <li>Kullanıcı, eriştiği tüm yayın ve içeriklerin telif hakkı sahibinden yasal olarak edinilmiş olduğunu ve yürürlükteki telif hukuku kurallarına uygun olduğunu garanti eder.</li>
+              <li>Telif hakkıyla korunan yayınların, televizyon kanallarının, filmlerin veya dizilerin yetkisiz veya korsan yayın kaynaklarından izlenmesi kesinlikle yasaktır. XUBO bu tür kullanımları hiçbir şekilde desteklemez ve teşvik etmez.</li>
+            </ul>
+          </article>
+
+          <!-- 4. Fikri Mülkiyet Hakları ve Lisans -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">04</span>
+              <h2>Fikri Mülkiyet Hakları ve Lisans</h2>
+            </div>
+            <p>
+              XUBO yazılımının tüm kaynak kodları, görsel tasarımları, logoları, arayüz bileşenleri ve marka hakları Umur Çelebi'ye aittir.
+            </p>
+            <p>
+              Kullanıcılara, Uygulamayı desteklenen cihazlarında kişisel ve ticari olmayan amaçlarla kullanabilmeleri için geri alınabilir, münhasır olmayan, devredilemez ve sınırlı bir lisans verilmektedir. Uygulamanın tersine mühendislikle çözülmesi, kaynak koda dönüştürülmesi veya yetkisiz olarak yeniden dağıtılması yasaktır.
+            </p>
+          </article>
+
+          <!-- 5. Üçüncü Taraf Servisler ve Bağlantılar -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">05</span>
+              <h2>Üçüncü Taraf Servisler ve Bağlantılar</h2>
+            </div>
+            <p>
+              Kullanıcının yapılandırdığı IPTV sağlayıcıları ve akış sunucuları XUBO'nun kontrolü dışındadır.
+            </p>
+            <p>
+              XUBO; kullanıcının bağlandığı üçüncü taraf servislerin kesintisizliğini, yayın kalitesini, yayın süresini, doğruluğunu veya yasallığını denetlemez, garanti etmez ve bunlardan doğabilecek hiçbir aksaklıktan sorumlu tutulamaz.
+            </p>
+          </article>
+
+          <!-- 6. Garanti Reddi -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">06</span>
+              <h2>Garanti Reddi (Disclaimer of Warranties)</h2>
+            </div>
+            <p>
+              UYGULAMA "OLDUĞU GİBİ" (AS IS) VE "MEVCUT OLDUĞU ŞEKİLDE" (AS AVAILABLE) ESASIYLA SUNULMAKTADIR. YASALARIN İZİN VERDİĞİ AZAMİ ÖLÇÜDE, XUBO VE GELİŞTİRİCİSİ; TİCARİ ELVERİŞLİLİK, BELİRLİ BİR AMACA UYGUNLUK VEYA İHLAL ETMEME DAHİL OLMAK ÜZERE AÇIK VEYA ZIMNİ HİÇBİR GARANTİ VERMEMEKTEDİR.
+            </p>
+            <p>
+              Uygulamanın kesintisiz, hatasız veya tüm ağ koşullarında kusursuz çalışacağı yönünde herhangi bir garanti taahhüt edilmez.
+            </p>
+          </article>
+
+          <!-- 7. Sorumluluğun Sınırlandırılması -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">07</span>
+              <h2>Sorumluluğun Sınırlandırılması (Limitation of Liability)</h2>
+            </div>
+            <p>
+              YÜRÜRLÜKTEKİ KANUNLARIN İZİN VERDİĞİ EN GENİŞ KAPSAMDA; XUBO, GELİŞTİRİCİSİ VEYA LİSANSÖRLERİ; UYGULAMANIN KULLANIMINDAN VEYA KULLANILAMAMASINDAN DOĞAN KÂR KAYBI, VERİ KAYBI, CİHAZ HASARI VEYA TELİF HAKKI İHLALLERİ DAHİL HİÇBİR DOĞRUDAN, DOLAYLI, ÖZEL VEYA CEZAİ ZARARDAN SORUMLU TUTULAMAZ.
+            </p>
+          </article>
+
+          <!-- 8. Ebeveyn Kontrolü ve Güvenlik -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">08</span>
+              <h2>Ebeveyn Kontrolü ve Güvenlik</h2>
+            </div>
+            <p>
+              Uygulama, ebeveynlerin çocuklarını uygunsuz içeriklerden korumalarına yardımcı olmak amacıyla 4 haneli PIN korumalı kategori kilitleme özelliği sunar. Bu kilitlerin ayarlanması ve güvenli tutulması ebeveynin / kullanıcının sorumluluğundadır.
+            </p>
+          </article>
+
+          <!-- 9. Değişiklikler ve Yürürlük -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">09</span>
+              <h2>Koşullardaki Değişiklikler</h2>
+            </div>
+            <p>
+              İşbu Kullanım Koşulları; yeni uygulama işlevleri, mevzuat değişiklikleri veya platform gereksinimleri doğrultusunda önceden haber verilmeksizin güncellenebilir.
+            </p>
+            <p>
+              Değişiklikler bu web sayfasında yayımlandığı andan itibaren geçerlilik kazanır.
+            </p>
+          </article>
+
+          <!-- 10. İletişim ve Telif Bildirimleri -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">10</span>
+              <h2>İletişim & DMCA Telif Bildirimleri</h2>
+            </div>
+            <p>
+              Kullanım koşulları, lisans hakları veya telif bildirimi (DMCA / EU Copyright) talepleriniz için doğrudan geliştirici ile iletişime geçebilirsiniz:
+            </p>
+            <p>
+              <strong>E-posta:</strong> <a href="mailto:umurcelebi@gmail.com">umurcelebi@gmail.com</a>
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- ===================================================================
+           ENGLISH CONTENT BLOCK (EN)
+           =================================================================== -->
+      <div data-lang-block="en">
+        <div class="policy-notice">
+          <strong>Important Legal Disclaimer:</strong> XUBO IPTV Player is strictly a neutral media player client designed to allow users to play their own legally obtained IPTV stream URLs or M3U playlists. XUBO does not provide, host, sell, distribute, or stream any media content, TV channels, radio broadcasts, movies, or series. We strictly do not endorse or support the streaming of copyright-protected material without the explicit permission of the copyright holder.
+        </div>
+
+        <div class="policy-grid">
+          <!-- 1. Acceptance of Terms -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">01</span>
+              <h2>Acceptance of Terms</h2>
+            </div>
+            <p>
+              By downloading, installing, accessing, or using the XUBO IPTV Player application ("Application") on any operating system platform (iOS, iPadOS, macOS, tvOS, Android TV, or web), you acknowledge that you have read, understood, and agreed to be legally bound by these Terms of Use ("Terms").
+            </p>
+            <p>
+              If you do not agree to these Terms, do not install, access, or use the Application.
+            </p>
+          </article>
+
+          <!-- 2. Nature of Software -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">02</span>
+              <h2>Nature of Software: Pure Media Player Interface</h2>
+            </div>
+            <p>
+              XUBO is an independent media player interface powered by native rendering engines (AVPlayer and VLCKit).
+            </p>
+            <ul>
+              <li>The Application does not include or provide any pre-configured media playlists, streams, channels, or content libraries.</li>
+              <li>No audio, video, broadcast stream, M3U playlist, or copyrighted assets are packaged within or hosted by the Application.</li>
+              <li>XUBO is not affiliated, associated, authorized, endorsed by, or in any way officially connected with any third-party IPTV service provider.</li>
+            </ul>
+          </article>
+
+          <!-- 3. User Responsibilities & Copyright Compliance -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">03</span>
+              <h2>User Responsibilities & Copyright Compliance</h2>
+            </div>
+            <p>
+              Each user expressly represents and warrants that:
+            </p>
+            <ul>
+              <li>All server URLs, Xtream Codes credentials, M3U playlists, or XMLTV EPG sources imported into the Application are the sole responsibility of the user.</li>
+              <li>The user owns or has obtained all necessary legal rights and permissions from the legitimate copyright owners to access and stream the media content.</li>
+              <li>Streaming unauthorized, unlicensed, or pirated copyright-protected content is strictly prohibited. XUBO expressly disclaims any endorsement or facilitation of copyright infringement.</li>
+            </ul>
+          </article>
+
+          <!-- 4. Intellectual Property & Limited License -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">04</span>
+              <h2>Intellectual Property & Limited License</h2>
+            </div>
+            <p>
+              All software source code, user interface designs, visual layouts, graphics, trademarks, and brand assets of XUBO are the intellectual property of Umur Çelebi.
+            </p>
+            <p>
+              You are granted a limited, personal, non-exclusive, non-transferable, revocable license to install and use the Application strictly for personal, non-commercial purposes. Reverse engineering, decompiling, or redistributing the software is prohibited.
+            </p>
+          </article>
+
+          <!-- 5. Third-Party Services -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">05</span>
+              <h2>Third-Party Services & Feeds</h2>
+            </div>
+            <p>
+              The streaming servers and content providers configured by users operate completely independently of XUBO.
+            </p>
+            <p>
+              XUBO has no control over and assumes no responsibility for the uptime, streaming quality, availability, legality, or practices of any third-party IPTV service or stream feed.
+            </p>
+          </article>
+
+          <!-- 6. Disclaimer of Warranties -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">06</span>
+              <h2>Disclaimer of Warranties</h2>
+            </div>
+            <p>
+              THE APPLICATION IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+            </p>
+            <p>
+              WE DO NOT WARRANT THAT THE APPLICATION WILL OPERATE UNINTERRUPTED OR ERROR-FREE UNDER ALL NETWORK CONDITIONS.
+            </p>
+          </article>
+
+          <!-- 7. Limitation of Liability -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">07</span>
+              <h2>Limitation of Liability</h2>
+            </div>
+            <p>
+              TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL XUBO OR ITS DEVELOPER BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOSS OF PROFITS, DATA, OR USE, ARISING OUT OF OR IN CONNECTION WITH THE APPLICATION OR CONTENT ACCESSED THROUGH IT.
+            </p>
+          </article>
+
+          <!-- 8. Parental Controls -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">08</span>
+              <h2>Parental Controls & PIN Protection</h2>
+            </div>
+            <p>
+              The Application provides an integrated 4-digit PIN lock feature allowing parents to restrict access to adult categories and sensitive channels. Enabling, maintaining, and managing these security PIN codes is the sole responsibility of the user.
+            </p>
+          </article>
+
+          <!-- 9. Changes to Terms -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">09</span>
+              <h2>Modifications to Terms</h2>
+            </div>
+            <p>
+              We reserve the right to revise or update these Terms at any time to reflect software updates, platform guidelines, or regulatory requirements. Continued use of the Application after updates constitutes acceptance of the revised Terms.
+            </p>
+          </article>
+
+          <!-- 10. Contact & DMCA Inquiries -->
+          <article class="policy-card">
+            <div class="policy-header-row">
+              <span class="policy-num">10</span>
+              <h2>Contact & DMCA Copyright Notices</h2>
+            </div>
+            <p>
+              For legal inquiries, terms clarification, or copyright notices, please contact the developer directly:
+            </p>
+            <p>
+              <strong>Email:</strong> <a href="mailto:umurcelebi@gmail.com">umurcelebi@gmail.com</a>
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Legal Box -->
+      <div class="legal-box" style="margin-top: 40px;" data-i18n="legal_text">
+        Önemli Yasal Bilgilendirme: XUBO yalnızca bağımsız bir medya oynatıcı arayüzüdür. Uygulama içerisinde hazır yayın, kanal, film veya dizi bulunmaz ve satılmaz. Hizmetten yararlanmak için kendi yasal IPTV aboneliğinizi kullanmanız gerekir.
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="global-footer">
+      <div class="footer-inner">
+        <div data-i18n="footer_copy">
+          © 2026 Umur Çelebi. XUBO IPTV Player — Tüm hakları saklıdır.
+        </div>
+        <div class="footer-links">
+          <a href="./" data-i18n="nav_home">XUBO Tanıtım</a>
+          <a href="https://umurcelebi.github.io/" target="_blank" rel="noopener">umurcelebi.github.io</a>
+          <a href="indir.html" data-i18n="footer_quick_dl">Hızlı İndirme</a>
+          <a href="privacy.html" data-i18n="footer_privacy">Gizlilik Politikası</a>
+          <a href="terms.html" data-i18n="footer_terms">Kullanım Koşulları</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>

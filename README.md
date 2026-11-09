@@ -12,7 +12,7 @@
   <a href="https://github.com/umurcelebi/xubo/releases/latest"><img src="https://img.shields.io/github/v/release/umurcelebi/xubo?color=f59e0b&label=S%C3%BCr%C3%BCm&style=flat-square" alt="Son Sürüm"></a>
   <img src="https://img.shields.io/badge/Platform-Android%20TV%20%7C%20Google%20TV%20%7C%20Tizen%20%7C%20webOS-06b6d4?style=flat-square" alt="Platform">
   <img src="https://img.shields.io/badge/Android-6.0%2B-10b981?style=flat-square" alt="Android 6.0+">
-  <a href="https://umurcelebi.github.io/xubo/privacy.html"><img src="https://img.shields.io/badge/Gizlilik-G%C3%BCvenli%20%26%20Anonim-3b82f6?style=flat-square" alt="Gizlilik"></a>
+  <a href="https://xubo.app/privacy.html"><img src="https://img.shields.io/badge/Gizlilik-G%C3%BCvenli%20%26%20Anonim-3b82f6?style=flat-square" alt="Gizlilik"></a>
 </p>
 
 ---
@@ -20,9 +20,9 @@
 ## 📌 Hızlı Bağlantılar
 
 - 🚀 **[En Son Sürümü İndir (Releases)](https://github.com/umurcelebi/xubo/releases)**
-- 🌐 **[Resmi Web Sitesi & Tanıtım](https://umurcelebi.github.io/xubo/)**
-- ⚡ **[Doğrudan İndirme Sayfası](https://umurcelebi.github.io/xubo/indir.html)**
-- 🔒 **[Gizlilik Politikası](https://umurcelebi.github.io/xubo/privacy.html)**
+- 🌐 **[Resmi Web Sitesi & Tanıtım](https://xubo.app/)**
+- ⚡ **[Doğrudan İndirme Sayfası](https://xubo.app/indir.html)**
+- 🔒 **[Gizlilik Politikası](https://xubo.app/privacy.html)**
 
 ---
 
@@ -44,7 +44,7 @@
 1. TV'nizin Google Play Store mağazasından ücretsiz **Downloader by AFTVnews** uygulamasını yükleyin.
 2. Downloader arama çubuğuna şu adresi girip **Go** butonuna basın:
    ```text
-   https://umurcelebi.github.io/xubo/downloads/xubo-iptv.apk
+   https://xubo.app/downloads/xubo-iptv.apk
    ```
 3. İndirme tamamlandığında **Install (Yükle)** seçeneğini onaylayarak kurulumu tamamlayın.
 

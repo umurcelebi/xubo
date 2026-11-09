@@ -1,0 +1,30 @@
+{
+  "versionName": "1.2.6",
+  "versionCode": 150,
+  "minRequiredVersion": 100,
+  "releaseDate": "2026-11-03",
+  "downloadUrl": "https://xubo.app/downloads/xubo-iptv.apk",
+  "apkFileName": "xubo-iptv.apk",
+  "fileSize": 16102770,
+  "sha256": "c9a2c6d384eb5b191f41d03d060b1101b7a0bb6862294e5cb28b45fd37e9df14",
+  "packageName": "com.xubo.iptv",
+  "forceUpdate": false,
+  "changelog": {
+    "tr": [
+      "Yeni nesil birleşik kapsül oynatıcı kontrolleri (B-tipi tasarım): Canlı TV, film ve dizi oynatıcı kontrolleri modern cam görünümlü kapsüller içine toplandı",
+      "Canlı TV sabit önizleme alanı: Dikey ekranda canlı yayın videosu ekranın üstüne sabitlenerek kesintisiz izleme sağlandı, kanal listesi ve EPG bağımsız kaydırılabilir hale getirildi",
+      "Canlı TV arayüz temizliği: Canlı yayın ekranındaki gereksiz seekbar ve LIVE yazıları kaldırılarak temiz ve profesyonel görüntü sağlandı",
+      "Kanal adı ve başlık genişliği optimizasyonu: Dikey ekranda kanal adı taşması giderildi, çift satırlı başlık ve Geri butonuyla tam uyumlu kanal numarası rozeti uygulandı",
+      "Dizi ve Film detay kartı çerçeve taşması düzeltildi: Ekran alt sınırlarına tam oturan dinamik güvenli alan (safe-area) uyumluluğu",
+      "Mobil gezinme çubuğu (Bottom Navigation) 6 butonlu tam genişlik düzenine uyarlandı"
+    ],
+    "en": [
+      "Next-generation unified capsule player controls (Option B design): Sleek segmented glass pills for playback and stream tools",
+      "Live TV pinned preview box: Video preview stays firmly pinned at the top on portrait screens; channel list and EPG scroll smoothly beneath it",
+      "Clean Live TV OSD: Removed redundant seekbar and LIVE labels during live streaming for an uncluttered viewing experience",
+      "Portrait channel title & badge alignment: 2-row header prevents channel title truncation; channel number badge matches Back button height and radius",
+      "Series & VOD modal bottom overflow fix: Card frame strictly respects screen safe-areas on portrait phones",
+      "Bottom navigation bar adapted to full-width 6-item grid"
+    ]
+  }
+}
