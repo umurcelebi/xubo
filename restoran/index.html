@@ -301,8 +301,8 @@
       
       <form id="masterLoginForm" onsubmit="handleMasterLogin(event)">
         <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="masterUsername">Kullanıcı Adı</label>
-          <input type="text" id="masterUsername" class="form-input" placeholder="Kullanıcı adı girin" required autocomplete="username">
+          <label class="form-label" for="masterUsername">Yönetici E-Posta</label>
+          <input type="email" id="masterUsername" class="form-input" placeholder="umurcelebi@gmail.com" required autocomplete="email">
         </div>
         <div class="form-group" style="text-align: left;">
           <label class="form-label" for="masterPassword">Süper Şifre</label>
@@ -521,38 +521,65 @@
       setTimeout(() => { t.style.display = "none"; }, 3500);
     }
 
-    function checkAuth() {
-      const isLogged = sessionStorage.getItem("xubo_master_logged_in") === "true";
+    async function checkAuth() {
       const overlay = document.getElementById("authOverlay");
-      if (isLogged) {
+      let isSuperAdmin = false;
+      if (supabaseClient && supabaseClient.auth) {
+        try {
+          const { data } = await supabaseClient.auth.getSession();
+          const user = data && data.session ? data.session.user : null;
+          isSuperAdmin = !!(user && user.app_metadata && user.app_metadata.role === "super_admin");
+        } catch (e) {}
+      }
+      if (isSuperAdmin) {
+        sessionStorage.setItem("xubo_master_logged_in", "true");
         overlay.style.display = "none";
         loadRestaurants();
       } else {
+        sessionStorage.removeItem("xubo_master_logged_in");
         overlay.style.display = "flex";
       }
     }
 
-    function handleMasterLogin(e) {
+    async function handleMasterLogin(e) {
       e.preventDefault();
-      const user = document.getElementById("masterUsername").value.trim();
+      const email = document.getElementById("masterUsername").value.trim().toLowerCase();
       const pass = document.getElementById("masterPassword").value;
       const err = document.getElementById("loginError");
 
-      // Platform tek yetkili yöneticisi kontrolü
-      if (user === "umur.celebi" && pass === "Umur1988!#") {
-        sessionStorage.setItem("xubo_master_logged_in", "true");
-        err.style.display = "none";
-        checkAuth();
-        showToast("Platform Yöneticisi Girişi Başarılı!");
-      } else {
-        err.textContent = "Hatalı yönetici bilgileri!";
+      if (!supabaseClient || !supabaseClient.auth) {
+        err.textContent = "Kimlik doğrulama servisine ulaşılamadı.";
         err.style.display = "block";
+        return;
       }
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+      if (error || !data || !data.user) {
+        err.textContent = "Hatalı e-posta veya şifre!";
+        err.style.display = "block";
+        return;
+      }
+
+      const role = (data.user.app_metadata && data.user.app_metadata.role) || "";
+      if (role !== "super_admin") {
+        await supabaseClient.auth.signOut();
+        err.textContent = "Bu hesap Master Panel (super_admin) yetkisine sahip değil!";
+        err.style.display = "block";
+        return;
+      }
+
+      sessionStorage.setItem("xubo_master_logged_in", "true");
+      err.style.display = "none";
+      await checkAuth();
+      showToast("Platform Yöneticisi Girişi Başarılı!");
     }
 
-    function handleLogout() {
+    async function handleLogout() {
+      if (supabaseClient && supabaseClient.auth) {
+        try { await supabaseClient.auth.signOut(); } catch (e) {}
+      }
       sessionStorage.removeItem("xubo_master_logged_in");
-      checkAuth();
+      await checkAuth();
     }
 
     function autoSuggestSlug(name) {
