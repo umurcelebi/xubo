@@ -301,8 +301,8 @@
       
       <form id="masterLoginForm" onsubmit="handleMasterLogin(event)">
         <div class="form-group" style="text-align: left;">
-          <label class="form-label" for="masterEmail">Yönetici E-Posta</label>
-          <input type="email" id="masterEmail" class="form-input" value="admin@gingerpizza.com" required>
+          <label class="form-label" for="masterUsername">Kullanıcı Adı</label>
+          <input type="text" id="masterUsername" class="form-input" placeholder="Kullanıcı adı girin" required autocomplete="username">
         </div>
         <div class="form-group" style="text-align: left;">
           <label class="form-label" for="masterPassword">Süper Şifre</label>
@@ -457,12 +457,12 @@
 
     function handleMasterLogin(e) {
       e.preventDefault();
-      const email = document.getElementById("masterEmail").value.trim().toLowerCase();
+      const user = document.getElementById("masterUsername").value.trim();
       const pass = document.getElementById("masterPassword").value;
       const err = document.getElementById("loginError");
 
-      // Platform yöneticisi kontrolü
-      if (email === "admin@gingerpizza.com" && pass === "ginger123") {
+      // Platform tek yetkili yöneticisi kontrolü
+      if (user === "umur.celebi" && pass === "Umur1988!#") {
         sessionStorage.setItem("xubo_master_logged_in", "true");
         err.style.display = "none";
         checkAuth();
