@@ -509,9 +509,10 @@
     let pendingDeleteSlug = null;
 
     function initSupabase() {
-      if (window.supabase && window.SUPABASE_CONFIG) {
+      if (!supabaseClient && window.supabase && window.SUPABASE_CONFIG) {
         supabaseClient = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
       }
+      return supabaseClient;
     }
 
     function showToast(msg) {
@@ -522,6 +523,7 @@
     }
 
     async function checkAuth() {
+      initSupabase();
       const overlay = document.getElementById("authOverlay");
       let isSuperAdmin = false;
       if (supabaseClient && supabaseClient.auth) {
@@ -543,6 +545,7 @@
 
     async function handleMasterLogin(e) {
       e.preventDefault();
+      initSupabase();
       const email = document.getElementById("masterUsername").value.trim().toLowerCase();
       const pass = document.getElementById("masterPassword").value;
       const err = document.getElementById("loginError");
