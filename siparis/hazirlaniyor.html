@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ginger Pizza — Yeni Sitemiz & Online Sipariş Çok Yakında</title>
+  <meta name="description" content="Kadıköy Göztepe'nin butik pizzacısı Ginger Pizza. Yeni web sitemiz ve online sipariş sistemimiz hazırlanıyor. Sipariş ve bilgi için: 0216 337 02 01">
+  <meta name="theme-color" content="#d86a1a">
+  <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+  <link rel="apple-touch-icon" href="images/logo.jpg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Ginger Pizza — Kadıköy Göztepe Butik Pizzacısı">
+  <meta property="og:description" content="Yeni web sitemiz ve online sipariş sistemimiz çok yakında! Telefonla sipariş: 0216 337 02 01">
+  <meta property="og:type" content="restaurant.restaurant">
+  <meta property="og:url" content="https://www.gingerpizza.com">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --white: #ffffff;
+      --off-white: #fcf9f4;
+      --sand-50: #f7f2ea;
+      --sand-100: #eee5d8;
+      --sand-200: #dfd2bf;
+
+      --ginger-50: #fff6ee;
+      --ginger-100: #feecd9;
+      --ginger-200: #fcd5b0;
+      --ginger-400: #f09540;
+      --ginger-500: #d86a1a;
+      --ginger-600: #b8500c;
+
+      --ink-900: #1b1411;
+      --ink-700: #423630;
+      --ink-600: #554740;
+      --ink-500: #6d5d54;
+      --ink-400: #9c8b82;
+
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 85% 12%, rgba(216, 106, 26, 0.11), transparent 42%),
+        radial-gradient(circle at 12% 88%, rgba(240, 149, 64, 0.09), transparent 45%),
+        var(--off-white);
+      color: var(--ink-900);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Header */
+    .top-bar {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--white);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 18px rgba(216, 106, 26, 0.18);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink-900);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-title span {
+      color: var(--ginger-500);
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--ink-500);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--white);
+      border: 1px solid var(--sand-100);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink-700);
+      box-shadow: 0 2px 10px rgba(27, 20, 17, 0.04);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ginger-500);
+      box-shadow: 0 0 0 4px rgba(216, 106, 26, 0.16);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.75; }
+    }
+
+    /* Main Card */
+    .main-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px 40px;
+    }
+
+    .coming-card {
+      width: 100%;
+      max-width: 860px;
+      background: var(--white);
+      border: 1px solid var(--sand-100);
+      border-radius: 26px;
+      padding: 44px 40px;
+      box-shadow: 0 20px 55px rgba(27, 20, 17, 0.06);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--ginger-50);
+      border: 1px solid var(--ginger-200);
+      color: var(--ginger-600);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 3.6vw, 2.65rem);
+      font-weight: 700;
+      line-height: 1.16;
+      letter-spacing: -0.02em;
+      color: var(--ink-900);
+      margin-bottom: 16px;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--ginger-500);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--ink-600);
+      margin-bottom: 26px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 22px;
+      border-radius: 999px;
+      background: var(--ginger-500);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 0.94rem;
+      box-shadow: 0 8px 20px rgba(216, 106, 26, 0.24);
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--ginger-600);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 20px;
+      border-radius: 999px;
+      background: var(--sand-50);
+      color: var(--ink-900);
+      border: 1px solid var(--sand-200);
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--sand-100);
+      border-color: var(--ginger-200);
+    }
+
+    /* Info Column */
+    .info-box {
+      background: var(--off-white);
+      border: 1px solid var(--sand-100);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+    }
+
+    .info-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--white);
+      border: 1px solid var(--sand-100);
+      color: var(--ginger-500);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .info-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-400);
+      margin-bottom: 2px;
+    }
+
+    .info-val {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink-900);
+      line-height: 1.45;
+    }
+
+    .info-val a {
+      color: var(--ginger-600);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .info-sub {
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--ink-500);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Footer */
+    .site-footer {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px 26px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--ink-500);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-links a {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: 0.8;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+      color: var(--ginger-600);
+    }
+
+    @media (max-width: 820px) {
+      .coming-card {
+        grid-template-columns: 1fr;
+        padding: 30px 22px;
+        gap: 26px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 16px 0;
+        gap: 10px;
+      }
+      .brand-mark {
+        width: 52px;
+        height: 52px;
+      }
+      .main-wrap {
+        padding: 20px 14px 28px;
+      }
+      .coming-card {
+        padding: 24px 18px;
+        border-radius: 20px;
+      }
+      .cta-row {
+        flex-direction: column;
+      }
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+      .site-footer {
+        padding: 0 16px 22px;
+      }
+    }
+  </style>
+  <script>
+    (function(){try{var p=new URLSearchParams(location.search),q=p.get("r")||p.get("restaurant"),h=(location.hostname||"").toLowerCase(),s=(q||sessionStorage.getItem("ginger_active_restaurant_slug")||"").trim().toLowerCase(),c=(h&&h!=="www.gingerpizza.com"&&h!=="gingerpizza.com"&&h!=="xubo.app"&&h!=="www.xubo.app"&&h!=="localhost"&&h!=="127.0.0.1");if((s&&s!=="ginger-pizza")||(!s&&c)){document.documentElement.style.visibility="hidden";setTimeout(function(){document.documentElement.style.visibility="";},1500);}}catch(e){}})();
+  </script>
+</head>
+<body>
+
+  <header class="top-bar">
+    <div class="brand-logo">
+      <div class="brand-mark">
+        <img src="images/logo.jpg" alt="Ginger Pizza Logo">
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Ginger <span>Pizza</span></span>
+      </div>
+    </div>
+
+    <div class="status-pill">
+      <span class="status-dot" aria-hidden="true"></span>
+      Online Sipariş Hazırlanıyor
+    </div>
+  </header>
+
+  <main class="main-wrap">
+    <section class="coming-card" aria-labelledby="comingTitle">
+      <div>
+        <div class="hero-eyebrow">🔥 Fırınımız Açık, Sitemiz Yenileniyor</div>
+        <h1 id="comingTitle" class="hero-title">
+          Yeni menümüz ve online sipariş sistemimiz <em>çok yakında</em> burada.
+        </h1>
+        <p class="hero-desc">
+          Göztepe'deki taş fırınımızdan sıcacık lezzetlerimizi doğrudan web sitemiz üzerinden sipariş edebilmeniz için son hazırlıklarımızı yapıyoruz. Bu sırada telefonla hemen sipariş verebilirsiniz.
+        </p>
+
+        <div class="cta-row">
+          <a href="tel:02163370201" class="btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            Telefonla Sipariş: 0216 337 02 01
+          </a>
+          <a href="https://instagram.com/gingerpizza" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            @gingerpizza
+          </a>
+        </div>
+      </div>
+
+      <aside class="info-box" aria-label="İletişim ve Konum Bilgileri">
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Adres</div>
+            <div class="info-val">
+              Göztepe Mah. Rıdvanpaşa Sk. No: 16<br>Kadıköy / İstanbul
+              <span class="info-sub"><a href="https://maps.google.com/?q=Ginger+Pizza+Göztepe+Kadıköy" target="_blank" rel="noopener noreferrer">Google Haritalar'da Aç →</a></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Telefon</div>
+            <div class="info-val">
+              <a href="tel:02163370201">0216 337 02 01</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Çalışma Saatleri</div>
+            <div class="info-val">
+              Haftanın her günü: 11:30 – 23:00
+              <span class="info-sub">Paket Servis & Gel Al</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Instagram</div>
+            <div class="info-val">
+              <a href="https://instagram.com/gingerpizza" target="_blank" rel="noopener noreferrer">@gingerpizza</a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© 2026 Ginger Pizza · Kadıköy, İstanbul</div>
+    <div class="footer-links">
+      <a href="admin.html">Yönetici Girişi</a>
+    </div>
+  </footer>
+
+  <script src="js/config.js?v=20261112"></script>
+</body>
+</html>

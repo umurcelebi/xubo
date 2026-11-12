@@ -1,417 +1,533 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ginger Pizza — Yeni Sitemiz & Online Sipariş Çok Yakında</title>
+  <meta name="description" content="Kadıköy Göztepe'nin butik pizzacısı Ginger Pizza. Yeni web sitemiz ve online sipariş sistemimiz hazırlanıyor. Sipariş ve bilgi için: 0216 337 02 01">
+  <meta name="theme-color" content="#d86a1a">
+  <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+  <link rel="apple-touch-icon" href="images/logo.jpg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Ginger Pizza — Kadıköy Göztepe Butik Pizzacısı">
+  <meta property="og:description" content="Yeni web sitemiz ve online sipariş sistemimiz çok yakında! Telefonla sipariş: 0216 337 02 01">
+  <meta property="og:type" content="restaurant.restaurant">
+  <meta property="og:url" content="https://www.gingerpizza.com">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --white: #ffffff;
+      --off-white: #fcf9f4;
+      --sand-50: #f7f2ea;
+      --sand-100: #eee5d8;
+      --sand-200: #dfd2bf;
+
+      --ginger-50: #fff6ee;
+      --ginger-100: #feecd9;
+      --ginger-200: #fcd5b0;
+      --ginger-400: #f09540;
+      --ginger-500: #d86a1a;
+      --ginger-600: #b8500c;
+
+      --ink-900: #1b1411;
+      --ink-700: #423630;
+      --ink-600: #554740;
+      --ink-500: #6d5d54;
+      --ink-400: #9c8b82;
+
+      --font-display: "Fraunces", Georgia, serif;
+      --font-body: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(circle at 85% 12%, rgba(216, 106, 26, 0.11), transparent 42%),
+        radial-gradient(circle at 12% 88%, rgba(240, 149, 64, 0.09), transparent 45%),
+        var(--off-white);
+      color: var(--ink-900);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Header */
+    .top-bar {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--white);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 18px rgba(216, 106, 26, 0.18);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--ink-900);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-title span {
+      color: var(--ginger-500);
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--ink-500);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--white);
+      border: 1px solid var(--sand-100);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink-700);
+      box-shadow: 0 2px 10px rgba(27, 20, 17, 0.04);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ginger-500);
+      box-shadow: 0 0 0 4px rgba(216, 106, 26, 0.16);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.75; }
+    }
+
+    /* Main Card */
+    .main-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px 40px;
+    }
+
+    .coming-card {
+      width: 100%;
+      max-width: 860px;
+      background: var(--white);
+      border: 1px solid var(--sand-100);
+      border-radius: 26px;
+      padding: 44px 40px;
+      box-shadow: 0 20px 55px rgba(27, 20, 17, 0.06);
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: var(--ginger-50);
+      border: 1px solid var(--ginger-200);
+      color: var(--ginger-600);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 3.6vw, 2.65rem);
+      font-weight: 700;
+      line-height: 1.16;
+      letter-spacing: -0.02em;
+      color: var(--ink-900);
+      margin-bottom: 16px;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--ginger-500);
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--ink-600);
+      margin-bottom: 26px;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 22px;
+      border-radius: 999px;
+      background: var(--ginger-500);
+      color: var(--white);
+      font-weight: 700;
+      font-size: 0.94rem;
+      box-shadow: 0 8px 20px rgba(216, 106, 26, 0.24);
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--ginger-600);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 20px;
+      border-radius: 999px;
+      background: var(--sand-50);
+      color: var(--ink-900);
+      border: 1px solid var(--sand-200);
+      font-weight: 600;
+      font-size: 0.92rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--sand-100);
+      border-color: var(--ginger-200);
+    }
+
+    /* Info Column */
+    .info-box {
+      background: var(--off-white);
+      border: 1px solid var(--sand-100);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+    }
+
+    .info-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--white);
+      border: 1px solid var(--sand-100);
+      color: var(--ginger-500);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .info-label {
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-400);
+      margin-bottom: 2px;
+    }
+
+    .info-val {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink-900);
+      line-height: 1.45;
+    }
+
+    .info-val a {
+      color: var(--ginger-600);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .info-sub {
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--ink-500);
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Footer */
+    .site-footer {
+      width: 100%;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px 26px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.82rem;
+      color: var(--ink-500);
+    }
+
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-links a {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      opacity: 0.8;
+    }
+
+    .footer-links a:hover {
+      opacity: 1;
+      color: var(--ginger-600);
+    }
+
+    @media (max-width: 820px) {
+      .coming-card {
+        grid-template-columns: 1fr;
+        padding: 30px 22px;
+        gap: 26px;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px 16px 0;
+        gap: 10px;
+      }
+      .brand-mark {
+        width: 52px;
+        height: 52px;
+      }
+      .main-wrap {
+        padding: 20px 14px 28px;
+      }
+      .coming-card {
+        padding: 24px 18px;
+        border-radius: 20px;
+      }
+      .cta-row {
+        flex-direction: column;
+      }
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+      }
+      .site-footer {
+        padding: 0 16px 22px;
+      }
+    }
+  </style>
   <script>
-    (function() {
-      var p = new URLSearchParams(window.location.search).get('lang');
-      var l = p || localStorage.getItem('xubo_site_lang');
-      if (!l) {
-        var bl = (navigator.language || '').toLowerCase();
-        l = bl.startsWith('tr') ? 'tr' : 'en';
-      }
-      if (l === 'en' || l === 'tr') {
-        document.documentElement.lang = l;
-      }
-    })();
+    (function(){try{var p=new URLSearchParams(location.search),q=p.get("r")||p.get("restaurant"),h=(location.hostname||"").toLowerCase(),s=(q||sessionStorage.getItem("ginger_active_restaurant_slug")||"").trim().toLowerCase(),c=(h&&h!=="www.gingerpizza.com"&&h!=="gingerpizza.com"&&h!=="xubo.app"&&h!=="www.xubo.app"&&h!=="localhost"&&h!=="127.0.0.1");if((s&&s!=="ginger-pizza")||(!s&&c)){document.documentElement.style.visibility="hidden";setTimeout(function(){document.documentElement.style.visibility="";},1500);}}catch(e){}})();
   </script>
-  <title>XUBO — Tüm Ekranlarınız İçin Yeni Nesil IPTV Oynatıcı</title>
-  <meta name="description" content="XUBO; televizyon, bilgisayar, tablet ve telefonda kendi IPTV aboneliğinizdeki canlı TV, film ve dizileri en yüksek performans ve sinematik koyu arayüzle oynatan bağımsız medya oynatıcısıdır.">
-  <link rel="icon" href="favicon.png" type="image/png">
-  <link rel="stylesheet" href="assets/css/xubo.css">
-  <script src="assets/js/xubo.js" defer></script>
 </head>
 <body>
 
-  <!-- Floating Capsule Navigation -->
-  <div class="nav-wrapper">
-    <header class="floating-nav">
-      <a href="./" class="nav-brand" aria-label="XUBO">
-        <img src="assets/img/xubo-icon.png" alt="XUBO Logo" width="34" height="34">
-        <span>XUBO</span>
-        <span class="pulse-indicator">
-          <span class="pulse-dot" aria-hidden="true"></span>
-          v1.2.6 BETA
-        </span>
-      </a>
+  <header class="top-bar">
+    <div class="brand-logo">
+      <div class="brand-mark">
+        <img src="images/logo.jpg" alt="Ginger Pizza Logo">
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Ginger <span>Pizza</span></span>
+      </div>
+    </div>
 
-      <nav class="nav-menu" aria-label="Menü">
-        <a class="nav-opt" href="#ekranlar" data-i18n="nav_screens">Arayüz</a>
-        <a class="nav-opt" href="#ozellikler" data-i18n="nav_architecture">Mimarisi</a>
-        <a class="nav-opt" href="#ekosistem" data-i18n="nav_devices">Tüm Platformlar</a>
-        <a class="nav-opt" href="privacy.html" data-i18n="nav_privacy">Gizlilik</a>
+    <div class="status-pill">
+      <span class="status-dot" aria-hidden="true"></span>
+      Online Sipariş Hazırlanıyor
+    </div>
+  </header>
 
-        <!-- Language Switcher -->
-        <div class="lang-switcher" aria-label="Dil Seçimi">
-          <button type="button" class="lang-btn is-active" data-lang="tr" aria-pressed="true">TR</button>
-          <span class="lang-sep" aria-hidden="true">|</span>
-          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
-        </div>
-
-        <a class="btn-nav-cta" href="#indir" data-i18n="nav_beta_cta">Beta İndir</a>
-      </nav>
-    </header>
-  </div>
-
-  <div class="wrap">
-    <main id="icerik">
-      <!-- 1. Theatrical Hero Stage -->
-      <section class="hero-stage">
-        <div class="hero-pill-badge">
-          <span data-i18n="hero_badge">✦ Tüm Cihazlar & Tüm Platformlar</span>
-          <span style="opacity: 0.4;">|</span>
-          <span class="tag-highlight" data-i18n="hero_badge_sub">Android TV & Mobil Beta Yayında</span>
-        </div>
-
-        <h1>
-          <span data-i18n="hero_h1_lead">Tüm Ekranlarınızda</span><br>
-          <span class="gradient-text" data-i18n="hero_h1_grad">Kusursuz Medya Sahnesi.</span>
+  <main class="main-wrap">
+    <section class="coming-card" aria-labelledby="comingTitle">
+      <div>
+        <div class="hero-eyebrow">🔥 Fırınımız Açık, Sitemiz Yenileniyor</div>
+        <h1 id="comingTitle" class="hero-title">
+          Yeni menümüz ve online sipariş sistemimiz <em>çok yakında</em> burada.
         </h1>
-
-        <p class="hero-lead" data-i18n="hero_lead">
-          Yüksek performans, sıfır karmaşa. XUBO; televizyondan bilgisayara, tabletten telefona tüm cihazlarınızda Xtream ve M3U oynatma listelerinizi ultra akıcı, modern ve sinematik bir OLED arayüzüyle buluşturan yeni nesil medya oynatıcısıdır.
+        <p class="hero-desc">
+          Göztepe'deki taş fırınımızdan sıcacık lezzetlerimizi doğrudan web sitemiz üzerinden sipariş edebilmeniz için son hazırlıklarımızı yapıyoruz. Bu sırada telefonla hemen sipariş verebilirsiniz.
         </p>
 
-        <div class="hero-buttons">
-          <a class="btn-glow-primary" href="#indir">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span data-i18n="hero_btn_dl">Android Beta Sürümünü İndir (APK)</span>
+        <div class="cta-row">
+          <a href="tel:02163370201" class="btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            Telefonla Sipariş: 0216 337 02 01
           </a>
-          <a class="btn-glass-secondary" href="#ekranlar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span data-i18n="hero_btn_explore">Arayüzü İncele</span>
+          <a href="https://instagram.com/gingerpizza" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+            @gingerpizza
           </a>
-        </div>
-
-        <div class="specs-ticker">
-          <span data-i18n="spec_hw">Donanım Hızlandırma</span>
-          <span data-i18n="spec_4k">4K / UHD 60 FPS</span>
-          <span data-i18n="spec_epg">Akıllı EPG Rehberi</span>
-          <span data-i18n="spec_multi">Çoklu Profil</span>
-          <span data-i18n="spec_pin">PIN Ebeveyn Kilidi</span>
-        </div>
-
-        <!-- 2. Cinematic OLED Showcase -->
-        <div class="showcase-stage" id="ekranlar">
-          <div class="ambient-glow" aria-hidden="true"></div>
-
-          <div class="oled-tv">
-            <div class="tv-display">
-              <img class="is-visible" data-screen="live" src="assets/img/screen-live.png" alt="XUBO Canlı TV ve EPG Program Rehberi" width="1920" height="1080">
-              <img data-screen="vod" src="assets/img/screen-vod.png" alt="XUBO 4K VOD Sinema ve Film Kütüphanesi" width="1920" height="1080" loading="lazy">
-              <img data-screen="series" src="assets/img/screen-series.png" alt="XUBO Dizi ve Sezon Takip Arayüzü" width="1920" height="1080" loading="lazy">
-              <img data-screen="login" src="assets/img/screen-login.png" alt="XUBO Giriş ve Çoklu Profil Yönetimi" width="1920" height="1080" loading="lazy">
-              <img data-screen="settings" src="assets/img/screen-settings.png" alt="XUBO Sistem Ayarları ve Ebeveyn Kilidi" width="1920" height="1080" loading="lazy">
-            </div>
-          </div>
-          <div class="tv-pedestal" aria-hidden="true"></div>
-
-          <!-- Dynamic Dock Switcher -->
-          <div class="showcase-dock">
-            <div class="dock-tabs" role="tablist" aria-label="Uygulama Ekranları">
-              <button type="button" class="dock-btn is-active" role="tab" aria-selected="true" data-target="live">
-                <span class="dock-icon">📺</span> <span data-i18n="tab_live">Canlı TV & EPG</span>
-              </button>
-              <button type="button" class="dock-btn" role="tab" aria-selected="false" data-target="vod">
-                <span class="dock-icon">🎬</span> <span data-i18n="tab_vod">Sinema & VOD</span>
-              </button>
-              <button type="button" class="dock-btn" role="tab" aria-selected="false" data-target="series">
-                <span class="dock-icon">🍿</span> <span data-i18n="tab_series">Dizi & Sezon</span>
-              </button>
-              <button type="button" class="dock-btn" role="tab" aria-selected="false" data-target="login">
-                <span class="dock-icon">👤</span> <span data-i18n="tab_login">Çoklu Profil</span>
-              </button>
-              <button type="button" class="dock-btn" role="tab" aria-selected="false" data-target="settings">
-                <span class="dock-icon">⚙️</span> <span data-i18n="tab_settings">Sistem & Kilit</span>
-              </button>
-            </div>
-
-            <div class="dock-info" aria-live="polite">
-              <h3 data-dock-title>Canlı TV ve Elektronik Program Rehberi (EPG)</h3>
-              <p data-dock-desc>Anlık ve sıradaki yayın bilgisi, kategori bazlı filtreleme ve kumandadan doğrudan sayı ile kanal seçimi.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3. Bento Grid Features Architecture -->
-      <section id="ozellikler" aria-labelledby="h-ozellikler">
-        <div class="section-header">
-          <div class="section-eyebrow" data-i18n="bento_eyebrow">TEKNİK MİMARİ</div>
-          <h2 class="section-heading" id="h-ozellikler" data-i18n="bento_h2">Gelişmiş Performans, Kusursuz Kontrol.</h2>
-          <p class="section-desc" data-i18n="bento_desc">Gereksiz karmaşadan arındırılmış, televizyon kumandasından mobil dokunmatiğe kadar her cihaza özel ergonomi.</p>
-        </div>
-
-        <div class="bento-grid">
-          <!-- Card 1: Wide 2 cols -->
-          <div class="bento-card col-span-2">
-            <div class="bento-icon-box" aria-hidden="true">⚡</div>
-            <h3 data-i18n="bento_1_title">Anlık Kanal Değişimi ve Akıllı EPG</h3>
-            <p data-i18n="bento_1_desc">Arka planda optimize edilen akış tamponlaması sayesinde kanal değiştirirken ekran donmaz. Kategorize edilmiş liste, anlık yayın akışı, program detayları ve sayı tuşlarıyla doğrudan kanal atlama desteği sunar.</p>
-          </div>
-
-          <!-- Card 2 -->
-          <div class="bento-card">
-            <div class="bento-icon-box" aria-hidden="true">🎬</div>
-            <h3 data-i18n="bento_2_title">Görsel Sinema & VOD</h3>
-            <p data-i18n="bento_2_desc">Film ve diziler için poster afiş duvarı, IMDb puanları, özet bilgileri ve kaldığınız saniyeyi her profilde bağımsız hatırlayan akıllı oynatıcı hafızası.</p>
-          </div>
-
-          <!-- Card 3 -->
-          <div class="bento-card">
-            <div class="bento-icon-box" aria-hidden="true">👥</div>
-            <h3 data-i18n="bento_3_title">Çoklu Hesap ve Bağımsız Profiller</h3>
-            <p data-i18n="bento_3_desc">Xtream ve M3U hesaplarınızı tek çatıda toplayın. Evdeki her aile üyesi için ayrı profil oluşturup favorileri ve geçmişi birbirinden ayırın.</p>
-          </div>
-
-          <!-- Card 4 -->
-          <div class="bento-card">
-            <div class="bento-icon-box" aria-hidden="true">🔒</div>
-            <h3 data-i18n="bento_4_title">PIN Korumalı Ebeveyn Kilidi</h3>
-            <p data-i18n="bento_4_desc">Yetişkin kategorileri ya da özel listeleri 4 haneli güvenli PIN şifresiyle kilitleyin; aileniz için her zaman güvenli ve denetimli bir izleme ortamı sağlayın.</p>
-          </div>
-
-          <!-- Card 5 -->
-          <div class="bento-card">
-            <div class="bento-icon-box" aria-hidden="true">🌐</div>
-            <h3 data-i18n="bento_5_title">Geniş Format ve Ses/Altyazı Desteği</h3>
-            <p data-i18n="bento_5_desc">HLS, TS, MP4 ve MKV kapsayıcıları ile tam uyum. Yayın anında çoklu ses dilleri ve harici altyazılar arasında tek dokunuşla geçiş yapabilme imkanı.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4. Ecosystem & Platform Matrix (8 Platforms) -->
-      <section id="ekosistem" aria-labelledby="h-ekosistem">
-        <div class="section-header">
-          <div class="section-eyebrow" data-i18n="eco_eyebrow">PLATFORM EKOSİSTEMİ</div>
-          <h2 class="section-heading" id="h-ekosistem" data-i18n="eco_h2">Tüm Ekranlarınızda Tek Standart.</h2>
-          <p class="section-desc" data-i18n="eco_desc">Televizyon, bilgisayar, tablet ve telefon: Farklı işletim sistemlerinde aynı tutarlı hız ve sinematik koyu arayüz.</p>
-        </div>
-
-        <div class="ecosystem-grid">
-          <!-- 1. Android (Active Beta) -->
-          <div class="eco-card eco-active">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Android"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.4395 5.5586c-.675 1.1664-1.352 2.3318-2.0274 3.498-.0366-.0155-.0742-.0286-.1113-.043-1.8249-.6957-3.484-.8-4.42-.787-1.8551.0185-3.3544.4643-4.2597.8203-.084-.1494-1.7526-3.021-2.0215-3.4864a1.1451 1.1451 0 0 0-.1406-.1914c-.3312-.364-.9054-.4859-1.379-.203-.475.282-.7136.9361-.3886 1.5019 1.9466 3.3696-.0966-.2158 1.9473 3.3593.0172.031-.4946.2642-1.3926 1.0177C2.8987 12.176.452 14.772 0 18.9902h24c-.119-1.1108-.3686-2.099-.7461-3.0683-.7438-1.9118-1.8435-3.2928-2.7402-4.1836a12.1048 12.1048 0 0 0-2.1309-1.6875c.6594-1.122 1.312-2.2559 1.9649-3.3848.2077-.3615.1886-.7956-.0079-1.1191a1.1001 1.1001 0 0 0-.8515-.5332c-.5225-.0536-.9392.3128-1.0488.5449zm-.0391 8.461c.3944.5926.324 1.3306-.1563 1.6503-.4799.3197-1.188.0985-1.582-.4941-.3944-.5927-.324-1.3307.1563-1.6504.4727-.315 1.1812-.1086 1.582.4941zM7.207 13.5273c.4803.3197.5506 1.0577.1563 1.6504-.394.5926-1.1038.8138-1.584.4941-.48-.3197-.5503-1.0577-.1563-1.6504.4008-.6021 1.1087-.8106 1.584-.4941z"/></svg></span>
-                <span class="eco-pill pill-live" data-i18n="eco_android_badge">Aktif Beta</span>
-              </div>
-              <h3 data-i18n="eco_android_title">Android</h3>
-              <p class="eco-desc" data-i18n="eco_android_desc">Telefon, Tablet, Android TV ve Google TV cihazları için optimize edildi.</p>
-            </div>
-            <div class="eco-footer">
-              <a href="#indir" data-i18n="eco_android_cta">
-                Beta Sürümünü İndir →
-              </a>
-            </div>
-          </div>
-
-          <!-- 2. LG webOS -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="LG Smart TV"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14.522 14.078h3.27v1.33h-4.847v-6.83h1.577v5.5zm6.74-1.274h1.284v1.195c-.236.09-.698.18-1.137.18-1.42 0-1.893-.721-1.893-2.186 0-1.398.45-2.221 1.869-2.221.791 0 1.24.248 1.612.722l.982-.903c-.6-.855-1.646-1.114-2.629-1.114-2.208 0-3.368 1.205-3.368 3.504 0 2.288 1.047 3.528 3.358 3.528 1.06 0 2.096-.27 2.66-.665V11.53h-2.739v1.274zM5.291 6.709a5.29 5.29 0 1 1 0 10.582 5.291 5.291 0 1 1 0-10.582m3.16 8.457a4.445 4.445 0 0 0 1.31-3.161v-.242l-.22.001H6.596v.494h2.662l-.001.015a3.985 3.985 0 0 1-3.965 3.708 3.95 3.95 0 0 1-2.811-1.165 3.952 3.952 0 0 1-1.164-2.811c0-1.061.414-2.059 1.164-2.81a3.951 3.951 0 0 1 2.81-1.164l.252.003v-.495l-.251-.003a4.475 4.475 0 0 0-4.47 4.469c0 1.194.465 2.316 1.309 3.161a4.444 4.444 0 0 0 3.16 1.31 4.444 4.444 0 0 0 3.162-1.31m-2.91-1.297V9.644H5.04v4.72h1.556v-.495H5.543zm-1.265-3.552a.676.676 0 1 0-.675.674.676.676 0 0 0 .675-.674"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_lg_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_lg_title">LG Smart TV</h3>
-              <p class="eco-desc" data-i18n="eco_lg_desc">webOS platformu için Magic Remote kumanda optimizasyonları tamamlanıyor.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_lg_status">Yakında LG Content Store'da</span>
-            </div>
-          </div>
-
-          <!-- 3. Samsung Tizen OS -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Samsung Smart TV"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.8166 10.2808l.0459 2.6934h-.023l-.7793-2.6934h-1.2837v3.3925h.8481l-.0458-2.785h.023l.8366 2.785h1.2264v-3.3925zm-16.149 0l-.6418 3.427h.9284l.4699-3.1175h.0229l.4585 3.1174h.9169l-.6304-3.4269zm5.1805 0l-.424 2.6132h-.023l-.424-2.6132H6.5788l-.0688 3.427h.8596l.023-3.0832h.0114l.573 3.0831h.8711l.5731-3.083h.023l.0228 3.083h.8596l-.0802-3.4269zm-7.2664 2.4527c.0343.0802.0229.1949.0114.2522-.0229.1146-.1031.2292-.3324.2292-.2177 0-.3438-.126-.3438-.3095v-.3323H0v.2636c0 .7679.6074.9971 1.2493.9971.6189 0 1.1346-.2178 1.2149-.7794.0458-.298.0114-.4928 0-.5616-.1605-.722-1.467-.9283-1.5588-1.3295-.0114-.0688-.0114-.1375 0-.1834.023-.1146.1032-.2292.3095-.2292.2063 0 .321.126.321.3095v.2063h.8595v-.2407c0-.745-.6762-.8596-1.1576-.8596-.6074 0-1.1117.2063-1.2034.7564-.023.149-.0344.2866.0114.4585.1376.7106 1.364.9169 1.5358 1.3524m11.152 0c.0343.0803.0228.1834.0114.2522-.023.1146-.1032.2292-.3324.2292-.2178 0-.3438-.126-.3438-.3095v-.3323h-.917v.2636c0 .7564.596.9857 1.2379.9857.6189 0 1.1232-.2063 1.2034-.7794.0459-.298.0115-.4814 0-.5616-.1375-.7106-1.4327-.9284-1.5243-1.318-.0115-.0688-.0115-.1376 0-.1835.0229-.1146.1031-.2292.3094-.2292.1948 0 .321.126.321.3095v.2063h.848v-.2407c0-.745-.6647-.8596-1.146-.8596-.6075 0-1.1004.1948-1.192.7564-.023.149-.023.2866.0114.4585.1376.7106 1.341.9054 1.513 1.3524m2.8882.4585c.2407 0 .3094-.1605.3323-.2522.0115-.0343.0115-.0917.0115-.126v-2.533h.871v2.4642c0 .0688 0 .1948-.0114.2292-.0573.6419-.5616.8482-1.192.8482-.6303 0-1.1346-.2063-1.192-.8482 0-.0344-.0114-.1604-.0114-.2292v-2.4642h.871v2.533c0 .0458 0 .0916.0115.126 0 .0917.0688.2522.3095.2522m7.1518-.0344c.2522 0 .3324-.1605.3553-.2522.0115-.0343.0115-.0917.0115-.126v-.4929h-.3553v-.5043H24v.917c0 .0687 0 .1145-.0115.2292-.0573.6303-.596.8481-1.2034.8481-.6075 0-1.1461-.2178-1.2034-.8481-.0115-.1147-.0115-.1605-.0115-.2293v-1.444c0-.0574.0115-.172.0115-.2293.0802-.6419.596-.8482 1.2034-.8482s1.1347.2063 1.2034.8482c.0115.1031.0115.2292.0115.2292v.1146h-.8596v-.1948s0-.0803-.0115-.1261c-.0114-.0802-.0802-.2521-.3438-.2521-.2521 0-.321.1604-.3438.2521-.0115.0458-.0115.1032-.0115.1605v1.5702c0 .0458 0 .0916.0115.126 0 .0917.0917.2522.3323.2522"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_samsung_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_samsung_title">Samsung Smart TV</h3>
-              <p class="eco-desc" data-i18n="eco_samsung_desc">Tizen OS için tek kumanda ergonomisi ve donanım hızlandırma entegrasyonu.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_samsung_status">Yakında Samsung Smart TV Mağazası'nda</span>
-            </div>
-          </div>
-
-          <!-- 4. Xbox Series X / S -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Xbox"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.102 21.033C6.211 22.881 8.977 24 12 24c3.026 0 5.789-1.119 7.902-2.967 1.877-1.912-4.316-8.709-7.902-11.417-3.582 2.708-9.779 9.505-7.898 11.417zm11.16-14.406c2.5 2.961 7.484 10.313 6.076 12.912C23.002 17.48 24 14.861 24 12.004c0-3.34-1.365-6.362-3.57-8.536 0 0-.027-.022-.082-.042-.063-.022-.152-.045-.281-.045-.592 0-1.985.434-4.805 3.246zM3.654 3.426c-.057.02-.082.041-.086.042C1.365 5.642 0 8.664 0 12.004c0 2.854.998 5.473 2.661 7.533-1.401-2.605 3.579-9.951 6.08-12.91-2.82-2.813-4.216-3.245-4.806-3.245-.131 0-.223.021-.281.046v-.002zM12 3.551S9.055 1.828 6.755 1.746c-.903-.033-1.454.295-1.521.339C7.379.646 9.659 0 11.984 0H12c2.334 0 4.605.646 6.766 2.085-.068-.046-.615-.372-1.52-.339C14.946 1.828 12 3.545 12 3.545v.006z"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_xbox_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_xbox_title">Xbox Series X / S</h3>
-              <p class="eco-desc" data-i18n="eco_xbox_desc">Xbox oyun kumandası ile tam uyumlu 4K HDR oynatma deneyimi.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_xbox_status">Yakında Microsoft Store'da</span>
-            </div>
-          </div>
-
-          <!-- 5. Windows -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Windows"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M0 0h11.377v11.372H0zm12.623 0H24v11.372H12.623zM0 12.623h11.377V24H0zm12.623 0H24V24H12.623z"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_windows_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_windows_title">Windows</h3>
-              <p class="eco-desc" data-i18n="eco_windows_desc">Windows 10 ve 11 masaüstü ve dizüstü bilgisayarlar için bağımsız oynatıcı uygulaması.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_windows_status">Yakında Windows İçin Yayında</span>
-            </div>
-          </div>
-
-          <!-- 6. macOS -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Apple macOS"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_macos_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_macos_title">macOS</h3>
-              <p class="eco-desc" data-i18n="eco_macos_desc">Apple Silicon (M1/M2/M3/M4) ve Intel Mac cihazları için yüksek performanslı masaüstü arayüzü.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_macos_status">Yakında Mac App Store'da</span>
-            </div>
-          </div>
-
-          <!-- 7. iOS (iPhone & iPad) -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Apple iOS"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_ios_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_ios_title">iOS (iPhone & iPad)</h3>
-              <p class="eco-desc" data-i18n="eco_ios_desc">iPhone ve iPad ekranları için optimize edilmiş, akıcı mobil ve tablet deneyimi.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_ios_status">Yakında App Store'da</span>
-            </div>
-          </div>
-
-          <!-- 8. Apple TV (tvOS) -->
-          <div class="eco-card">
-            <div>
-              <div class="eco-head">
-                <span class="eco-icon" aria-label="Apple TV"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.57 17.735h-1.815l-3.34-9.203h1.633l2.02 5.987c.075.231.273.9.586 2.012l.297-.997.33-1.006 2.094-6.004H24zm-5.344-.066a5.76 5.76 0 0 1-1.55.207c-1.23 0-1.84-.693-1.84-2.087V9.646h-1.063V8.532h1.121V7.081l1.476-.602v2.062h1.707v1.113H13.38v5.805c0 .446.074.75.214.932.14.182.396.264.75.264.207 0 .495-.041.883-.115zm-7.29-5.343c.017 1.764 1.55 2.358 1.567 2.366-.017.042-.248.842-.808 1.658-.487.71-.99 1.418-1.79 1.435-.783.016-1.03-.462-1.93-.462-.89 0-1.17.445-1.913.478-.758.025-1.344-.775-1.838-1.484-.998-1.451-1.765-4.098-.734-5.88.51-.89 1.426-1.451 2.416-1.46.75-.016 1.468.512 1.93.512.461 0 1.327-.627 2.234-.536.38.016 1.452.157 2.136 1.154-.058.033-1.278.743-1.27 2.219M6.468 7.988c.404-.495.685-1.18.61-1.864-.585.025-1.294.388-1.723.883-.38.437-.71 1.138-.619 1.806.652.05 1.328-.338 1.732-.825Z"/></svg></span>
-                <span class="eco-pill pill-soon" data-i18n="eco_appletv_badge">Hazırlanıyor</span>
-              </div>
-              <h3 data-i18n="eco_appletv_title">Apple TV (tvOS)</h3>
-              <p class="eco-desc" data-i18n="eco_appletv_desc">tvOS ve Apple TV 4K için Siri Remote kumanda uyumu ve 4K HDR yayın deneyimi.</p>
-            </div>
-            <div class="eco-footer">
-              <span class="soon-label" data-i18n="eco_appletv_status">Yakında tvOS App Store'da</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 5. Monolith Download Hub -->
-      <section id="indir" aria-labelledby="h-indir">
-        <div class="download-hub">
-          <div class="hub-layout">
-            <!-- Left: Download Hero & Verification -->
-            <div class="hub-hero">
-              <div class="hero-pill-badge" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: var(--amber-bright);" data-i18n="hub_badge">
-                Açık Beta Dağıtımı
-              </div>
-              <h3 id="h-indir" data-i18n="hub_h3">XUBO Android Beta'yı İndirin</h3>
-              <p data-i18n="hub_lead">
-                Android TV, Google TV, tablet veya akıllı telefonunuza doğrudan kurabileceğiniz en güncel v1.2.6 resmi APK paketidir.
-              </p>
-
-              <a class="btn-download-hero" href="downloads/xubo-iptv.apk" download="xubo-iptv.apk">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                <span data-i18n="hub_btn">APK'yı İndir (v1.2.6)</span>
-              </a>
-
-              <div style="margin-top: 10px;">
-                <a href="https://github.com/umurcelebi/xubo/releases" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 7px; color: var(--text-dim); font-size: 13px; font-weight: 600; text-decoration: none; padding: 6px 14px; border-radius: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.2s ease;">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                  <span data-i18n="hub_github_releases">GitHub Releases (Tüm Sürümler) →</span>
-                </a>
-              </div>
-
-              <div class="apk-specs">
-                <span data-i18n="hub_spec_ver">Sürüm: 1.2.6</span>
-                <span data-i18n="hub_spec_size">Boyut: ~15.4 MB</span>
-                <span data-i18n="hub_spec_req">Android 6.0 ve üzeri</span>
-              </div>
-
-              <!-- Cryptographic Hash Verification -->
-              <div class="security-card">
-                <div class="hash-row">
-                  <span style="color: var(--text-dim); font-weight: 600;" data-i18n="hub_pkg">Paket:</span>
-                  <code style="color: var(--amber-bright);">com.xubo.iptv</code>
-                </div>
-                <div class="hash-row" style="margin-top: 8px;">
-                  <span style="color: var(--text-dim); font-weight: 600;" data-i18n="hub_hash">SHA-256:</span>
-                  <code>1391db0c770e016de306f5912e48edd32513ead6213caec6c5b5e49c2360671e</code>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: Fast TV Installation Timeline -->
-            <div>
-              <h4 style="font-size: 20px; font-weight: 750; color: var(--text-primary); margin: 0 0 20px;" data-i18n="hub_guide_title">
-                Televizyona Kurulum (Downloader ile)
-              </h4>
-
-              <ol class="timeline-guide">
-                <li>
-                  <h4 data-i18n="hub_step_1_title">Downloader Uygulamasını Açın</h4>
-                  <p data-i18n="hub_step_1_desc">Android TV veya Google TV cihazınızda Google Play Store'dan ücretsiz Downloader uygulamasını açın.</p>
-                </li>
-                <li>
-                  <h4 data-i18n="hub_step_2_title">Adresi Yazın</h4>
-                  <p><span data-i18n="hub_step_2_desc">Downloader arama çubuğuna şu kısa adresi girip kumandadan Go butonuna basın:</span><br>
-                    <span class="fast-url">xubo.app/indir.html</span>
-                  </p>
-                </li>
-                <li>
-                  <h4 data-i18n="hub_step_3_title">İndirin ve Yükleyin</h4>
-                  <p data-i18n="hub_step_3_desc">Açılan sayfada APK'yı İndir seçeneğine tıklayın. İndirme bittiğinde Yükle (Install) butonuna basarak kurulumu tamamlayın.</p>
-                </li>
-                <li>
-                  <h4 data-i18n="hub_step_4_title">Hesabınızı Ekleyin</h4>
-                  <p data-i18n="hub_step_4_desc">Uygulamayı açıp IPTV sağlayıcınızın Xtream Codes veya M3U bağlantı bilgileriyle anında izlemeye başlayın.</p>
-                </li>
-              </ol>
-            </div>
-          </div>
-
-          <!-- Legal Disclaimer -->
-          <div class="legal-box" data-i18n="legal_text">
-            Önemli Yasal Bilgilendirme: XUBO yalnızca bağımsız bir medya oynatıcı arayüzüdür. Uygulama içerisinde hazır yayın, kanal, film veya dizi bulunmaz ve satılmaz. Hizmetten yararlanmak için kendi yasal IPTV aboneliğinizi kullanmanız gerekir.
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Global Footer -->
-    <footer class="global-footer">
-      <div class="footer-inner">
-        <div data-i18n="footer_copy">
-          © 2026 Umur Çelebi. XUBO IPTV Player — Tüm hakları saklıdır.
-        </div>
-        <div class="footer-links">
-          <a href="https://umurcelebi.github.io/" target="_blank" rel="noopener">umurcelebi.github.io</a>
-          <a href="indir.html" data-i18n="footer_quick_dl">Hızlı İndirme</a>
-          <a href="privacy.html" data-i18n="footer_privacy">Gizlilik Politikası</a>
-          <a href="terms.html" data-i18n="footer_terms">Kullanım Koşulları</a>
-          <a href="https://github.com/umurcelebi/xubo/releases" target="_blank" rel="noopener" data-i18n="footer_github">GitHub Sürümleri</a>
         </div>
       </div>
-    </footer>
-  </div>
 
+      <aside class="info-box" aria-label="İletişim ve Konum Bilgileri">
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Adres</div>
+            <div class="info-val">
+              Göztepe Mah. Rıdvanpaşa Sk. No: 16<br>Kadıköy / İstanbul
+              <span class="info-sub"><a href="https://maps.google.com/?q=Ginger+Pizza+Göztepe+Kadıköy" target="_blank" rel="noopener noreferrer">Google Haritalar'da Aç →</a></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Telefon</div>
+            <div class="info-val">
+              <a href="tel:02163370201">0216 337 02 01</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Çalışma Saatleri</div>
+            <div class="info-val">
+              Haftanın her günü: 11:30 – 23:00
+              <span class="info-sub">Paket Servis & Gel Al</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+            </svg>
+          </div>
+          <div>
+            <div class="info-label">Instagram</div>
+            <div class="info-val">
+              <a href="https://instagram.com/gingerpizza" target="_blank" rel="noopener noreferrer">@gingerpizza</a>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>© 2026 Ginger Pizza · Kadıköy, İstanbul</div>
+    <div class="footer-links">
+      <a href="admin.html">Yönetici Girişi</a>
+    </div>
+  </footer>
+
+  <script src="js/config.js?v=20261112"></script>
 </body>
 </html>
