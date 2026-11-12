@@ -299,14 +299,14 @@
       </div>
       <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 24px;">Platform Restoran Yönetimi</p>
       
-      <form id="masterLoginForm" onsubmit="handleMasterLogin(event)">
+      <form id="masterLoginForm" onsubmit="handleMasterLogin(event)" autocomplete="off">
         <div class="form-group" style="text-align: left;">
           <label class="form-label" for="masterUsername">Yönetici E-Posta</label>
-          <input type="email" id="masterUsername" class="form-input" placeholder="umurcelebi@gmail.com" required autocomplete="email">
+          <input type="email" id="masterUsername" class="form-input" placeholder="" required autocomplete="off">
         </div>
         <div class="form-group" style="text-align: left;">
           <label class="form-label" for="masterPassword">Süper Şifre</label>
-          <input type="password" id="masterPassword" class="form-input" placeholder="••••••••" required>
+          <input type="password" id="masterPassword" class="form-input" placeholder="" required autocomplete="new-password">
         </div>
         <div id="loginError" style="color: var(--danger); font-size: 0.82rem; font-weight: 600; margin-bottom: 12px; display: none;"></div>
         <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">Giriş Yap</button>
