@@ -664,14 +664,12 @@
         const creds = (() => {
           if (isGinger) {
             return {
-              email: r.admin_email || "admin@gingerpizza.com",
-              password: r.admin_password || "ginger123"
+              email: r.admin_email || "admin@gingerpizza.com"
             };
           }
           const clean = String(r.slug || "").toLowerCase().replace(/[^a-z0-9]/g, "") || "restoran";
           return {
-            email: r.admin_email || ("admin@" + clean + ".com"),
-            password: r.admin_password || (clean + "123")
+            email: r.admin_email || ("admin@" + clean + ".com")
           };
         })();
         return `
@@ -691,9 +689,8 @@
             <div class="rest-slug">${domainLabel}</div>
 
             <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin-bottom: 12px; font-size: 0.78rem; display: flex; flex-direction: column; gap: 3px;">
-              <div style="color: var(--text-muted); font-weight: 600;">Yönetici Giriş Bilgileri</div>
+              <div style="color: var(--text-muted); font-weight: 600;">Yönetici E-Posta</div>
               <div style="font-family: monospace; color: var(--text-main);">👤 ${creds.email}</div>
-              <div style="font-family: monospace; color: #fdba74;">🔑 ${creds.password}</div>
             </div>
 
             <div class="rest-metrics">
@@ -729,11 +726,8 @@
                 </button>
               </div>
               <div class="link-group">
-                <button type="button" class="btn" onclick="runPreFlightCheck('${r.slug}')" style="font-size: 0.78rem; justify-content: center; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">
+                <button type="button" class="btn" onclick="runPreFlightCheck('${r.slug}')" style="font-size: 0.78rem; justify-content: center; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd; grid-column: 1 / -1;">
                   🩺 Test Et
-                </button>
-                <button type="button" class="btn" onclick="openWorkerGuideModal('${r.slug}', '${cleanDomain}')" style="font-size: 0.78rem; justify-content: center; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d;">
-                  ☁️ Worker Kodu
                 </button>
               </div>
               <div class="link-group">
