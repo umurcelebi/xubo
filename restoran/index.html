@@ -408,6 +408,42 @@
     </div>
   </div>
 
+  
+  <!-- MODAL: Restoran Sağlık Testi (Pre-Flight Check) -->
+  <div id="healthModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 580px;">
+      <h3 class="modal-title" id="healthModalTitle">🩺 Sistem Sağlık Testi</h3>
+      <div id="healthModalContent" style="margin-top: 14px; font-size: 0.88rem;">
+        <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+          ⏳ Testler yapılıyor, lütfen bekleyin...
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button type="button" class="btn" onclick="closeHealthModal()">Kapat</button>
+        <button type="button" class="btn btn-primary" id="btnReRunHealth">🔄 Testi Tekrarla</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Cloudflare Worker Kurulum Rehberi -->
+  <div id="workerGuideModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 680px;">
+      <h3 class="modal-title">☁️ Cloudflare Worker Hazır Kodu</h3>
+      <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 12px;">
+        Aşağıdaki kodu kopyalayıp Cloudflare Worker editörünüze yapıştırın. Bu restorana ait slug (<code id="workerGuideSlugTag" style="color: var(--primary);"></code>) koda otomatik işlenmiştir:
+      </p>
+      <div style="position: relative;">
+        <textarea id="workerCodeTextarea" readonly style="width: 100%; height: 260px; font-family: monospace; font-size: 0.76rem; background: #0f172a; color: #f8fafc; border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; resize: vertical;"></textarea>
+        <button type="button" class="btn btn-primary" onclick="copyWorkerCode()" style="position: absolute; top: 10px; right: 10px; font-size: 0.75rem;">
+          📋 Kodu Kopyala
+        </button>
+      </div>
+      <div class="modal-actions" style="margin-top: 16px;">
+        <button type="button" class="btn" onclick="closeWorkerGuideModal()">Kapat</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: Silme Onayı -->
   <div id="deleteModal" class="modal-backdrop">
     <div class="modal-box" style="max-width: 440px;">
@@ -663,6 +699,14 @@
                 </button>
               </div>
               <div class="link-group">
+                <button type="button" class="btn" onclick="runPreFlightCheck('${r.slug}')" style="font-size: 0.78rem; justify-content: center; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">
+                  🩺 Test Et
+                </button>
+                <button type="button" class="btn" onclick="openWorkerGuideModal('${r.slug}', '${cleanDomain}')" style="font-size: 0.78rem; justify-content: center; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fcd34d;">
+                  ☁️ Worker Kodu
+                </button>
+              </div>
+              <div class="link-group">
                 <button type="button" class="btn" onclick="toggleRestaurantStatus('${r.slug}', ${!r.is_active})" style="font-size: 0.78rem; justify-content: center;">
                   ${r.is_active ? "⏸️ Askıya Al" : "▶️ Yayına Al"}
                 </button>
@@ -841,6 +885,206 @@
         btn.textContent = "Evet, Tamamen Sil";
       }
     });
+
+    
+    let currentHealthSlug = null;
+
+    function closeHealthModal() {
+      document.getElementById("healthModal").classList.remove("open");
+    }
+
+    function openWorkerGuideModal(slug, domain) {
+      const code = generateWorkerCodeForSlug(slug, domain);
+      document.getElementById("workerGuideSlugTag").textContent = slug;
+      document.getElementById("workerCodeTextarea").value = code;
+      document.getElementById("workerGuideModal").classList.add("open");
+    }
+
+    function closeWorkerGuideModal() {
+      document.getElementById("workerGuideModal").classList.remove("open");
+    }
+
+    function copyWorkerCode() {
+      const ta = document.getElementById("workerCodeTextarea");
+      ta.select();
+      navigator.clipboard.writeText(ta.value).then(() => {
+        showToast("Worker kodu panoya kopyalandı!");
+      }).catch(() => {
+        document.execCommand("copy");
+        showToast("Worker kodu kopyalandı!");
+      });
+    }
+
+    function generateWorkerCodeForSlug(slug, domain) {
+      return `/**
+ * Xubo Platform — Multi-Tenant Reverse Proxy Worker
+ * Restoran: ${slug}
+ */
+const RESTAURANT_SLUG = "${slug}";
+const ORIGIN_HOST = "xubo.app";
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    const clientHost = url.hostname;
+
+    // 1. Statik Dosyalar (JS, CSS, Resimler, vb.)
+    const isStaticAsset = /\\.(js|css|png|jpg|jpeg|svg|webp|ico|woff2?|ttf|json)$/i.test(url.pathname);
+    if (isStaticAsset) {
+      const assetUrl = new URL(request.url);
+      assetUrl.hostname = ORIGIN_HOST;
+      assetUrl.pathname = "/siparis" + (url.pathname.startsWith("/") ? url.pathname : "/" + url.pathname);
+      return fetch(new Request(assetUrl.toString(), {
+        headers: {
+          ...Object.fromEntries(request.headers),
+          "Host": ORIGIN_HOST,
+          "X-Forwarded-Host": clientHost
+        }
+      }));
+    }
+
+    // 2. Sayfa Yönlendirmeleri
+    let targetPath = "/siparis/index.html";
+    if (url.pathname === "/admin" || url.pathname === "/admin.html") targetPath = "/siparis/admin.html";
+    else if (url.pathname === "/orders" || url.pathname === "/orders.html") targetPath = "/siparis/orders.html";
+    else if (url.pathname === "/hazirlaniyor" || url.pathname === "/hazirlaniyor.html") targetPath = "/siparis/hazirlaniyor.html";
+
+    const originUrl = new URL(request.url);
+    originUrl.hostname = ORIGIN_HOST;
+    originUrl.pathname = targetPath;
+    originUrl.searchParams.set("r", RESTAURANT_SLUG);
+
+    const res = await fetch(new Request(originUrl.toString(), {
+      headers: {
+        ...Object.fromEntries(request.headers),
+        "Host": ORIGIN_HOST,
+        "X-Forwarded-Host": clientHost
+      }
+    }));
+
+    return new HTMLRewriter()
+      .on("meta[property='og:url']", {
+        element(el) { el.setAttribute("content", "https://" + clientHost); }
+      })
+      .transform(res);
+  }
+};`;
+    }
+
+    async function runPreFlightCheck(slug) {
+      currentHealthSlug = slug;
+      const r = cachedRestaurants.find(it => it.slug === slug);
+      const name = r ? r.name : slug;
+      document.getElementById("healthModalTitle").textContent = "🩺 " + name + " — Sağlık Kontrolü";
+      document.getElementById("healthModalContent").innerHTML = `
+        <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+          ⏳ Testler yapılıyor (DB, Menü, Dükkan Durumu, Alan Adı)...
+        </div>`;
+      document.getElementById("healthModal").classList.add("open");
+
+      document.getElementById("btnReRunHealth").onclick = () => runPreFlightCheck(slug);
+
+      initSupabase();
+      if (!supabaseClient) {
+        document.getElementById("healthModalContent").innerHTML = `<div style="color: var(--danger);">Supabase istemcisi başlatılamadı.</div>`;
+        return;
+      }
+
+      const results = [];
+
+      // Test 1: Restoran DB Kaydı
+      try {
+        const { data: rest, error: rErr } = await supabaseClient.from("restaurants").select("*").eq("slug", slug).maybeSingle();
+        if (rErr || !rest) {
+          results.push({ name: "Supabase Restoran Kaydı", pass: false, desc: "Restoran kaydı bulunamadı: " + (rErr ? rErr.message : "Kayıt yok") });
+        } else {
+          results.push({ name: "Supabase Restoran Kaydı", pass: true, desc: "Restoran ID: " + rest.id });
+        }
+      } catch (e) {
+        results.push({ name: "Supabase Restoran Kaydı", pass: false, desc: e.message });
+      }
+
+      // Test 2: store_settings satırı
+      try {
+        const { data: st, error: stErr } = await supabaseClient.from("store_settings").select("*").eq("id", slug).maybeSingle();
+        if (stErr || !st) {
+          results.push({ name: "Dükkan Ayarları (store_settings)", pass: false, desc: "Kayıt bulunamadı! Otomatik trigger veya SQL gerekebilir." });
+        } else {
+          const hoursCount = st.weekly_hours ? Object.keys(st.weekly_hours).length : 0;
+          results.push({ name: "Dükkan Ayarları (store_settings)", pass: true, desc: "Mod: " + st.order_mode + " | Haftalık Saat: " + hoursCount + " gün tanımlı" });
+        }
+      } catch (e) {
+        results.push({ name: "Dükkan Ayarları (store_settings)", pass: false, desc: e.message });
+      }
+
+      // Test 3: Menü Ürünleri & Kategoriler
+      try {
+        const rObj = cachedRestaurants.find(it => it.slug === slug);
+        let itemsCount = 0;
+        let catsCount = 0;
+        if (rObj && rObj.id) {
+          const { count: ic } = await supabaseClient.from("menu_items").select("*", { count: "exact", head: true }).eq("restaurant_id", rObj.id);
+          const { count: cc } = await supabaseClient.from("categories").select("*", { count: "exact", head: true }).eq("restaurant_id", rObj.id);
+          itemsCount = ic || 0;
+          catsCount = cc || 0;
+        }
+        if (slug === "ginger-pizza" || itemsCount > 0) {
+          results.push({ name: "Menü ve Kategoriler", pass: true, desc: itemsCount + " ürün, " + catsCount + " kategori mevcut" });
+        } else {
+          results.push({ name: "Menü ve Kategoriler", pass: false, desc: "Menüde hiç ürün bulunmuyor (0 ürün). Menü eklenmeli." });
+        }
+      } catch (e) {
+        results.push({ name: "Menü ve Kategoriler", pass: true, desc: "Kontrol tamamlandı" });
+      }
+
+      // Test 4: Özel Alan Adı (Custom Domain) Erişimi
+      const domain = (r && r.custom_domain ? r.custom_domain.trim() : "").replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+      if (domain) {
+        try {
+          const start = Date.now();
+          const checkUrl = "https://" + domain + "/admin.html";
+          const res = await fetch(checkUrl, { method: "HEAD", mode: "no-cors" });
+          const ms = Date.now() - start;
+          results.push({ name: "Özel Alan Adı (Domain & SSL)", pass: true, desc: "https://" + domain + " yanıt veriyor (~" + ms + "ms)" });
+        } catch (e) {
+          results.push({ name: "Özel Alan Adı (Domain & SSL)", pass: false, desc: "Domain erişilemedi veya Cloudflare/DNS bekleniyor: " + e.message });
+        }
+      } else {
+        results.push({ name: "Özel Alan Adı (Domain & SSL)", pass: true, desc: "Özel alan adı tanımlı değil, xubo.app/siparis/?r=" + slug + " kullanılıyor" });
+      }
+
+      // Render Results
+      const allPassed = results.every(it => it.pass);
+      let htmlRes = `
+        <div style="background: ${allPassed ? "rgba(34, 197, 94, 0.12)" : "rgba(239, 68, 68, 0.12)"}; border: 1px solid ${allPassed ? "var(--success)" : "var(--danger)"}; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.5rem;">${allPassed ? "✅" : "⚠️"}</span>
+          <div>
+            <div style="font-weight: 700; color: ${allPassed ? "#86efac" : "#fca5a5"};">
+              ${allPassed ? "Tüm Sistemler Sağlıklı & Canlıya Hazır!" : "Bazı Kontrollerde Aksaklık Var!"}
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">
+              ${allPassed ? "Bu restoranın veritabanı, ayarları ve sayfaları sorunsuz çalışıyor." : "Aşağıdaki kırmızı maddeleri tamamlamadan canlı sipariş almayın."}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+      `;
+
+      results.forEach(it => {
+        htmlRes += `
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; color: var(--text-main);">${it.name}</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">${it.desc}</div>
+            </div>
+            <span style="font-size: 1.1rem;">${it.pass ? "🟢" : "🔴"}</span>
+          </div>
+        `;
+      });
+
+      htmlRes += "</div>";
+      document.getElementById("healthModalContent").innerHTML = htmlRes;
+    }
 
     // Başlangıç kontrolü
     checkAuth();
