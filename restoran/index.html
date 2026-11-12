@@ -616,6 +616,29 @@
           }));
         }
 
+        // Son sipariş zamanlarını çek
+        const lastOrderMap = {};
+        try {
+          const { data: recentOrders } = await supabaseClient
+            .from("orders")
+            .select("restaurant_slug, created_at")
+            .order("created_at", { ascending: false })
+            .limit(200);
+          if (Array.isArray(recentOrders)) {
+            recentOrders.forEach(o => {
+              const s = o.restaurant_slug || "ginger-pizza";
+              if (!lastOrderMap[s] && o.created_at) {
+                lastOrderMap[s] = o.created_at;
+              }
+            });
+          }
+        } catch (e) {}
+
+        list = list.map(r => ({
+          ...r,
+          last_order_at: r.last_order_at || lastOrderMap[r.slug] || null
+        }));
+
         cachedRestaurants = list;
         renderRestaurants(list);
         updateKPIs(list);
@@ -631,6 +654,28 @@
       const totalRev = list.reduce((sum, r) => sum + (Number(r.total_revenue) || 0), 0);
       document.getElementById("kpiTotalOrders").textContent = totalOrders;
       document.getElementById("kpiTotalRevenue").textContent = totalRev.toLocaleString("tr-TR") + " ₺";
+    }
+
+    function formatLastOrderAgo(iso) {
+      if (!iso) return "Henüz sipariş yok";
+      const diffMs = Date.now() - new Date(iso).getTime();
+      if (!Number.isFinite(diffMs) || diffMs < 0) return "Az önce";
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return "Az önce";
+      if (mins < 60) return mins + " dk önce";
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + " saat önce";
+      const days = Math.floor(hours / 24);
+      return days + " gün önce";
+    }
+
+    async function copyStoreLink(url) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("Link kopyalandı: " + url);
+      } catch (e) {
+        prompt("Linki kopyalayın:", url);
+      }
     }
 
     function renderRestaurants(list) {
@@ -686,7 +731,10 @@
               </span>
             </div>
 
-            <div class="rest-slug">${domainLabel}</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
+              <div class="rest-slug" style="margin-bottom:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${domainLabel}</div>
+              <button type="button" class="btn" onclick="copyStoreLink('${storeUrl}')" style="font-size:0.72rem; padding:4px 8px; flex-shrink:0;" title="Vitrin linkini kopyala">📋 Kopyala</button>
+            </div>
 
             <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin-bottom: 12px; font-size: 0.78rem; display: flex; flex-direction: column; gap: 3px;">
               <div style="color: var(--text-muted); font-weight: 600;">Yönetici E-Posta</div>
@@ -706,6 +754,9 @@
                 <div class="metric-sub">Ciro</div>
                 <div class="metric-num">${(Number(r.total_revenue) || 0).toLocaleString("tr-TR")} ₺</div>
               </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin:-6px 0 12px 0; text-align:right;">
+              🕒 Son sipariş: <strong style="color:var(--text-main);">${formatLastOrderAgo(r.last_order_at)}</strong>
             </div>
 
             <div class="rest-links">
