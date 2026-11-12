@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ginger Pizza — Canlı Sipariş & Mutfak Ekranı (KDS)</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#d86a1a">
+  <link rel="icon" type="image/jpeg" href="images/logo.jpg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js?v=20261112"></script>
+  <script src="js/store-status.js?v=20261112"></script>
+  <script src="js/order-api.js?v=20261112"></script>
+
+  <style>
+    :root {
+      --bg: #181412;
+      --surface: #241e1b;
+      --surface-card: #2f2723;
+      --border: #3d332d;
+      --ink: #fcf9f5;
+      --ink-muted: #a6988f;
+
+      --ginger-500: #d86a1a;
+      --ginger-600: #b8500c;
+
+      --status-new: #e67e22;
+      --status-new-bg: rgba(230, 126, 34, 0.15);
+
+      --status-prep: #f39c12;
+      --status-prep-bg: rgba(243, 156, 18, 0.15);
+
+      --status-way: #3498db;
+      --status-way-bg: rgba(52, 152, 219, 0.15);
+
+      --status-done: #2ecc71;
+      --status-done-bg: rgba(46, 204, 113, 0.15);
+
+      --status-cancel: #e74c3c;
+      --font-body: "Plus Jakarta Sans", sans-serif;
+      --font-display: "Fraunces", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { overflow-x: hidden; }
+    body {
+      background-color: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.45;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Üst Kontrol Çubuğu */
+    .kds-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .kds-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+    .brand-title span { color: var(--ginger-500); }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.4);
+      color: #2ecc71;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2ecc71;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .kds-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .btn-kds {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.18s ease;
+      font-family: inherit;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-kds:hover {
+      background: var(--border);
+      color: var(--ink);
+    }
+
+    .btn-kds-sound.active {
+      background: var(--ginger-500);
+      color: #fff;
+      border-color: var(--ginger-500);
+    }
+
+    /* Kanban Kolonları */
+    .kanban-board {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 20px;
+      height: calc(100vh - 65px);
+      overflow-y: hidden;
+    }
+
+    .kanban-col {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .col-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .col-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .col-badge-count {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--surface-card);
+      display: grid;
+      place-items: center;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .col-new .col-header { background: var(--status-new-bg); color: var(--status-new); }
+    .col-prep .col-header { background: var(--status-prep-bg); color: var(--status-prep); }
+    .col-way .col-header { background: var(--status-way-bg); color: var(--status-way); }
+    .col-done .col-header { background: var(--status-done-bg); color: var(--status-done); }
+
+    .col-cards-list {
+      flex: 1;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Sipariş Kartı */
+    .order-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      position: relative;
+      transition: transform 0.15s ease;
+    }
+
+    .order-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(216, 106, 26, 0.4);
+    }
+
+    .order-card.highlight-new {
+      border: 2px solid var(--ginger-500);
+      animation: glow 1.5s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { box-shadow: 0 0 8px rgba(216, 106, 26, 0.4); }
+      to { box-shadow: 0 0 20px rgba(216, 106, 26, 0.85); }
+    }
+
+    .order-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .order-num {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .order-time {
+      font-size: 0.76rem;
+      color: var(--ink-muted);
+    }
+
+    .delivery-pill {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .order-customer {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+
+    .customer-name {
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .customer-phone-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 0.82rem;
+    }
+
+    .customer-phone-row a {
+      color: var(--ginger-500);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-wa-mini {
+      background: #25d366;
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .order-address {
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    .order-notes-box {
+      background: rgba(216, 106, 26, 0.1);
+      border-left: 3px solid var(--ginger-500);
+      padding: 6px 8px;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.8rem;
+      color: #ffb37a;
+    }
+
+    /* Ürün Listesi */
+    .order-items-list {
+      border-top: 1px dashed var(--border);
+      border-bottom: 1px dashed var(--border);
+      padding: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 0.88rem;
+    }
+
+    .item-qty {
+      font-weight: 800;
+      color: var(--ginger-500);
+      font-size: 0.95rem;
+      margin-right: 4px;
+    }
+
+    .item-name {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .item-size {
+      font-size: 0.76rem;
+      color: var(--ink-muted);
+      margin-left: 4px;
+    }
+
+    .item-price {
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .order-total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+
+    .order-total-val {
+      font-size: 1.25rem;
+      color: var(--ginger-500);
+      font-family: var(--font-display);
+    }
+
+    .payment-tag {
+      font-size: 0.72rem;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Kart Aksiyon Butonları */
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .btn-step-next {
+      background: var(--ginger-500);
+      color: #fff;
+      border: none;
+      padding: 9px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.15s ease;
+      font-family: inherit;
+    }
+
+    .btn-step-next:hover {
+      background: var(--ginger-600);
+    }
+
+    .btn-group-new {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 8px;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      border: 1px solid rgba(231, 76, 60, 0.4);
+      color: #e74c3c;
+      padding: 9px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(231, 76, 60, 0.15);
+    }
+
+    .btn-print {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--ink-muted);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      align-self: flex-end;
+    }
+
+    .btn-print:hover { color: #fff; border-color: #888; }
+
+    /* Boş Durum */
+    .col-empty {
+      padding: 36px 16px;
+      text-align: center;
+      color: var(--ink-muted);
+      font-size: 0.86rem;
+    }
+
+    /* Kolon Temizle Butonu & Gün Sonu Onay Modalı */
+    .btn-clear-col {
+      background: rgba(46, 204, 113, 0.16);
+      border: 1px solid rgba(46, 204, 113, 0.45);
+      color: #2ecc71;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+    .btn-clear-col:hover {
+      background: #2ecc71;
+      color: #181412;
+    }
+
+    .archive-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      place-items: center;
+      padding: 20px;
+    }
+    .archive-modal-backdrop.open {
+      display: grid;
+    }
+    .archive-modal-box {
+      width: 100%;
+      max-width: 460px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px;
+      color: var(--ink);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+    }
+    .archive-modal-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+    .archive-summary-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .archive-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .archive-stat-row.total {
+      border-top: 1px dashed var(--border);
+      padding-top: 10px;
+      margin-top: 4px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--ginger-500);
+    }
+    .archive-warn-box {
+      background: rgba(230, 126, 34, 0.12);
+      border: 1px solid rgba(230, 126, 34, 0.35);
+      color: #ffb37a;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+    .archive-modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr;
+      gap: 10px;
+    }
+    .btn-modal-cancel {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-modal-cancel:hover { background: var(--border); }
+    .btn-modal-confirm {
+      background: #27ae60;
+      border: none;
+      color: #fff;
+      padding: 11px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s ease;
+    }
+    .btn-modal-confirm:hover { background: #219150; }
+    .btn-modal-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Yazdırma / Adisyon Çıktısı (40 Kolon / 58mm Termal Yazıcı Uyumlu) */
+    @media print {
+      @page {
+        margin: 0;
+        size: auto;
+      }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      body > *:not(#printArea) {
+        display: none !important;
+      }
+      .print-receipt {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        max-width: 56mm !important;
+        margin: 0 !important;
+        padding: 3mm 2mm !important;
+        color: #000 !important;
+        background: #fff !important;
+        font-family: "Courier New", Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .kanban-board {
+        grid-template-columns: repeat(2, 1fr);
+        height: auto;
+        overflow-y: visible;
+      }
+    }
+
+    .btn-kds-store.is-open {
+      background: rgba(46, 204, 113, 0.14);
+      border-color: rgba(46, 204, 113, 0.45);
+      color: #6ee7a0;
+    }
+
+    .btn-kds-store.is-busy {
+      background: rgba(230, 126, 34, 0.22);
+      border-color: rgba(230, 126, 34, 0.65);
+      color: #ffbe7b;
+    }
+
+    .btn-kds-store.is-closed {
+      background: rgba(231, 76, 60, 0.22);
+      border-color: rgba(231, 76, 60, 0.65);
+      color: #ff9c94;
+    }
+
+    .kds-mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .btn-kds-mode {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-card);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+
+    .btn-kds-mode:hover {
+      border-color: var(--ginger-500);
+      background: #3a302b;
+    }
+
+    .btn-kds-mode.span-2 {
+      grid-column: span 2;
+    }
+
+    .btn-kds-mode.active {
+      border-color: #2ecc71;
+      background: rgba(46, 204, 113, 0.16);
+      color: #8df5b8;
+    }
+
+    .btn-kds-mode.active-busy {
+      border-color: var(--ginger-500);
+      background: rgba(216, 106, 26, 0.22);
+      color: #ffc58f;
+    }
+
+    .btn-kds-mode.active-closed {
+      border-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.22);
+      color: #ffaaa2;
+    }
+
+    .kds-mode-note-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.86rem;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .kanban-board {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 12px;
+      }
+      .col-body {
+        max-height: none;
+        overflow-y: visible;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .kds-header {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .brand-title {
+        font-size: 1.12rem;
+      }
+      .kds-actions {
+        width: 100%;
+        gap: 6px;
+      }
+      .btn-kds {
+        padding: 7px 10px;
+        font-size: 0.76rem;
+      }
+      .kds-mode-grid,
+      .archive-modal-actions,
+      .btn-group-new {
+        grid-template-columns: 1fr;
+      }
+      .btn-kds-mode.span-2 {
+        grid-column: span 1;
+      }
+      .archive-modal-backdrop {
+        padding: 10px;
+      }
+      .archive-modal-box {
+        padding: 18px 15px;
+        max-height: calc(100dvh - 20px);
+        overflow-y: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Üst Bar -->
+  <header class="kds-header">
+    <div class="kds-brand">
+      <img src="images/logo.jpg" alt="Ginger Pizza Logo" style="width:44px; height:44px; border-radius:50%; object-fit:cover; flex-shrink:0;">
+      <div class="brand-title">Ginger <span>Pizza</span></div>
+      <div class="live-indicator">
+        <span class="live-dot"></span>
+        Canlı Mutfak Paneli
+      </div>
+    </div>
+
+    <div class="kds-actions">
+      <button type="button" class="btn-kds btn-kds-store is-open" id="btnKdsStoreStatus" onclick="openKdsStoreModal()" title="Dükkan sipariş durumu ve yoğun mod kontrolü">
+        🟢 Siparişe Açık
+      </button>
+      <button type="button" class="btn-kds btn-kds-sound active" id="btnToggleSound" title="Yeni sipariş geldiğinde ses çal">
+        🔔 Ses Açık (Test Et)
+      </button>
+      <button type="button" class="btn-kds" id="btnRefreshOrders" title="Siparişleri yenile">
+        🔄 Yenile
+      </button>
+      <a href="admin.html" class="btn-kds" title="Menü yönetimine dön">
+        📋 Menü Paneli
+      </a>
+      <a href="onizleme.html" target="_blank" class="btn-kds" title="Önizleme sitesini yeni sekmede aç">
+        🌐 Önizleme
+      </a>
+    </div>
+  </header>
+
+  <!-- Kanban Tahtası -->
+  <main class="kanban-board">
+    <!-- 1. Kolon: Yeni Siparişler -->
+    <section class="kanban-col col-new">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span>🔔 Yeni Siparişler</span>
+        </div>
+        <span class="col-badge-count" id="countNew">0</span>
+      </div>
+      <div class="col-cards-list" id="listNew">
+        <div class="col-empty">Şu anda yeni sipariş yok.</div>
+      </div>
+    </section>
+
+    <!-- 2. Kolon: Hazırlanıyor / Fırında -->
+    <section class="kanban-col col-prep">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span>🍕 Fırında / Hazırlanıyor</span>
+        </div>
+        <span class="col-badge-count" id="countPrep">0</span>
+      </div>
+      <div class="col-cards-list" id="listPrep">
+        <div class="col-empty">Fırında bekleyen pizza yok.</div>
+      </div>
+    </section>
+
+    <!-- 3. Kolon: Kuryede / Yolda -->
+    <section class="kanban-col col-way">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span>🛵 Kuryede / Dağıtımda</span>
+        </div>
+        <span class="col-badge-count" id="countWay">0</span>
+      </div>
+      <div class="col-cards-list" id="listWay">
+        <div class="col-empty">Yolda sipariş yok.</div>
+      </div>
+    </section>
+
+    <!-- 4. Kolon: Tamamlananlar / Arşiv -->
+    <section class="kanban-col col-done">
+      <div class="col-header">
+        <div class="col-title-wrap">
+          <span>✓ Tamamlananlar</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" id="btnClearCompleted" class="btn-clear-col" onclick="openArchiveModal()" title="Gün sonu tamamlanan siparişleri arşivleyerek ekrandan temizle" style="display:none;">
+            🧹 Temizle
+          </button>
+          <span class="col-badge-count" id="countDone">0</span>
+        </div>
+      </div>
+      <div class="col-cards-list" id="listDone">
+        <div class="col-empty">Henüz tamamlanan sipariş yok.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Gün Sonu Arşivleme & Onay Modalı -->
+  <div id="archiveModalBackdrop" class="archive-modal-backdrop" onclick="if(event.target===this) closeArchiveModal()">
+    <div class="archive-modal-box" role="dialog" aria-modal="true" aria-labelledby="archiveModalTitle">
+      <h2 id="archiveModalTitle" class="archive-modal-title">🌙 Gün Sonu — Ekranı Temizle</h2>
+      <p style="font-size: 0.85rem; color: var(--ink-muted);">
+        Tamamlanan ve iptal edilen siparişler mutfak ekranından kaldırılıp veritabanı arşivine aktarılacaktır.
+      </p>
+
+      <div class="archive-summary-card" id="archiveSummaryBody">
+        <!-- Dinamik özet -->
+      </div>
+
+      <div id="archiveActiveWarning" class="archive-warn-box" style="display:none;"></div>
+
+      <div class="archive-modal-actions">
+        <button type="button" class="btn-modal-cancel" onclick="closeArchiveModal()">Vazgeç</button>
+        <button type="button" id="btnConfirmArchive" class="btn-modal-confirm" onclick="confirmArchiveCompleted()">✓ Onayla ve Temizle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mutfak Hızlı Dükkan Durumu & Yoğun Modu Modalı -->
+  <div id="kdsStoreModalBackdrop" class="archive-modal-backdrop" onclick="if(event.target===this) closeKdsStoreModal()">
+    <div class="archive-modal-box" role="dialog" aria-modal="true" aria-labelledby="kdsStoreModalTitle">
+      <h2 id="kdsStoreModalTitle" class="archive-modal-title">🔥 Dükkan Durumu &amp; Yoğun Mod</h2>
+      <p id="kdsStoreModalSubtitle" style="font-size: 0.85rem; color: var(--ink-muted);">
+        Mutfak yoğunlaştığında sipariş alımını tek tıkla geçici olarak durdurabilirsiniz.
+      </p>
+
+      <div class="kds-mode-grid">
+        <button type="button" class="btn-kds-mode" id="btnKdsModeAuto" onclick="applyKdsStoreMode('auto')">
+          🟢 Otomatik (Saatlere Göre)
+        </button>
+        <button type="button" class="btn-kds-mode" id="btnKdsModeManualOpen" onclick="applyKdsStoreMode('manual_open')">
+          ✅ Dükkanı Aç (Manuel)
+        </button>
+        <button type="button" class="btn-kds-mode" id="btnKdsModeBusy30" onclick="applyKdsStoreMode('busy', 30)">
+          🔥 Yoğun Mod · 30 dk
+        </button>
+        <button type="button" class="btn-kds-mode" id="btnKdsModeBusy60" onclick="applyKdsStoreMode('busy', 60)">
+          🔥 Yoğun Mod · 60 dk
+        </button>
+        <button type="button" class="btn-kds-mode" id="btnKdsModeBusyInf" onclick="applyKdsStoreMode('busy', null)">
+          🔥 Yoğun Mod · Süresiz
+        </button>
+        <button type="button" class="btn-kds-mode" id="btnKdsModeManualClosed" onclick="applyKdsStoreMode('manual_closed')">
+          ⛔ Dükkanı Kapat
+        </button>
+      </div>
+
+      <label for="kdsStoreMessageInput" style="display:block; font-size:0.78rem; color:var(--ink-muted); margin-bottom:6px;">
+        Müşteriye Gösterilecek Mesaj (Opsiyonel):
+      </label>
+      <input type="text" id="kdsStoreMessageInput" class="kds-mode-note-input" placeholder="Örn: Fırın yoğunluğu nedeniyle kısa bir ara verdik.">
+
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <span style="font-size:0.76rem; color:var(--ink-muted);">Haftalık saatleri Admin panelinden düzenleyebilirsiniz.</span>
+        <button type="button" class="btn-modal-cancel" onclick="closeKdsStoreModal()">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gizli Yazdırma Alanı (Adisyon için) -->
+  <div id="printArea" class="print-receipt" style="display: none;"></div>
+
+  <script>
+    let allOrders = [];
+    let kdsStoreSettings = null;
+    let soundEnabled = true;
+    let knownNewOrderIds = new Set();
+
+    // Zaman formatlama (Örn: "5 dk önce")
+    function formatTimeAgo(isoString) {
+      if (!isoString) return "";
+      const diffMs = Date.now() - new Date(isoString).getTime();
+      const mins = Math.floor(diffMs / 60000);
+      if (mins < 1) return "Az önce";
+      if (mins < 60) return `${mins} dk önce`;
+      const hours = Math.floor(mins / 60);
+      return `${hours} saat önce`;
+    }
+
+    // Adisyon Yazdırma Fonksiyonu (40 Kolon / 58mm Termal)
+    window.printOrderReceipt = function(orderId) {
+      const order = allOrders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const printArea = document.getElementById("printArea");
+      const deliveryLabel = order.delivery_type === "takeaway" ? "GEL-AL" : "PAKET SERVİS";
+      const payLabel = window.StoreStatus
+        ? StoreStatus.getPaymentMethodLabel(order.payment_method, kdsStoreSettings).toLocaleUpperCase("tr-TR")
+        : (order.payment_method === "door_cash" ? "KAPIDA NAKİT" : "KAPIDA KART");
+
+      printArea.innerHTML = `
+        <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px;">
+          <div style="font-size: 15px; font-weight: bold; letter-spacing: 0.5px;">GINGER PIZZA</div>
+          <div style="font-size: 10px; margin-top: 2px;">Göztepe Rıdvanpaşa Sk. No:16</div>
+          <div style="font-size: 10px;">Tel: 0216 337 02 01</div>
+          <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">SİPARİŞ #${order.order_number || order.id.slice(-4)}</div>
+          <div style="font-size: 10px; margin-top: 2px;">${new Date(order.created_at || Date.now()).toLocaleString("tr-TR")}</div>
+        </div>
+
+        <div style="margin-bottom: 6px; font-size: 11px; line-height: 1.35;">
+          <div><strong>MÜŞTERİ:</strong> ${order.customer_name}</div>
+          <div><strong>TEL:</strong> ${order.customer_phone}</div>
+          <div><strong>TİP:</strong> ${deliveryLabel}</div>
+          ${order.delivery_type !== 'takeaway' ? `<div><strong>ADRES:</strong> ${order.delivery_address || '-'}</div>` : ''}
+          ${order.order_notes ? `<div style="margin-top: 3px; border: 1px solid #000; padding: 2px 4px;"><strong>NOT:</strong> ${order.order_notes}</div>` : ''}
+        </div>
+
+        <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 5px 0; margin-bottom: 6px; font-size: 11px;">
+          ${(order.items || []).map(i => `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
+              <span style="flex: 1;">${i.quantity}x ${i.item_name}${i.size_label ? ' (' + i.size_label + ')' : ''}${i.item_notes ? ' [' + i.item_notes + ']' : ''}</span>
+              <strong style="white-space: nowrap;">${i.total_price} TL</strong>
+            </div>
+          `).join("")}
+        </div>
+
+        ${Number(order.discount_amount) > 0 ? `
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+            <span>ARA TOPLAM:</span>
+            <span>${order.subtotal_amount || (Number(order.total_amount) + Number(order.discount_amount))} TL</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
+            <span>ONLINE İNDİRİM (%${order.discount_percent || 0}):</span>
+            <span>-${order.discount_amount} TL</span>
+          </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; margin-bottom: 4px;">
+          <span>TOPLAM:</span>
+          <span>${order.total_amount} TL</span>
+        </div>
+        <div style="font-size: 11px; text-align: center; margin-top: 6px; border-top: 1px dashed #000; padding-top: 5px;">
+          ÖDEME: <strong>${payLabel}</strong>
+        </div>
+      `;
+
+      const originalTitle = document.title;
+      document.title = "";
+      printArea.style.display = "block";
+      window.print();
+      printArea.style.display = "none";
+      document.title = originalTitle;
+    };
+
+    // Sipariş Kartı HTML Üretici
+    function renderOrderCard(order) {
+      const isNew = order.status === "new";
+      const isPrep = order.status === "preparing";
+      const isWay = order.status === "on_way";
+      const isDone = order.status === "delivered";
+
+      const deliveryLabel = order.delivery_type === "takeaway" ? "🛍️ Gel-Al" : "🛵 Paket Servis";
+      const paymentLabel = window.StoreStatus
+        ? StoreStatus.getPaymentMethodDisplay(order.payment_method, kdsStoreSettings)
+        : (order.payment_method === "door_cash" ? "💵 Kapıda Nakit" : "💳 Kapıda Kart");
+
+      // Telefonu WhatsApp linkine dönüştür
+      const cleanPhone = (order.customer_phone || "").replace(/\D/g, "");
+      const waNumber = cleanPhone.startsWith("0") ? "90" + cleanPhone.slice(1) : (cleanPhone.startsWith("90") ? cleanPhone : "90" + cleanPhone);
+      const waMsg = encodeURIComponent(`Merhaba ${order.customer_name}, Ginger Pizza siparişiniz (#${order.order_number || ''}) hakkında yazıyoruz.`);
+      const waUrl = `https://wa.me/${waNumber}?text=${waMsg}`;
+
+      // Aksiyon Butonları (Kolona Göre)
+      let actionsHtml = "";
+      if (isNew) {
+        actionsHtml = `
+          <div class="btn-group-new">
+            <button type="button" class="btn-step-next" onclick="updateStatus('${order.id}', 'preparing')">
+              ✓ Kabul Et & Fırına Ver
+            </button>
+            <button type="button" class="btn-cancel" onclick="updateStatus('${order.id}', 'cancelled')">
+              ✕ Reddet
+            </button>
+          </div>
+        `;
+      } else if (isPrep) {
+        const nextBtnText = order.delivery_type === "takeaway"
+          ? "🥡 Hazırlandı (Teslim Bekliyor)"
+          : "🛵 Kuryeye Teslim Et (Yola Çıkar)";
+        actionsHtml = `
+          <button type="button" class="btn-step-next" onclick="updateStatus('${order.id}', 'on_way')">
+            ${nextBtnText}
+          </button>
+        `;
+      } else if (isWay) {
+        actionsHtml = `
+          <button type="button" class="btn-step-next" style="background:#27ae60;" onclick="updateStatus('${order.id}', 'delivered')">
+            ✓ Teslim Edildi Olarak Tamamla
+          </button>
+        `;
+      }
+
+      const items = order.items || [];
+
+      return `
+        <article class="order-card ${isNew ? 'highlight-new' : ''}" id="card-${order.id}">
+          <div class="order-card-header">
+            <div>
+              <span class="order-num">#${order.order_number || order.id.slice(-4)}</span>
+              <span class="delivery-pill">${deliveryLabel}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+              <span class="order-time">${formatTimeAgo(order.created_at)}</span>
+              <button type="button" class="btn-print" onclick="printOrderReceipt('${order.id}')" title="Adisyon Fişi Yazdır">
+                🖨️ Fiş Yazdır
+              </button>
+            </div>
+          </div>
+
+          <div class="order-customer">
+            <div class="customer-name">${order.customer_name}</div>
+            <div class="customer-phone-row">
+              <a href="tel:${order.customer_phone}">📞 ${order.customer_phone}</a>
+              <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="btn-wa-mini">
+                💬 WhatsApp
+              </a>
+            </div>
+            ${order.delivery_address && order.delivery_type !== 'takeaway' ? `
+              <div class="order-address">
+                📍 ${order.delivery_address}
+                <a href="https://maps.google.com/?q=${encodeURIComponent(order.delivery_address)}" target="_blank" rel="noopener" style="color:var(--ginger-500); text-decoration:underline; font-size:0.75rem; display:block; margin-top:2px;">Haritada Aç</a>
+              </div>
+            ` : ''}
+          </div>
+
+          ${order.order_notes ? `
+            <div class="order-notes-box">
+              <strong>Sipariş Notu:</strong> ${order.order_notes}
+            </div>
+          ` : ''}
+
+          <div class="order-items-list">
+            ${items.map(item => `
+              <div class="item-row">
+                <div>
+                  <span class="item-qty">${item.quantity}x</span>
+                  <span class="item-name">${item.item_name}</span>
+                  ${item.size_label ? `<span class="item-size">(${item.size_label})</span>` : ''}
+                  ${item.item_notes ? `<div style="font-size:0.74rem; color:#ffb37a; margin-top:2px; line-height:1.35;">${item.item_notes}</div>` : ''}
+                </div>
+                <span class="item-price">${item.total_price || (item.unit_price * item.quantity)} ₺</span>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="order-total-row">
+            <div>
+              <div class="payment-tag">${paymentLabel}</div>
+              ${Number(order.discount_amount) > 0 ? `
+                <div style="font-size:0.72rem; color:#6ee7a0; font-weight:700; margin-top:2px;">
+                  🎁 %${order.discount_percent || 0} İndirim (-${order.discount_amount} ₺)
+                </div>
+              ` : `
+                <div style="font-size:0.74rem; color:var(--ink-muted);">Toplam Tutar</div>
+              `}
+            </div>
+            <div style="text-align:right;">
+              ${Number(order.discount_amount) > 0 ? `<div style="font-size:0.74rem; color:var(--ink-muted); text-decoration:line-through;">${order.subtotal_amount || (Number(order.total_amount) + Number(order.discount_amount))} ₺</div>` : ''}
+              <div class="order-total-val">${order.total_amount} ₺</div>
+            </div>
+          </div>
+
+          ${actionsHtml}
+        </article>
+      `;
+    }
+
+    // Ekranı Render Et
+    function renderBoard() {
+      const listNew = document.getElementById("listNew");
+      const listPrep = document.getElementById("listPrep");
+      const listWay = document.getElementById("listWay");
+      const listDone = document.getElementById("listDone");
+
+      const newOrders = allOrders.filter(o => o.status === "new");
+      const prepOrders = allOrders.filter(o => o.status === "preparing");
+      const wayOrders = allOrders.filter(o => o.status === "on_way");
+      const doneOrders = allOrders.filter(o => o.status === "delivered" || o.status === "cancelled");
+
+      document.getElementById("countNew").textContent = newOrders.length;
+      document.getElementById("countPrep").textContent = prepOrders.length;
+      document.getElementById("countWay").textContent = wayOrders.length;
+      document.getElementById("countDone").textContent = doneOrders.length;
+
+      const btnClear = document.getElementById("btnClearCompleted");
+      if (btnClear) {
+        btnClear.style.display = doneOrders.length > 0 ? "inline-flex" : "none";
+      }
+
+      listNew.innerHTML = newOrders.length > 0
+        ? newOrders.map(renderOrderCard).join("")
+        : '<div class="col-empty">Şu anda yeni sipariş yok.</div>';
+
+      listPrep.innerHTML = prepOrders.length > 0
+        ? prepOrders.map(renderOrderCard).join("")
+        : '<div class="col-empty">Fırında bekleyen pizza yok.</div>';
+
+      listWay.innerHTML = wayOrders.length > 0
+        ? wayOrders.map(renderOrderCard).join("")
+        : '<div class="col-empty">Yolda sipariş yok.</div>';
+
+      listDone.innerHTML = doneOrders.length > 0
+        ? doneOrders.slice(0, 50).map(renderOrderCard).join("")
+        : '<div class="col-empty">Henüz tamamlanan sipariş yok.</div>';
+
+      // Yeni gelen sipariş varsa ses çal!
+      let hasBrandNew = false;
+      newOrders.forEach(o => {
+        if (!knownNewOrderIds.has(o.id)) {
+          hasBrandNew = true;
+          knownNewOrderIds.add(o.id);
+        }
+      });
+
+      if (hasBrandNew && soundEnabled) {
+        SoundAlert.playBell();
+      }
+    }
+
+    // Gün Sonu Özet & Onay Modalı
+    window.openArchiveModal = function() {
+      const doneOrders = allOrders.filter(o => o.status === "delivered" || o.status === "cancelled");
+      if (doneOrders.length === 0) return;
+
+      const delivered = doneOrders.filter(o => o.status === "delivered");
+      const cancelled = doneOrders.filter(o => o.status === "cancelled");
+      const activeCount = allOrders.filter(o => o.status === "new" || o.status === "preparing" || o.status === "on_way").length;
+
+      const paymentTotals = new Map();
+      delivered.forEach(o => {
+        const amt = Number(o.total_amount || 0);
+        const label = window.StoreStatus
+          ? StoreStatus.getPaymentMethodDisplay(o.payment_method, kdsStoreSettings)
+          : (o.payment_method === "door_cash" ? "💵 Kapıda Nakit" : "💳 Kapıda Kredi Kartı");
+        paymentTotals.set(label, (paymentTotals.get(label) || 0) + amt);
+      });
+      const grandTotal = delivered.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+      const paymentBreakdownHtml = Array.from(paymentTotals.entries())
+        .map(([label, total]) => `
+          <div class="archive-stat-row">
+            <span style="color: var(--ink-muted);">${label}</span>
+            <strong>${total.toLocaleString("tr-TR")} ₺</strong>
+          </div>
+        `).join("");
+
+      const summaryBody = document.getElementById("archiveSummaryBody");
+      if (summaryBody) {
+        summaryBody.innerHTML = `
+          <div class="archive-stat-row">
+            <span style="color: var(--ink-muted);">Teslim Edilen Sipariş</span>
+            <strong>${delivered.length} adet</strong>
+          </div>
+          ${cancelled.length > 0 ? `
+            <div class="archive-stat-row">
+              <span style="color: var(--ink-muted);">İptal / Reddedilen (Ciroya dahil değil)</span>
+              <strong style="color: var(--status-cancel);">${cancelled.length} adet</strong>
+            </div>
+          ` : ''}
+          ${paymentBreakdownHtml}
+          <div class="archive-stat-row total">
+            <span>Gün Sonu Toplam Ciro</span>
+            <span>${grandTotal.toLocaleString("tr-TR")} ₺</span>
+          </div>
+        `;
+      }
+
+      const warnBox = document.getElementById("archiveActiveWarning");
+      if (warnBox) {
+        if (activeCount > 0) {
+          warnBox.style.display = "block";
+          warnBox.textContent = `ℹ️ Dikkat: Hala işlemde (Yeni / Fırında / Yolda) bekleyen ${activeCount} aktif sipariş var. Bu siparişler arşive alınmayacak, ekranda kalmaya devam edecektir.`;
+        } else {
+          warnBox.style.display = "none";
+        }
+      }
+
+      const backdrop = document.getElementById("archiveModalBackdrop");
+      if (backdrop) backdrop.classList.add("open");
+    };
+
+    window.closeArchiveModal = function() {
+      const backdrop = document.getElementById("archiveModalBackdrop");
+      if (backdrop) backdrop.classList.remove("open");
+    };
+
+    window.confirmArchiveCompleted = async function() {
+      const doneOrders = allOrders.filter(o => o.status === "delivered" || o.status === "cancelled");
+      const ids = doneOrders.map(o => o.id);
+      if (ids.length === 0) {
+        closeArchiveModal();
+        return;
+      }
+
+      const btn = document.getElementById("btnConfirmArchive");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Arşivleniyor...";
+      }
+
+      try {
+        const res = await OrderAPI.archiveOrders(ids);
+        if (res && res.success === false) {
+          alert("Arşivleme sırasında veritabanı hatası oluştu. Lütfen Supabase'de 'is_archived' sütununun eklendiğinden emin olun.");
+        } else {
+          closeArchiveModal();
+          await loadOrders();
+        }
+      } catch (e) {
+        console.error("Archive exception:", e);
+        alert("Bir hata oluştu: " + (e.message || e));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "✓ Onayla ve Temizle";
+        }
+      }
+    };
+
+    // Sipariş Durumunu Güncelle
+    window.updateStatus = async function(orderId, nextStatus) {
+      await OrderAPI.updateStatus(orderId, nextStatus);
+      await loadOrders();
+    };
+
+    // Siparişleri Yükle
+    async function loadOrders() {
+      allOrders = await OrderAPI.getOrders();
+      renderBoard();
+    }
+
+    // Başlatıcı
+    document.addEventListener("DOMContentLoaded", () => {
+      // Ses Butonu
+      const btnSound = document.getElementById("btnToggleSound");
+      btnSound.addEventListener("click", () => {
+        SoundAlert.init();
+        SoundAlert.playBell();
+        soundEnabled = !soundEnabled;
+        btnSound.className = soundEnabled ? "btn-kds btn-kds-sound active" : "btn-kds btn-kds-sound";
+        btnSound.textContent = soundEnabled ? "🔔 Ses Açık (Test Et)" : "🔕 Ses Kapalı";
+      });
+
+      // Yenile Butonu
+      document.getElementById("btnRefreshOrders").addEventListener("click", () => {
+        loadOrders();
+      });
+
+      // Mutfak Hızlı Dükkan Durumu & Yoğun Mod Kontrolü
+      function renderKdsStoreStatus() {
+        if (!window.StoreStatus) return;
+        const st = StoreStatus.evaluate(kdsStoreSettings);
+        const btn = document.getElementById("btnKdsStoreStatus");
+        const sub = document.getElementById("kdsStoreModalSubtitle");
+
+        if (btn) {
+          btn.classList.remove("is-open", "is-busy", "is-closed");
+          if (st.isOpen) {
+            btn.classList.add("is-open");
+            btn.textContent = st.reason === "manual_open" ? "🟢 Manuel Açık" : "🟢 Siparişe Açık";
+          } else if (st.reason === "busy") {
+            btn.classList.add("is-busy");
+            btn.textContent = st.busyRemainingMinutes !== null
+              ? `🔥 Yoğun (${st.busyRemainingMinutes} dk)`
+              : "🔥 Yoğun Mod";
+          } else if (st.reason === "manual_closed") {
+            btn.classList.add("is-closed");
+            btn.textContent = "⛔ Manuel Kapalı";
+          } else {
+            btn.classList.add("is-closed");
+            btn.textContent = "🌙 Saat Dışı Kapalı";
+          }
+        }
+
+        if (sub) {
+          sub.textContent = `${st.title} — ${st.detail}`;
+        }
+
+        const mode = st.effectiveMode;
+        const busyUntil = st.settings.busy_until ? new Date(st.settings.busy_until).getTime() : null;
+        const remainingMins = busyUntil ? Math.round((busyUntil - Date.now()) / 60000) : null;
+
+        const btnAuto = document.getElementById("btnKdsModeAuto");
+        const btnManualOpen = document.getElementById("btnKdsModeManualOpen");
+        const btnB30 = document.getElementById("btnKdsModeBusy30");
+        const btnB60 = document.getElementById("btnKdsModeBusy60");
+        const btnBInf = document.getElementById("btnKdsModeBusyInf");
+        const btnMan = document.getElementById("btnKdsModeManualClosed");
+        [btnAuto, btnManualOpen, btnB30, btnB60, btnBInf, btnMan].forEach(el => {
+          if (el) el.classList.remove("active", "active-busy", "active-closed");
+        });
+
+        if (mode === "auto" && btnAuto) btnAuto.classList.add("active");
+        else if (mode === "manual_open" && btnManualOpen) btnManualOpen.classList.add("active");
+        else if (mode === "manual_closed" && btnMan) btnMan.classList.add("active-closed");
+        else if (mode === "busy") {
+          if (remainingMins === null && btnBInf) btnBInf.classList.add("active-busy");
+          else if (remainingMins <= 35 && btnB30) btnB30.classList.add("active-busy");
+          else if (btnB60) btnB60.classList.add("active-busy");
+        }
+      }
+
+      async function refreshKdsStoreStatus() {
+        if (!window.StoreStatus) return;
+        kdsStoreSettings = await StoreStatus.getSettings();
+        const noteInput = document.getElementById("kdsStoreMessageInput");
+        if (noteInput && document.activeElement !== noteInput) {
+          noteInput.value = kdsStoreSettings.status_message || "";
+        }
+        renderKdsStoreStatus();
+      }
+
+      window.openKdsStoreModal = function() {
+        refreshKdsStoreStatus();
+        const backdrop = document.getElementById("kdsStoreModalBackdrop");
+        if (backdrop) backdrop.classList.add("open");
+      };
+
+      window.closeKdsStoreModal = function() {
+        const backdrop = document.getElementById("kdsStoreModalBackdrop");
+        if (backdrop) backdrop.classList.remove("open");
+      };
+
+      window.applyKdsStoreMode = async function(mode, durationMinutes = null) {
+        if (!window.StoreStatus) return;
+        const noteInput = document.getElementById("kdsStoreMessageInput");
+        const statusMessage = noteInput ? noteInput.value.trim() : "";
+        const res = await StoreStatus.setOrderMode(mode, { durationMinutes, statusMessage });
+        kdsStoreSettings = res.settings;
+        renderKdsStoreStatus();
+      };
+
+      // İlk Yükleme
+      loadOrders();
+      refreshKdsStoreStatus();
+
+      // Realtime Dinleyiciyi Başlat (Milisaniyelik Güncelleme)
+      OrderAPI.subscribe((payload) => {
+        console.log("Realtime order event received:", payload);
+        loadOrders();
+      });
+
+      if (window.StoreStatus) {
+        StoreStatus.subscribe((nextSettings) => {
+          kdsStoreSettings = nextSettings;
+          const noteInput = document.getElementById("kdsStoreMessageInput");
+          if (noteInput && document.activeElement !== noteInput) {
+            noteInput.value = kdsStoreSettings.status_message || "";
+          }
+          renderKdsStoreStatus();
+        });
+        setInterval(renderKdsStoreStatus, 30000);
+      }
+
+      // Periyodik Polling (Her 10 saniyede bir garanti kontrol)
+      setInterval(loadOrders, 10000);
+    });
+  </script>
+</body>
+</html>

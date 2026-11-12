@@ -390,6 +390,12 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label" for="newRestDomain">Özel Domain (Opsiyonel)</label>
+          <input type="text" id="newRestDomain" class="form-input" placeholder="Örn: www.modaburger.com">
+          <div class="form-hint">Boş bırakılırsa otomatik xubo.app/siparis adresi kullanılır.</div>
+        </div>
+
+        <div class="form-group">
           <label class="form-label" for="newRestColor">Marka / Tema Rengi</label>
           <input type="color" id="newRestColor" value="#d86a1a" style="width: 100%; height: 38px; border-radius: 8px; background: none; border: 1px solid var(--card-border); cursor: pointer;">
         </div>
@@ -416,13 +422,48 @@
     </div>
   </div>
 
+  <!-- MODAL: Restoran Düzenle -->
+  <div id="editRestaurantModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h3 class="modal-title">✏️ Restoran Bilgilerini Düzenle</h3>
+      <form id="editRestaurantForm" onsubmit="handleEditRestaurant(event)">
+        <input type="hidden" id="editRestSlug">
+        <div class="form-group">
+          <label class="form-label" for="editRestName">Restoran Adı *</label>
+          <input type="text" id="editRestName" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editRestDomain">Özel Domain</label>
+          <input type="text" id="editRestDomain" class="form-input" placeholder="Örn: www.modaburger.com">
+          <div class="form-hint">Bağlanacak alan adını https:// olmadan yazın.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editRestPhone">Telefon Numarası</label>
+          <input type="text" id="editRestPhone" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editRestAddress">Adres</label>
+          <input type="text" id="editRestAddress" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="editRestColor">Marka / Tema Rengi</label>
+          <input type="color" id="editRestColor" style="width: 100%; height: 38px; border-radius: 8px; background: none; border: 1px solid var(--card-border); cursor: pointer;">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" onclick="closeEditModal()">Vazgeç</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitEdit">💾 Değişiklikleri Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <!-- Konfigürasyon ve Scriptler -->
   
   <script>
     // Vitrin / Mağaza sisteminin yayında olduğu adres
-    window.STORE_FRONT_BASE_URL = "https://www.gingerpizza.com";
+    window.PLATFORM_STOREFRONT_BASE_URL = "https://xubo.app/siparis";
   </script>
   <script src="js/config.js"></script>
 
@@ -535,21 +576,40 @@
 
       container.innerHTML = list.map(r => {
         const isGinger = r.slug === "ginger-pizza";
+        const cleanDomain = (r.custom_domain || "").trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+        let storeUrl, adminUrl, kdsUrl, domainLabel;
+        if (isGinger) {
+          storeUrl = "https://www.gingerpizza.com/onizleme.html";
+          adminUrl = "https://www.gingerpizza.com/admin.html";
+          kdsUrl = "https://www.gingerpizza.com/orders.html";
+          domainLabel = "www.gingerpizza.com";
+        } else if (cleanDomain) {
+          storeUrl = "https://" + cleanDomain + "/onizleme.html";
+          adminUrl = "https://" + cleanDomain + "/admin.html";
+          kdsUrl = "https://" + cleanDomain + "/orders.html";
+          domainLabel = cleanDomain;
+        } else {
+          const base = window.PLATFORM_STOREFRONT_BASE_URL || "https://xubo.app/siparis";
+          storeUrl = base + "/?r=" + encodeURIComponent(r.slug);
+          adminUrl = base + "/admin.html?r=" + encodeURIComponent(r.slug);
+          kdsUrl = base + "/orders.html?r=" + encodeURIComponent(r.slug);
+          domainLabel = "xubo.app/siparis/?r=" + r.slug;
+        }
         return `
-          <div class="rest-card" style="border-top: 4px solid ${r.primary_color || 'var(--primary)'};">
+          <div class="rest-card" style="border-top: 4px solid ${r.primary_color || "var(--primary)"};">
             <div class="rest-header">
               <div>
                 <div class="rest-name">
                   ${r.name}
-                  ${isGinger ? '<span class="brand-badge" style="background: rgba(245, 158, 11, 0.2); color: var(--warning); border-color: var(--warning);">Ana Mağaza</span>' : ''}
+                  ${isGinger ? "<span class=\"brand-badge\" style=\"background: rgba(245, 158, 11, 0.2); color: var(--warning); border-color: var(--warning);\">Ana Mağaza</span>" : ""}
                 </div>
               </div>
-              <span class="status-pill ${r.is_active ? 'status-active' : 'status-inactive'}">
-                ${r.is_active ? '● Yayında' : '○ Kapalı'}
+              <span class="status-pill ${r.is_active ? "status-active" : "status-inactive"}">
+                ${r.is_active ? "● Yayında" : "○ Kapalı"}
               </span>
             </div>
 
-            <div class="rest-slug">slug: ${r.slug}</div>
+            <div class="rest-slug">${domainLabel}</div>
 
             <div class="rest-metrics">
               <div>
@@ -568,26 +628,31 @@
 
             <div class="rest-links">
               <div class="link-group">
-                <a href="${window.STORE_FRONT_BASE_URL}/onizleme.html?r=${r.slug}" target="_blank" class="btn" style="font-size: 0.78rem; justify-content: center;">
+                <a href="${storeUrl}" target="_blank" class="btn" style="font-size: 0.78rem; justify-content: center;">
                   🍕 Vitrin Menü ↗
                 </a>
-                <a href="${window.STORE_FRONT_BASE_URL}/admin.html?r=${r.slug}" target="_blank" class="btn" style="font-size: 0.78rem; justify-content: center;">
+                <a href="${adminUrl}" target="_blank" class="btn" style="font-size: 0.78rem; justify-content: center;">
                   ⚙️ Yönetim ↗
                 </a>
               </div>
               <div class="link-group">
-                <a href="${window.STORE_FRONT_BASE_URL}/orders.html?r=${r.slug}" target="_blank" class="btn" style="font-size: 0.78rem; justify-content: center;">
+                <a href="${kdsUrl}" target="_blank" class="btn" style="font-size: 0.78rem; justify-content: center;">
                   🧑‍🍳 KDS Mutfak ↗
                 </a>
-                <button type="button" class="btn" onclick="toggleRestaurantStatus('${r.slug}', ${!r.is_active})" style="font-size: 0.78rem; justify-content: center;">
-                  ${r.is_active ? '⏸️ Askıya Al' : '▶️ Yayına Al'}
+                <button type="button" class="btn" onclick="openEditModal('${r.slug}')" style="font-size: 0.78rem; justify-content: center;">
+                  ✏️ Düzenle
                 </button>
               </div>
-              ${!isGinger ? `
-                <button type="button" class="btn btn-danger" onclick="openDeleteModal('${r.slug}', '${r.name.replace(/'/g, "\\'")}')" style="font-size: 0.78rem; justify-content: center; margin-top: 4px;">
-                  🗑️ Restoranı Kaldır
+              <div class="link-group">
+                <button type="button" class="btn" onclick="toggleRestaurantStatus('${r.slug}', ${!r.is_active})" style="font-size: 0.78rem; justify-content: center;">
+                  ${r.is_active ? "⏸️ Askıya Al" : "▶️ Yayına Al"}
                 </button>
-              ` : ''}
+                ${!isGinger ? `
+                  <button type="button" class="btn btn-danger" onclick="openDeleteModal('${r.slug}', '${r.name.replace(/'/g, "\\'")}')" style="font-size: 0.78rem; justify-content: center;">
+                    🗑️ Kaldır
+                  </button>
+                ` : "<div></div>"}
+              </div>
             </div>
           </div>
         `;
@@ -614,6 +679,7 @@
       const slug = document.getElementById("newRestSlug").value.trim();
       const phone = document.getElementById("newRestPhone").value.trim();
       const address = document.getElementById("newRestAddress").value.trim();
+      const customDomain = document.getElementById("newRestDomain").value.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
       const primaryColor = document.getElementById("newRestColor").value;
 
       const btn = document.getElementById("btnSubmitCreate");
@@ -628,7 +694,7 @@
           p_address: address,
           p_instagram: "",
           p_primary_color: primaryColor,
-          p_custom_domain: null
+          p_custom_domain: customDomain || null
         });
 
         if (error) {
@@ -644,6 +710,59 @@
       } finally {
         btn.disabled = false;
         btn.textContent = "🚀 Otomatik Kur ve Başlat";
+      }
+    }
+
+    function openEditModal(slug) {
+      const r = cachedRestaurants.find(item => item.slug === slug);
+      if (!r) return;
+      document.getElementById("editRestSlug").value = r.slug;
+      document.getElementById("editRestName").value = r.name || "";
+      document.getElementById("editRestDomain").value = r.custom_domain || "";
+      document.getElementById("editRestPhone").value = r.phone || "";
+      document.getElementById("editRestAddress").value = r.address || "";
+      document.getElementById("editRestColor").value = r.primary_color || "#d86a1a";
+      document.getElementById("editRestaurantModal").classList.add("open");
+    }
+
+    function closeEditModal() {
+      document.getElementById("editRestaurantModal").classList.remove("open");
+    }
+
+    async function handleEditRestaurant(e) {
+      e.preventDefault();
+      initSupabase();
+      if (!supabaseClient) return;
+
+      const slug = document.getElementById("editRestSlug").value;
+      const name = document.getElementById("editRestName").value.trim();
+      const customDomain = document.getElementById("editRestDomain").value.trim();
+      const phone = document.getElementById("editRestPhone").value.trim();
+      const address = document.getElementById("editRestAddress").value.trim();
+      const primaryColor = document.getElementById("editRestColor").value;
+
+      const btn = document.getElementById("btnSubmitEdit");
+      btn.disabled = true;
+      btn.textContent = "Kaydediliyor...";
+
+      try {
+        const { error } = await supabaseClient.rpc("update_restaurant_details", {
+          p_slug: slug,
+          p_name: name,
+          p_phone: phone,
+          p_address: address,
+          p_primary_color: primaryColor,
+          p_custom_domain: customDomain || null
+        });
+        if (error) throw error;
+        closeEditModal();
+        showToast("Restoran bilgileri güncellendi.");
+        await loadRestaurants();
+      } catch (err) {
+        alert("Güncelleme hatası: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "💾 Değişiklikleri Kaydet";
       }
     }
 
