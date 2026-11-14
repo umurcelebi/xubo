@@ -231,6 +231,7 @@ const SoundAlert = {
   _wavUri: null,
   _audioUnlocked: false,
   _isRinging: false,
+  _pendingRing: false,
   _unlockBound: false,
   _titleFlashTimer: null,
   _originalTitle: null,
@@ -373,6 +374,11 @@ const SoundAlert = {
     if (this._unlockBound || typeof window === "undefined") return;
     this._unlockBound = true;
     const onGesture = () => {
+      if (this._pendingRing) {
+        this._pendingRing = false;
+        this.playBell();
+        return;
+      }
       this.unlock();
     };
     ["pointerdown", "keydown", "touchstart", "click"].forEach(evt => {
@@ -468,21 +474,29 @@ const SoundAlert = {
           return playPromise
             .then(() => {
               this._audioUnlocked = true;
+              this._pendingRing = false;
               return true;
             })
             .catch(() => {
               this._isRinging = false;
-              return this.playWebAudioRetroPhone();
+              const fallbackOk = this.playWebAudioRetroPhone();
+              if (!fallbackOk) this._pendingRing = true;
+              return fallbackOk;
             });
         }
         this._audioUnlocked = true;
+        this._pendingRing = false;
         return Promise.resolve(true);
       }
-      return Promise.resolve(this.playWebAudioRetroPhone());
+      const fallbackOk = this.playWebAudioRetroPhone();
+      if (!fallbackOk) this._pendingRing = true;
+      return Promise.resolve(fallbackOk);
     } catch (e) {
       this._isRinging = false;
       console.warn("Sound error:", e);
-      return Promise.resolve(this.playWebAudioRetroPhone());
+      const fallbackOk = this.playWebAudioRetroPhone();
+      if (!fallbackOk) this._pendingRing = true;
+      return Promise.resolve(fallbackOk);
     }
   },
 
