@@ -581,7 +581,10 @@
     .btn-modal-confirm:hover { background: #219150; }
     .btn-modal-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    /* Yazdırma / Adisyon Çıktısı (40 Kolon / 58mm Termal Yazıcı Uyumlu) */
+    /* Yazdırma / Adisyon Çıktısı (58mm & 80mm Termal Yazıcı + Otomatik Kesici Uyumlu) */
+    .receipt-cut-zone {
+      display: none;
+    }
     @media print {
       @page {
         margin: 0;
@@ -602,14 +605,26 @@
         display: block !important;
         position: static !important;
         width: 100% !important;
-        max-width: 56mm !important;
+        max-width: var(--receipt-max-width, 56mm) !important;
         margin: 0 !important;
-        padding: 3mm 2mm !important;
+        padding: 3mm 2mm 0 2mm !important;
         color: #000 !important;
         background: #fff !important;
         font-family: "Courier New", Courier, monospace !important;
         font-size: 11px !important;
         line-height: 1.3 !important;
+        page-break-after: always !important;
+        break-after: page !important;
+      }
+      .receipt-cut-zone {
+        display: block !important;
+        padding-top: 12mm !important;
+        margin-top: 4mm !important;
+        text-align: center !important;
+        font-size: 9px !important;
+        color: #000 !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
     }
 
@@ -793,8 +808,11 @@
       <button type="button" class="btn-kds btn-kds-sound active" id="btnToggleSound" title="Yeni sipariş geldiğinde telefon zili çal">
         ☎️ Zil Açık (Test Et)
       </button>
-      <button type="button" class="btn-kds" id="btnToggleAutoPrint" title="Yeni sipariş düştüğünde adisyon fişini otomatik yazdır">
+      <button type="button" class="btn-kds" id="btnToggleAutoPrint" title="Yeni sipariş düştüğünde adisyon fişini otomatik yazdır ve kes">
         🖨️ Oto-Fiş: Kapalı
+      </button>
+      <button type="button" class="btn-kds" id="btnOpenPrinterModal" onclick="openKdsPrinterModal()" title="Termal yazıcı, otomatik kağıt kesme (Auto-Cutter) ve fiş boyutu ayarları">
+        ✂️ Yazıcı &amp; Kesici
       </button>
       <button type="button" class="btn-kds" id="btnRefreshOrders" title="Siparişleri yenile">
         🔄 Yenile
@@ -930,6 +948,52 @@
     </div>
   </div>
 
+  <!-- Termal Yazıcı & Otomatik Kağıt Kesme Modalı -->
+  <div id="kdsPrinterModalBackdrop" class="archive-modal-backdrop" onclick="if(event.target===this) closeKdsPrinterModal()">
+    <div class="archive-modal-box" role="dialog" aria-modal="true" aria-labelledby="kdsPrinterModalTitle">
+      <h2 id="kdsPrinterModalTitle" class="archive-modal-title">🖨️ Yazıcı &amp; Otomatik Kağıt Kesme</h2>
+      <p style="font-size: 0.83rem; color: var(--ink-muted); margin-bottom: 14px;">
+        Fiş basıldıktan sonra kağıdın bıçak payı kadar ilerleyip otomatik kesilmesini (Auto-Cutter) buradan yönetebilirsiniz.
+      </p>
+
+      <div class="archive-summary-card" style="margin-bottom: 14px;">
+        <div class="archive-stat-row" style="align-items:center;">
+          <span>✂️ Otomatik Kağıt Kesme (Auto-Cut)</span>
+          <button type="button" id="btnPrinterToggleCut" class="btn-kds active" onclick="togglePrinterAutoCut()" style="padding:5px 10px; font-size:0.78rem;">Açık (Aktif)</button>
+        </div>
+        <div class="archive-stat-row" style="align-items:center;">
+          <span>📏 Termal Kağıt Genişliği</span>
+          <div style="display:flex; gap:6px;">
+            <button type="button" id="btnPaper58" class="btn-kds" onclick="setPrinterPaperWidth('58')" style="padding:4px 10px; font-size:0.76rem;">58mm</button>
+            <button type="button" id="btnPaper80" class="btn-kds" onclick="setPrinterPaperWidth('80')" style="padding:4px 10px; font-size:0.76rem;">80mm</button>
+          </div>
+        </div>
+        <div class="archive-stat-row" style="align-items:center;">
+          <span>🔌 Direkt ESC/POS Bıçak Bağlantısı</span>
+          <strong id="printerDirectStatusText" style="font-size:0.78rem; color:var(--ink-muted);">Tarayıcı Sürücüsü (Standart)</strong>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+        <button type="button" class="btn-kds-mode" onclick="connectDirectUsbPrinter()" style="text-align:center; font-size:0.8rem; padding:10px;">
+          🔌 USB Yazıcı Eşleştir (ESC/POS)
+        </button>
+        <button type="button" class="btn-kds-mode" onclick="connectDirectSerialPrinter()" style="text-align:center; font-size:0.8rem; padding:10px;">
+          📡 Seri / COM Yazıcı Eşleştir
+        </button>
+      </div>
+
+      <div class="archive-warn-box" style="margin-bottom:14px; font-size:0.76rem;">
+        💡 <strong>İpucu:</strong> USB/Seri eşleştirme yaparsanız tarayıcı yazdırma penceresi hiç açılmaz, fiş basılıp <code>GS V</code> komutuyla otomatik kesilir. Standart Windows/Mac sürücüsü kullanıyorsanız da fiş sonuna bıçak boşluğu ve sayfa sonu kesme tetikleyicisi otomatik eklenir.
+      </div>
+
+      <div class="archive-modal-actions">
+        <button type="button" class="btn-modal-cancel" onclick="closeKdsPrinterModal()">Kapat</button>
+        <button type="button" class="btn-modal-confirm" onclick="testPrintAndCut()">✂️ Test Fişi Bas &amp; Kes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Gizli Yazdırma Alanı (Adisyon için) -->
   <div id="printArea" class="print-receipt" style="display: none;"></div>
 
@@ -997,28 +1061,416 @@
       return `${hours} saat önce`;
     }
 
-    // Adisyon Yazdırma Fonksiyonu (40 Kolon / 58mm Termal)
-    window.printOrderReceipt = function(orderId) {
-      const order = allOrders.find(o => o.id === orderId);
+    function getPrinterPrefKey(suffix) {
+      return `kds_${suffix}_${getKdsActiveSlug()}`;
+    }
+
+    function isPrinterAutoCutEnabled() {
+      try {
+        return localStorage.getItem(getPrinterPrefKey("auto_cut")) !== "false";
+      } catch (e) {
+        return true;
+      }
+    }
+
+    function getPrinterPaperWidth() {
+      try {
+        return localStorage.getItem(getPrinterPrefKey("paper_width")) === "80" ? "80" : "58";
+      } catch (e) {
+        return "58";
+      }
+    }
+
+    function getReceiptStoreMeta() {
+      const isGinger = typeof window.getActiveRestaurantSlug !== "function" || window.getActiveRestaurantSlug() === "ginger-pizza";
+      const restInfo = window.__ACTIVE_RESTAURANT_INFO__ || {};
+      return {
+        isGinger,
+        title: isGinger ? "GINGER PIZZA" : (restInfo.name || "RESTORAN").toLocaleUpperCase("tr-TR"),
+        address: isGinger ? "Göztepe Rıdvanpaşa Sk. No:16" : (restInfo.address || ""),
+        phone: isGinger ? "0216 337 02 01" : (restInfo.phone || "")
+      };
+    }
+
+    // Doğrudan ESC/POS Termal Yazıcı & Otomatik Bıçak (Auto-Cutter) Motoru (WebUSB / WebSerial)
+    const ThermalPrinter = (() => {
+      let conn = null;
+
+      function normalizeAscii(str) {
+        const map = {
+          "ğ": "g", "Ğ": "G", "ü": "u", "Ü": "U", "ş": "s", "Ş": "S",
+          "ı": "i", "İ": "I", "ö": "o", "Ö": "O", "ç": "c", "Ç": "C",
+          "₺": "TL", "—": "-", "–": "-", "•": "*"
+        };
+        return String(str ?? "")
+          .replace(/[ğĞüÜşŞıİöÖçÇ₺—–•]/g, ch => map[ch] || ch)
+          .replace(/[^\x20-\x7E]/g, "?");
+      }
+
+      function pushText(buf, text) {
+        const clean = normalizeAscii(text);
+        for (let i = 0; i < clean.length; i++) {
+          buf.push(clean.charCodeAt(i));
+        }
+      }
+
+      function pushLine(buf, text = "") {
+        pushText(buf, text);
+        buf.push(0x0A);
+      }
+
+      function pushWrapRow(buf, left, right, cols) {
+        const l = normalizeAscii(left);
+        const r = normalizeAscii(right);
+        const gap = cols - l.length - r.length;
+        if (gap >= 1) {
+          pushLine(buf, l + " ".repeat(gap) + r);
+          return;
+        }
+        pushLine(buf, l.slice(0, cols));
+        const rem = "  " + l.slice(cols);
+        const remTrim = rem.slice(0, Math.max(4, cols - r.length - 1));
+        pushLine(buf, remTrim + " ".repeat(Math.max(1, cols - remTrim.length - r.length)) + r);
+      }
+
+      function buildReceiptBytes(order, storeMeta, options = {}) {
+        const cols = options.paperWidth === "80" ? 48 : 32;
+        const autoCut = options.autoCut !== false;
+        const sep = "-".repeat(cols);
+        const deliveryLabel = order.delivery_type === "takeaway" ? "GEL-AL" : "PAKET SERVIS";
+        const payLabel = window.StoreStatus
+          ? StoreStatus.getPaymentMethodLabel(order.payment_method, kdsStoreSettings).toLocaleUpperCase("tr-TR")
+          : (order.payment_method === "door_cash" ? "KAPIDA NAKIT" : "KAPIDA KART");
+
+        const buf = [];
+        // ESC @ -> Yazıcıyı sıfırla
+        buf.push(0x1B, 0x40);
+        // Ortala + Çift Yükseklik/Genişlik Başlık
+        buf.push(0x1B, 0x61, 0x01, 0x1B, 0x21, 0x30);
+        pushLine(buf, storeMeta.title);
+        buf.push(0x1B, 0x21, 0x00);
+        if (storeMeta.address) pushLine(buf, storeMeta.address);
+        if (storeMeta.phone) pushLine(buf, `Tel: ${storeMeta.phone}`);
+        buf.push(0x1B, 0x21, 0x18);
+        pushLine(buf, `SIPARIS #${order.order_number || String(order.id).slice(-4)}`);
+        buf.push(0x1B, 0x21, 0x00);
+        pushLine(buf, new Date(order.created_at || Date.now()).toLocaleString("tr-TR"));
+
+        // Sola Yasla + Müşteri Bilgileri
+        buf.push(0x1B, 0x61, 0x00);
+        pushLine(buf, sep);
+        pushLine(buf, `MUSTERI: ${order.customer_name || "-"}`);
+        if (order.customer_phone) pushLine(buf, `TEL    : ${order.customer_phone}`);
+        pushLine(buf, `TIP    : ${deliveryLabel}`);
+        if (order.delivery_type !== "takeaway" && order.delivery_address) {
+          pushLine(buf, `ADRES  : ${order.delivery_address}`);
+        }
+        if (order.order_notes) {
+          pushLine(buf, `NOT    : ${order.order_notes}`);
+        }
+
+        pushLine(buf, sep);
+        (order.items || []).forEach(i => {
+          const left = `${i.quantity}x ${i.item_name}${i.size_label ? ` (${i.size_label})` : ""}${i.item_notes ? ` [${i.item_notes}]` : ""}`;
+          const right = `${i.total_price} TL`;
+          pushWrapRow(buf, left, right, cols);
+        });
+        pushLine(buf, sep);
+
+        if (Number(order.discount_amount) > 0) {
+          const sub = order.subtotal_amount || (Number(order.total_amount) + Number(order.discount_amount));
+          pushWrapRow(buf, "ARA TOPLAM:", `${sub} TL`, cols);
+          pushWrapRow(buf, `INDIRIM (%${order.discount_percent || 0}):`, `-${order.discount_amount} TL`, cols);
+        }
+        if (Number(order.delivery_fee) > 0) {
+          pushWrapRow(buf, "TESLIMAT:", `+${order.delivery_fee} TL`, cols);
+        }
+
+        buf.push(0x1B, 0x45, 0x01); // Bold aç
+        pushWrapRow(buf, "TOPLAM:", `${order.total_amount} TL`, cols);
+        buf.push(0x1B, 0x45, 0x00); // Bold kapat
+
+        buf.push(0x1B, 0x61, 0x01); // Ortala
+        pushLine(buf, sep);
+        pushLine(buf, `ODEME: ${payLabel}`);
+
+        if (autoCut) {
+          // Bıçak hizası için 4 satır kağıt ilerlet + ESC/POS Auto-Cut komutu (GS V 66 0)
+          buf.push(0x1B, 0x64, 0x04);
+          buf.push(0x1D, 0x56, 0x42, 0x00);
+        } else {
+          buf.push(0x1B, 0x64, 0x04);
+        }
+
+        return new Uint8Array(buf);
+      }
+
+      async function claimUsbDevice(device) {
+        if (!device.opened) await device.open();
+        if (!device.configuration) await device.selectConfiguration(1);
+        for (const iface of device.configuration.interfaces) {
+          for (const alt of iface.alternates) {
+            const outEp = (alt.endpoints || []).find(ep => ep.direction === "out");
+            if (outEp) {
+              await device.claimInterface(iface.interfaceNumber);
+              if (alt.alternateSetting !== undefined) {
+                try { await device.selectAlternateInterface(iface.interfaceNumber, alt.alternateSetting); } catch (e) {}
+              }
+              return {
+                mode: "usb",
+                device,
+                interfaceNumber: iface.interfaceNumber,
+                endpointNumber: outEp.endpointNumber,
+                label: device.productName || "USB Termal Yazıcı"
+              };
+            }
+          }
+        }
+        throw new Error("Yazıcı çıkış ucu (OUT endpoint) bulunamadı.");
+      }
+
+      async function connectUsb() {
+        if (!navigator.usb) {
+          throw new Error("Bu tarayıcı WebUSB desteklemiyor (Masaüstü Chrome veya Edge kullanın).");
+        }
+        const device = await navigator.usb.requestDevice({ filters: [] });
+        conn = await claimUsbDevice(device);
+        try { localStorage.setItem(getPrinterPrefKey("direct_mode"), "usb"); } catch (e) {}
+        return conn;
+      }
+
+      async function openSerialPort(port) {
+        if (!port.readable && !port.writable) {
+          try {
+            await port.open({ baudRate: 9600 });
+          } catch (e) {
+            await port.open({ baudRate: 115200 });
+          }
+        }
+        return {
+          mode: "serial",
+          port,
+          label: "Seri / COM Termal Yazıcı"
+        };
+      }
+
+      async function connectSerial() {
+        if (!navigator.serial) {
+          throw new Error("Bu tarayıcı WebSerial desteklemiyor (Masaüstü Chrome veya Edge kullanın).");
+        }
+        const port = await navigator.serial.requestPort();
+        conn = await openSerialPort(port);
+        try { localStorage.setItem(getPrinterPrefKey("direct_mode"), "serial"); } catch (e) {}
+        return conn;
+      }
+
+      async function tryAutoReconnect() {
+        let savedMode = "";
+        try { savedMode = localStorage.getItem(getPrinterPrefKey("direct_mode")) || ""; } catch (e) {}
+        if (!savedMode) return false;
+        try {
+          if (savedMode === "usb" && navigator.usb) {
+            const devices = await navigator.usb.getDevices();
+            if (devices && devices.length > 0) {
+              conn = await claimUsbDevice(devices[0]);
+              return true;
+            }
+          } else if (savedMode === "serial" && navigator.serial) {
+            const ports = await navigator.serial.getPorts();
+            if (ports && ports.length > 0) {
+              conn = await openSerialPort(ports[0]);
+              return true;
+            }
+          }
+        } catch (e) {
+          conn = null;
+        }
+        return false;
+      }
+
+      async function printBytes(bytes) {
+        if (!conn) throw new Error("Bağlı direkt yazıcı yok.");
+        try {
+          if (conn.mode === "usb") {
+            if (!conn.device.opened) conn = await claimUsbDevice(conn.device);
+            const chunkSize = 64;
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+              await conn.device.transferOut(conn.endpointNumber, bytes.slice(i, i + chunkSize));
+            }
+            return true;
+          }
+          if (conn.mode === "serial") {
+            const writer = conn.port.writable.getWriter();
+            try {
+              await writer.write(bytes);
+            } finally {
+              writer.releaseLock();
+            }
+            return true;
+          }
+        } catch (e) {
+          conn = null;
+          throw e;
+        }
+        return false;
+      }
+
+      return {
+        isConnected: () => Boolean(conn),
+        getStatusLabel: () => {
+          if (!conn) return "Tarayıcı Sürücüsü (Standart)";
+          return conn.mode === "usb" ? `🔌 USB Bağlı (${conn.label})` : `📡 COM/Seri Bağlı`;
+        },
+        getShortBadge: () => {
+          if (!conn) return "";
+          return conn.mode === "usb" ? "USB" : "COM";
+        },
+        buildReceiptBytes,
+        connectUsb,
+        connectSerial,
+        tryAutoReconnect,
+        printBytes
+      };
+    })();
+
+    function syncPrinterModalUi() {
+      const autoCut = isPrinterAutoCutEnabled();
+      const paperWidth = getPrinterPaperWidth();
+
+      const btnCut = document.getElementById("btnPrinterToggleCut");
+      if (btnCut) {
+        btnCut.className = autoCut ? "btn-kds btn-kds-sound active" : "btn-kds";
+        btnCut.textContent = autoCut ? "✂️ Açık (Aktif)" : "Kapalı";
+      }
+
+      const btn58 = document.getElementById("btnPaper58");
+      const btn80 = document.getElementById("btnPaper80");
+      if (btn58) btn58.className = paperWidth === "58" ? "btn-kds btn-kds-sound active" : "btn-kds";
+      if (btn80) btn80.className = paperWidth === "80" ? "btn-kds btn-kds-sound active" : "btn-kds";
+
+      const statusEl = document.getElementById("printerDirectStatusText");
+      if (statusEl) {
+        statusEl.textContent = ThermalPrinter.getStatusLabel();
+        statusEl.style.color = ThermalPrinter.isConnected() ? "#6ee7a0" : "var(--ink-muted)";
+      }
+
+      const btnOpen = document.getElementById("btnOpenPrinterModal");
+      if (btnOpen) {
+        const directTag = ThermalPrinter.getShortBadge();
+        if (directTag) {
+          btnOpen.textContent = autoCut ? `✂️ Yazıcı (${directTag})` : `🖨️ Yazıcı (${directTag})`;
+        } else {
+          btnOpen.textContent = autoCut ? "✂️ Yazıcı & Kesici" : "🖨️ Yazıcı Ayarları";
+        }
+      }
+
+      const btnAuto = document.getElementById("btnToggleAutoPrint");
+      if (btnAuto) {
+        btnAuto.className = autoPrintEnabled ? "btn-kds btn-kds-sound active" : "btn-kds";
+        btnAuto.textContent = autoPrintEnabled
+          ? (autoCut ? "🖨️ Oto-Fiş: Açık (✂️ Kesmeli)" : "🖨️ Oto-Fiş: Açık")
+          : "🖨️ Oto-Fiş: Kapalı";
+      }
+    }
+
+    window.openKdsPrinterModal = function() {
+      syncPrinterModalUi();
+      const backdrop = document.getElementById("kdsPrinterModalBackdrop");
+      if (backdrop) backdrop.classList.add("open");
+    };
+
+    window.closeKdsPrinterModal = function() {
+      const backdrop = document.getElementById("kdsPrinterModalBackdrop");
+      if (backdrop) backdrop.classList.remove("open");
+    };
+
+    window.togglePrinterAutoCut = function() {
+      const next = !isPrinterAutoCutEnabled();
+      try { localStorage.setItem(getPrinterPrefKey("auto_cut"), next ? "true" : "false"); } catch (e) {}
+      syncPrinterModalUi();
+    };
+
+    window.setPrinterPaperWidth = function(width) {
+      try { localStorage.setItem(getPrinterPrefKey("paper_width"), width === "80" ? "80" : "58"); } catch (e) {}
+      syncPrinterModalUi();
+    };
+
+    window.connectDirectUsbPrinter = async function() {
+      try {
+        await ThermalPrinter.connectUsb();
+        syncPrinterModalUi();
+        alert("✅ USB Termal Yazıcı bağlandı! Artık fişler yazdırma penceresi açılmadan direkt basılıp otomatik kesilecek.");
+      } catch (e) {
+        if (e && e.name === "NotFoundError") return;
+        alert("USB yazıcı bağlanamadı: " + (e.message || e));
+      }
+    };
+
+    window.connectDirectSerialPrinter = async function() {
+      try {
+        await ThermalPrinter.connectSerial();
+        syncPrinterModalUi();
+        alert("✅ Seri/COM Termal Yazıcı bağlandı! Artık fişler penceresiz basılıp otomatik kesilecek.");
+      } catch (e) {
+        if (e && e.name === "NotFoundError") return;
+        alert("Seri yazıcı bağlanamadı: " + (e.message || e));
+      }
+    };
+
+    window.testPrintAndCut = function() {
+      const testOrder = {
+        id: "__TEST__",
+        order_number: "TEST-01",
+        created_at: new Date().toISOString(),
+        customer_name: "Test Müşteri",
+        customer_phone: "0555 000 00 00",
+        delivery_type: "delivery",
+        delivery_address: "Test Adresi No:1",
+        payment_method: "door_cash",
+        order_notes: "Otomatik kağıt kesim testi",
+        total_amount: 100,
+        items: [{ quantity: 1, item_name: "Test Ürünü", size_label: "Orta", total_price: 100 }]
+      };
+      window.printOrderReceipt(testOrder);
+    };
+
+    // Adisyon Yazdırma Fonksiyonu (58mm / 80mm + Otomatik Kağıt Kesme)
+    window.printOrderReceipt = async function(orderOrId) {
+      const order = (orderOrId && typeof orderOrId === "object")
+        ? orderOrId
+        : allOrders.find(o => o.id === orderOrId);
       if (!order) return;
 
+      const storeMeta = getReceiptStoreMeta();
+      const autoCut = isPrinterAutoCutEnabled();
+      const paperWidth = getPrinterPaperWidth();
+
+      // 1) Direkt USB / Seri ESC/POS Yazıcı bağlıysa penceresiz bas + bıçak kesimi gönder
+      if (ThermalPrinter.isConnected()) {
+        try {
+          const bytes = ThermalPrinter.buildReceiptBytes(order, storeMeta, { autoCut, paperWidth });
+          await ThermalPrinter.printBytes(bytes);
+          return;
+        } catch (err) {
+          console.warn("Direct ESC/POS print failed, falling back to browser print:", err);
+          syncPrinterModalUi();
+        }
+      }
+
+      // 2) Standart Tarayıcı Yazdırma (Sayfa sonu kesici tetikleyici & bıçak boşluğu ile)
       const printArea = document.getElementById("printArea");
+      printArea.style.setProperty("--receipt-max-width", paperWidth === "80" ? "76mm" : "56mm");
+
       const deliveryLabel = order.delivery_type === "takeaway" ? "GEL-AL" : "PAKET SERVİS";
       const payLabel = window.StoreStatus
         ? StoreStatus.getPaymentMethodLabel(order.payment_method, kdsStoreSettings).toLocaleUpperCase("tr-TR")
         : (order.payment_method === "door_cash" ? "KAPIDA NAKİT" : "KAPIDA KART");
 
-      const isGinger = typeof window.getActiveRestaurantSlug !== "function" || window.getActiveRestaurantSlug() === "ginger-pizza";
-      const restInfo = window.__ACTIVE_RESTAURANT_INFO__ || {};
-      const receiptTitle = isGinger ? "GINGER PIZZA" : (restInfo.name || "RESTORAN").toLocaleUpperCase("tr-TR");
-      const receiptAddress = isGinger ? "Göztepe Rıdvanpaşa Sk. No:16" : (restInfo.address || "");
-      const receiptPhone = isGinger ? "0216 337 02 01" : (restInfo.phone || "");
-
       printArea.innerHTML = `
         <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px;">
-          <div style="font-size: 15px; font-weight: bold; letter-spacing: 0.5px;">${escapeHtml(receiptTitle)}</div>
-          ${receiptAddress ? `<div style="font-size: 10px; margin-top: 2px;">${escapeHtml(receiptAddress)}</div>` : ''}
-          ${receiptPhone ? `<div style="font-size: 10px;">Tel: ${escapeHtml(receiptPhone)}</div>` : ''}
+          <div style="font-size: 15px; font-weight: bold; letter-spacing: 0.5px;">${escapeHtml(storeMeta.title)}</div>
+          ${storeMeta.address ? `<div style="font-size: 10px; margin-top: 2px;">${escapeHtml(storeMeta.address)}</div>` : ''}
+          ${storeMeta.phone ? `<div style="font-size: 10px;">Tel: ${escapeHtml(storeMeta.phone)}</div>` : ''}
           <div style="font-size: 14px; font-weight: bold; margin-top: 5px;">SİPARİŞ #${escapeHtml(order.order_number || String(order.id).slice(-4))}</div>
           <div style="font-size: 10px; margin-top: 2px;">${escapeHtml(new Date(order.created_at || Date.now()).toLocaleString("tr-TR"))}</div>
         </div>
@@ -1063,6 +1515,7 @@
         <div style="font-size: 11px; text-align: center; margin-top: 6px; border-top: 1px dashed #000; padding-top: 5px;">
           ÖDEME: <strong>${escapeHtml(payLabel)}</strong>
         </div>
+        ${autoCut ? '<div class="receipt-cut-zone">✂ - - - - - - - - - - - - - - - - - -</div>' : ''}
       `;
 
       const originalTitle = document.title;
@@ -1399,23 +1852,20 @@
         btnSound.textContent = soundEnabled ? "☎️ Zil Açık (Test Et)" : "🔕 Zil Kapalı";
       });
 
-      // Oto-Fiş Butonu ve Linkler
+      // Oto-Fiş ve Yazıcı / Kesici Ayarları
       const activeKdsSlug = getKdsActiveSlug();
       const autoPrintKey = `kds_auto_print_${activeKdsSlug}`;
       autoPrintEnabled = localStorage.getItem(autoPrintKey) === "true";
       const btnAutoPrint = document.getElementById("btnToggleAutoPrint");
       if (btnAutoPrint) {
-        const syncAutoPrintBtn = () => {
-          btnAutoPrint.className = autoPrintEnabled ? "btn-kds btn-kds-sound active" : "btn-kds";
-          btnAutoPrint.textContent = autoPrintEnabled ? "🖨️ Oto-Fiş: Açık" : "🖨️ Oto-Fiş: Kapalı";
-        };
-        syncAutoPrintBtn();
+        syncPrinterModalUi();
         btnAutoPrint.addEventListener("click", () => {
           autoPrintEnabled = !autoPrintEnabled;
           localStorage.setItem(autoPrintKey, autoPrintEnabled ? "true" : "false");
-          syncAutoPrintBtn();
+          syncPrinterModalUi();
         });
       }
+      ThermalPrinter.tryAutoReconnect().then(() => syncPrinterModalUi());
       const kdsLinkAdmin = document.getElementById("kdsLinkAdmin");
       const kdsLinkStorefront = document.getElementById("kdsLinkStorefront");
       if (kdsLinkAdmin && activeKdsSlug && activeKdsSlug !== "ginger-pizza") {
