@@ -14,8 +14,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js?v=20261114c"></script>
-  <script src="js/store-status.js?v=20261114b"></script>
-  <script src="js/order-api.js?v=20261114e"></script>
+  <script src="js/store-status.js?v=20261114c"></script>
+  <script src="js/order-api.js?v=20261114f"></script>
 
   <style>
     :root {
@@ -948,6 +948,28 @@
     </div>
   </div>
 
+  <!-- Sipariş Reddetme & İptal Nedeni Seçim Modalı -->
+  <div id="rejectOrderModalBackdrop" class="archive-modal-backdrop" onclick="if(event.target===this) closeRejectOrderModal()">
+    <div class="archive-modal-box" role="dialog" aria-modal="true" aria-labelledby="rejectOrderModalTitle">
+      <h2 id="rejectOrderModalTitle" class="archive-modal-title">✕ Siparişi Reddet</h2>
+      <p id="rejectOrderSubtitle" style="font-size: 0.85rem; color: var(--ink-muted); margin-bottom: 12px;">
+        Müşteriye sipariş takip ekranında gösterilecek iptal nedenini seçin.
+      </p>
+
+      <div id="rejectReasonButtonsGrid" style="display:flex; flex-direction:column; gap:8px; margin-bottom: 12px;"></div>
+
+      <label for="rejectCustomReasonInput" style="display:block; font-size:0.78rem; color:var(--ink-muted); margin-bottom:6px;">
+        Veya özel bir neden yazın (opsiyonel):
+      </label>
+      <input type="text" id="rejectCustomReasonInput" class="kds-mode-note-input" placeholder="Örn: Fırın bakımı nedeniyle iptal edildi" oninput="if(this.value.trim()) clearRejectPresetSelection()">
+
+      <div class="archive-modal-actions">
+        <button type="button" class="btn-modal-cancel" onclick="closeRejectOrderModal()">Vazgeç</button>
+        <button type="button" id="btnConfirmRejectOrder" class="btn-modal-confirm" style="background:#c0392b;" onclick="confirmRejectOrder()">✕ Reddet &amp; Müşteriye Göster</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Termal Yazıcı & Otomatik Kağıt Kesme Modalı -->
   <div id="kdsPrinterModalBackdrop" class="archive-modal-backdrop" onclick="if(event.target===this) closeKdsPrinterModal()">
     <div class="archive-modal-box" role="dialog" aria-modal="true" aria-labelledby="kdsPrinterModalTitle">
@@ -1554,7 +1576,7 @@
             <button type="button" class="btn-step-next" onclick="updateStatus('${order.id}', 'preparing')">
               ${isGinger ? "✓ Kabul Et & Fırına Ver" : "✓ Kabul Et & Hazırla"}
             </button>
-            <button type="button" class="btn-cancel" onclick="updateStatus('${order.id}', 'cancelled')">
+            <button type="button" class="btn-cancel" onclick="openRejectOrderModal('${safeOrderId}')">
               ✕ Reddet
             </button>
           </div>
@@ -1580,6 +1602,11 @@
 
       const safeOrderId = escapeHtml(order.id);
       const safeTelHref = "tel:" + String(order.customer_phone || "").replace(/[^\d+]/g, "");
+
+      const cancelReasonText = (order.status === "cancelled" && window.OrderAPI && typeof OrderAPI.getCancelReason === "function")
+        ? OrderAPI.getCancelReason(order)
+        : "";
+      const cleanedOrderNotes = String(order.order_notes || "").replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
 
       return `
         <article class="order-card ${isNew ? 'highlight-new' : ''}" id="card-${safeOrderId}">
@@ -1612,9 +1639,15 @@
             ` : ''}
           </div>
 
-          ${order.order_notes ? `
+          ${cancelReasonText ? `
+            <div class="order-notes-box" style="background:rgba(231,76,60,0.14); border-color:rgba(231,76,60,0.45); color:#ffb3ad;">
+              <strong>🚫 İptal Nedeni:</strong> ${escapeHtml(cancelReasonText)}
+            </div>
+          ` : ''}
+
+          ${cleanedOrderNotes ? `
             <div class="order-notes-box">
-              <strong>Sipariş Notu:</strong> ${escapeHtml(order.order_notes)}
+              <strong>Sipariş Notu:</strong> ${escapeHtml(cleanedOrderNotes)}
             </div>
           ` : ''}
 
@@ -1824,9 +1857,115 @@
     };
 
     // Sipariş Durumunu Güncelle
-    window.updateStatus = async function(orderId, nextStatus) {
-      await OrderAPI.updateStatus(orderId, nextStatus);
+    window.updateStatus = async function(orderId, nextStatus, extra) {
+      await OrderAPI.updateStatus(orderId, nextStatus, extra);
       await loadOrders();
+    };
+
+    // Sipariş Reddetme Modalı
+    let rejectTargetOrderId = null;
+    let selectedRejectReason = "";
+
+    function getKdsRejectionReasonsList() {
+      if (window.StoreStatus && typeof StoreStatus.getRejectionReasons === "function") {
+        const list = StoreStatus.getRejectionReasons(kdsStoreSettings);
+        if (list.length > 0) return list;
+      }
+      return [
+        "Elektrik kesintisi",
+        "Restoran yoğunluğu",
+        "Kurye kaza yaptı",
+        "Seçilen ürün satışta değil",
+        "Servis alanı dışında"
+      ];
+    }
+
+    window.clearRejectPresetSelection = function() {
+      selectedRejectReason = "";
+      document.querySelectorAll("#rejectReasonButtonsGrid .btn-kds-mode").forEach(btn => {
+        btn.classList.remove("active-closed");
+      });
+    };
+
+    window.selectRejectReason = function(idx) {
+      const reasons = getKdsRejectionReasonsList();
+      selectedRejectReason = reasons[idx] || "";
+      const customEl = document.getElementById("rejectCustomReasonInput");
+      if (customEl) customEl.value = "";
+      document.querySelectorAll("#rejectReasonButtonsGrid .btn-kds-mode").forEach((btn, i) => {
+        btn.classList.toggle("active-closed", i === idx);
+      });
+    };
+
+    window.openRejectOrderModal = async function(orderId) {
+      rejectTargetOrderId = orderId;
+      selectedRejectReason = "";
+      if (!kdsStoreSettings && window.StoreStatus) {
+        try { kdsStoreSettings = await StoreStatus.getSettings(); } catch (e) {}
+      }
+      const order = allOrders.find(o => o.id === orderId);
+      const subEl = document.getElementById("rejectOrderSubtitle");
+      if (subEl) {
+        subEl.textContent = order
+          ? `Sipariş #${order.order_number || String(order.id).slice(-4)} (${order.customer_name || "Müşteri"}) için iptal nedenini seçin. Bu neden müşteriye gösterilecektir.`
+          : "Müşteriye gösterilecek iptal nedenini seçin.";
+      }
+
+      const customEl = document.getElementById("rejectCustomReasonInput");
+      if (customEl) customEl.value = "";
+
+      const grid = document.getElementById("rejectReasonButtonsGrid");
+      const reasons = getKdsRejectionReasonsList();
+      if (grid) {
+        grid.innerHTML = reasons.map((reason, idx) => `
+          <button type="button" class="btn-kds-mode" onclick="selectRejectReason(${idx})">
+            🚫 ${escapeHtml(reason)}
+          </button>
+        `).join("");
+      }
+
+      const backdrop = document.getElementById("rejectOrderModalBackdrop");
+      if (backdrop) backdrop.classList.add("open");
+    };
+
+    window.closeRejectOrderModal = function() {
+      rejectTargetOrderId = null;
+      selectedRejectReason = "";
+      const backdrop = document.getElementById("rejectOrderModalBackdrop");
+      if (backdrop) backdrop.classList.remove("open");
+    };
+
+    window.confirmRejectOrder = async function() {
+      if (!rejectTargetOrderId) return;
+      const customEl = document.getElementById("rejectCustomReasonInput");
+      const customText = customEl ? customEl.value.trim() : "";
+      const finalReason = customText || selectedRejectReason;
+
+      if (!finalReason) {
+        alert("Lütfen bir reddetme nedeni seçin veya yazın.");
+        return;
+      }
+
+      const btn = document.getElementById("btnConfirmRejectOrder");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Reddediliyor...";
+      }
+      try {
+        const order = allOrders.find(o => o.id === rejectTargetOrderId);
+        const existingNotes = order && typeof order.order_notes === "string" ? order.order_notes : "";
+        await OrderAPI.updateStatus(rejectTargetOrderId, "cancelled", {
+          cancelReason: finalReason,
+          existingNotes
+        });
+        closeRejectOrderModal();
+        await loadOrders();
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "✕ Reddet & Müşteriye Göster";
+        }
+      }
     };
 
     // Siparişleri Yükle

@@ -74,6 +74,31 @@ function normalizePaymentMethods(raw) {
   return list.length > 0 ? list : createDefaultPaymentMethods();
 }
 
+const DEFAULT_REJECTION_REASONS = [
+  "Elektrik kesintisi",
+  "Restoran yoğunluğu",
+  "Kurye kaza yaptı",
+  "Seçilen ürün satışta değil",
+  "Servis alanı dışında"
+];
+
+function normalizeRejectionReasons(raw) {
+  if (!Array.isArray(raw)) {
+    return [...DEFAULT_REJECTION_REASONS];
+  }
+  const seen = new Set();
+  const list = [];
+  raw.forEach(item => {
+    const text = String(item ?? "").trim();
+    if (!text) return;
+    const key = text.toLocaleLowerCase("tr-TR");
+    if (seen.has(key)) return;
+    seen.add(key);
+    list.push(text.slice(0, 120));
+  });
+  return list;
+}
+
 function createDefaultStoreSettings() {
   return {
     id: getStoreSettingsRowId(),
@@ -86,6 +111,7 @@ function createDefaultStoreSettings() {
     min_order_amount: 0,
     delivery_fee: 0,
     payment_methods: createDefaultPaymentMethods(),
+    rejection_reasons: [...DEFAULT_REJECTION_REASONS],
     updated_at: new Date().toISOString()
   };
 }
@@ -115,6 +141,9 @@ function normalizeStoreSettings(raw) {
   const cleanMinOrder = Number.isFinite(rawMinOrder) ? Math.max(0, Math.round(rawMinOrder * 100) / 100) : 0;
   const rawDeliveryFee = Number(src.delivery_fee);
   const cleanDeliveryFee = Number.isFinite(rawDeliveryFee) ? Math.max(0, Math.round(rawDeliveryFee * 100) / 100) : 0;
+  const rawReasons = Array.isArray(src.rejection_reasons)
+    ? src.rejection_reasons
+    : (src.weekly_hours && Array.isArray(src.weekly_hours.__rejection_reasons) ? src.weekly_hours.__rejection_reasons : null);
 
   return {
     id: getStoreSettingsRowId(),
@@ -127,6 +156,7 @@ function normalizeStoreSettings(raw) {
     min_order_amount: cleanMinOrder,
     delivery_fee: cleanDeliveryFee,
     payment_methods: normalizePaymentMethods(src.payment_methods),
+    rejection_reasons: normalizeRejectionReasons(rawReasons),
     updated_at: src.updated_at || new Date().toISOString()
   };
 }
@@ -478,12 +508,13 @@ const StoreStatus = {
           order_mode: normalized.order_mode,
           busy_until: normalized.busy_until,
           status_message: normalized.status_message,
-          weekly_hours: normalized.weekly_hours,
+          weekly_hours: { ...normalized.weekly_hours, __rejection_reasons: normalized.rejection_reasons },
           online_discount_enabled: normalized.online_discount_enabled,
           online_discount_percent: normalized.online_discount_percent,
           min_order_amount: normalized.min_order_amount,
           delivery_fee: normalized.delivery_fee,
           payment_methods: normalized.payment_methods,
+          rejection_reasons: normalized.rejection_reasons,
           updated_at: normalized.updated_at
         };
 
@@ -494,7 +525,7 @@ const StoreStatus = {
           .single();
 
         // Veritabanında yeni sütunlar henüz yoksa uyumlu kolonlarla tekrar dene
-        if (error && /(online_discount|payment_methods|min_order_amount|delivery_fee)/i.test(String(error.message || ""))) {
+        if (error && /(online_discount|payment_methods|min_order_amount|delivery_fee|rejection_reasons)/i.test(String(error.message || ""))) {
           const errMsg = String(error.message || "");
           const retryPayload = { ...payload };
           if (/online_discount/i.test(errMsg)) {
@@ -508,17 +539,21 @@ const StoreStatus = {
             delete retryPayload.min_order_amount;
             delete retryPayload.delivery_fee;
           }
+          if (/rejection_reasons/i.test(errMsg)) {
+            delete retryPayload.rejection_reasons;
+          }
           let retry = await sb
             .from("store_settings")
             .upsert([retryPayload], { onConflict: "id" })
             .select()
             .single();
-          if (retry.error && /(online_discount|payment_methods|min_order_amount|delivery_fee)/i.test(String(retry.error.message || ""))) {
+          if (retry.error && /(online_discount|payment_methods|min_order_amount|delivery_fee|rejection_reasons)/i.test(String(retry.error.message || ""))) {
             delete retryPayload.online_discount_enabled;
             delete retryPayload.online_discount_percent;
             delete retryPayload.min_order_amount;
             delete retryPayload.delivery_fee;
             delete retryPayload.payment_methods;
+            delete retryPayload.rejection_reasons;
             retry = await sb.from("store_settings").upsert([retryPayload], { onConflict: "id" }).select().single();
           }
           if (!retry.error && retry.data) {
@@ -529,9 +564,10 @@ const StoreStatus = {
                 online_discount_percent: normalized.online_discount_percent,
                 min_order_amount: normalized.min_order_amount,
                 delivery_fee: normalized.delivery_fee,
-                payment_methods: normalized.payment_methods
+                payment_methods: normalized.payment_methods,
+                rejection_reasons: normalized.rejection_reasons
               }),
-              synced: false,
+              synced: !/rejection_reasons/i.test(errMsg) ? false : true,
               error
             };
           }
@@ -612,4 +648,12 @@ const StoreStatus = {
   }
 };
 
-window.StoreStatus = StoreStatus;
+window.StoreStatus = {
+  ...StoreStatus,
+  getDefaultRejectionReasons() {
+    return [...DEFAULT_REJECTION_REASONS];
+  },
+  getRejectionReasons(settings) {
+    return normalizeRejectionReasons(settings && settings.rejection_reasons);
+  }
+};

@@ -1094,15 +1094,53 @@ const OrderAPI = {
     return { success: true };
   },
 
+  getCancelReason(order) {
+    if (!order) return "";
+    if (typeof order.cancel_reason === "string" && order.cancel_reason.trim()) {
+      return order.cancel_reason.trim();
+    }
+    const notes = String(order.order_notes || "");
+    const m = notes.match(/\[İptal Nedeni:\s*([^\]]+)\]/i);
+    return m ? m[1].trim() : "";
+  },
+
   // Sipariş Durumunu Güncelle (new -> preparing -> on_way -> delivered -> cancelled)
-  async updateStatus(orderId, newStatus) {
+  async updateStatus(orderId, newStatus, extra = {}) {
+    const cancelReason = (newStatus === "cancelled" && extra && typeof extra.cancelReason === "string")
+      ? extra.cancelReason.trim().slice(0, 200)
+      : "";
+
     const sb = getOrderSupabaseClient();
     if (sb) {
       try {
-        await sb
+        const updatePayload = { status: newStatus, updated_at: new Date() };
+        if (cancelReason) {
+          updatePayload.cancel_reason = cancelReason;
+        }
+        const { error } = await sb
           .from("orders")
-          .update({ status: newStatus, updated_at: new Date() })
+          .update(updatePayload)
           .eq("id", orderId);
+
+        if (error && cancelReason && /cancel_reason/i.test(String(error.message || ""))) {
+          let baseNotes = typeof extra.existingNotes === "string" ? extra.existingNotes : "";
+          if (!baseNotes) {
+            const { data: curRow } = await sb
+              .from("orders")
+              .select("order_notes")
+              .eq("id", orderId)
+              .maybeSingle();
+            baseNotes = (curRow && curRow.order_notes) || "";
+          }
+          const cleaned = String(baseNotes).replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
+          const nextNotes = cleaned
+            ? `${cleaned}\n[İptal Nedeni: ${cancelReason}]`
+            : `[İptal Nedeni: ${cancelReason}]`;
+          await sb
+            .from("orders")
+            .update({ status: newStatus, order_notes: nextNotes, updated_at: new Date() })
+            .eq("id", orderId);
+        }
       } catch (e) {
         console.error("Update status error:", e);
       }
@@ -1114,6 +1152,9 @@ const OrderAPI = {
     if (order) {
       const oldStatus = order.status;
       order.status = newStatus;
+      if (cancelReason) {
+        order.cancel_reason = cancelReason;
+      }
       order.updated_at = new Date().toISOString();
       saveLocalOrders(localOrders);
       reconcileLocalCustomerStatusChange(order, oldStatus, newStatus);

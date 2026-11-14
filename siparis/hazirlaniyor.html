@@ -3269,8 +3269,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/menu-api.js?v=20261114b"></script>
-  <script src="js/store-status.js?v=20261114b"></script>
-  <script src="js/order-api.js?v=20261114e"></script>
+  <script src="js/store-status.js?v=20261114c"></script>
+  <script src="js/order-api.js?v=20261114f"></script>
   <script>
     let menuData = [];
     const cardSelectedSizes = {};
@@ -4141,6 +4141,9 @@
 
       const cfg = statusConfigs[status] || statusConfigs.new;
       const progressPercent = cfg.stepIndex <= 1 ? 0 : (cfg.stepIndex === 2 ? 33.33 : (cfg.stepIndex === 3 ? 66.66 : 100));
+      const cancelReason = (status === "cancelled" && window.OrderAPI && typeof OrderAPI.getCancelReason === "function")
+        ? OrderAPI.getCancelReason(order)
+        : (status === "cancelled" && typeof order.cancel_reason === "string" ? order.cancel_reason.trim() : "");
 
       const items = order.items || [];
       const paymentLabel = window.StoreStatus
@@ -4156,6 +4159,13 @@
           <h3 class="tracking-status-title">${cfg.title}</h3>
           <p class="tracking-status-desc">${cfg.desc}</p>
         </div>
+
+        ${status === 'cancelled' && cancelReason ? `
+          <div style="background: rgba(231, 76, 60, 0.08); border: 1px solid rgba(231, 76, 60, 0.28); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; text-align: left;">
+            <div style="font-size: 0.76rem; font-weight: 800; color: #c0392b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;">İptal Nedeni</div>
+            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink-900); line-height: 1.4;">🚫 ${escapeHtml(cancelReason)}</div>
+          </div>
+        ` : ''}
 
         ${status !== 'cancelled' ? `
           <div class="tracking-stepper-wrap">
