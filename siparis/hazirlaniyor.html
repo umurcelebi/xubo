@@ -3248,7 +3248,12 @@
           <h2 class="modal-heading" id="trackingModalTitle">🛵 Sipariş Takibi</h2>
           <div style="font-size: 0.78rem; color: var(--ink-500); margin-top: 2px;" id="trackingOrderNum">Sipariş Yükleniyor...</div>
         </div>
-        <button type="button" class="btn-close-drawer" onclick="closeTrackingModal()">✕</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" id="btnRefreshTracking" onclick="refreshTrackingNow()" title="Sipariş durumunu anlık sorgula" style="border: 1px solid var(--sand-300); background: var(--sand-50); color: var(--ink-900); border-radius: 999px; padding: 6px 12px; font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit;">
+            🔄 Yenile
+          </button>
+          <button type="button" class="btn-close-drawer" onclick="closeTrackingModal()">✕</button>
+        </div>
       </div>
 
       <div class="modal-content-inner" id="trackingModalBody">
@@ -3371,6 +3376,7 @@
     let currentPaymentMethod = "door_card"; // 'door_card' veya 'door_cash'
     let activeTrackingSubscription = null;
     let activeTrackingPollTimer = null;
+    let activeTrackingOrderId = null;
     let toastTimeout = null;
 
     // Toast Göster
@@ -4043,27 +4049,49 @@
         return;
       }
 
+      activeTrackingOrderId = targetId;
       if (modal) modal.classList.add("open");
       document.body.style.overflow = "hidden";
       if (body) body.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--ink-500);">Sipariş durumu sorgulanıyor...</div>`;
 
       await loadAndRenderTracking(targetId);
 
-      // Gerçek zamanlı dinleyici ve yedek periyodik kontrol (Anon kullanıcılar RLS nedeniyle realtime kaçırsa da 4 sn'de güncellenir)
+      // Gerçek zamanlı dinleyici ve 2 sn'de bir anlık takip sorgusu
       if (activeTrackingSubscription) activeTrackingSubscription();
       activeTrackingSubscription = OrderAPI.subscribe((payload) => {
         loadAndRenderTracking(targetId);
       });
       if (activeTrackingPollTimer) clearInterval(activeTrackingPollTimer);
       activeTrackingPollTimer = setInterval(() => {
-        loadAndRenderTracking(targetId);
-      }, 4000);
+        if (!document.hidden && activeTrackingOrderId) {
+          loadAndRenderTracking(activeTrackingOrderId);
+        }
+      }, 2000);
+    };
+
+    window.refreshTrackingNow = async function() {
+      const targetId = activeTrackingOrderId || (window.OrderAPI && OrderAPI.getActiveOrderId());
+      if (!targetId) return;
+      const btn = document.getElementById("btnRefreshTracking");
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⏳ Sorgulanıyor...";
+      }
+      try {
+        await loadAndRenderTracking(targetId);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "🔄 Yenile";
+        }
+      }
     };
 
     window.closeTrackingModal = function() {
       const modal = document.getElementById("trackingModalBackdrop");
       if (modal) modal.classList.remove("open");
       document.body.style.overflow = "";
+      activeTrackingOrderId = null;
       if (activeTrackingSubscription) {
         activeTrackingSubscription();
         activeTrackingSubscription = null;
@@ -4252,7 +4280,7 @@
             <div style="display: grid; grid-template-columns: ${telHref && waNum ? '1fr 1fr' : '1fr'}; gap: 10px;">
               ${telHref ? `
                 <a href="${telHref}" class="btn-primary" style="background: var(--ink-900); font-size: 0.85rem; padding: 11px; justify-content: center;">
-                  ${isGinger ? '📞 Fırını Ara' : '📞 Restoranı Ara'}
+                  📞 Restoranı Ara
                 </a>
               ` : ''}
               ${waNum ? `
