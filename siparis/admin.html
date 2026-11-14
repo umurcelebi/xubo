@@ -2570,7 +2570,7 @@
   <!-- Menu API, Dükkan Durumu & Sipariş/Rapor API -->
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/menu-api.js?v=20261114b"></script>
-  <script src="js/store-status.js?v=20261114d"></script>
+  <script src="js/store-status.js?v=20261114e"></script>
   <script src="js/order-api.js?v=20261114k"></script>
 
   <script>
@@ -3257,8 +3257,8 @@
     };
 
     function getAdminRejectionReasonsSafe(settings) {
-      if (window.StoreStatus && typeof StoreStatus.getRejectionReasons === "function") {
-        return StoreStatus.getRejectionReasons(settings);
+      if (window.StoreStatus && typeof StoreStatus.getRejectionReasonItems === "function") {
+        return StoreStatus.getRejectionReasonItems(settings);
       }
       return [
         "Elektrik kesintisi",
@@ -3266,7 +3266,7 @@
         "Kurye kaza yaptı",
         "Seçilen ürün satışta değil",
         "Servis alanı dışında"
-      ];
+      ].map(label => ({ label, enabled: true, isDefault: true }));
     }
 
     function renderRejectionReasonsEditor() {
@@ -3277,18 +3277,36 @@
         container.innerHTML = `<div style="font-size:0.82rem; color:var(--ink-500); padding:8px 0;">Henüz kayıtlı reddetme nedeni yok. Yeni ekleyebilir veya varsayılanları yükleyebilirsiniz.</div>`;
         return;
       }
-      container.innerHTML = list.map((reason, idx) => `
-        <div class="payment-method-item">
-          <div style="display:flex; align-items:center; gap:8px; min-width:0;">
-            <span style="font-weight:700; color:var(--ink-900); font-size:0.86rem;">🚫 ${escapeHtml(reason)}</span>
+      container.innerHTML = list.map((item, idx) => `
+        <div class="payment-method-item ${item.enabled ? '' : 'is-disabled'}">
+          <div style="display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap;">
+            <span style="font-weight:700; color:var(--ink-900); font-size:0.86rem;">🚫 ${escapeHtml(item.label)}</span>
+            ${item.isDefault ? '<span class="badge-default">Varsayılan</span>' : ''}
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-            <button type="button" class="btn-action-icon btn-action-delete" title="Bu nedeni kaldır" onclick="removeRejectionReason(${idx})">🗑️</button>
+            <label class="switch" title="${item.enabled ? 'Pasifleştir' : 'Aktifleştir'}">
+              <input type="checkbox" ${item.enabled ? 'checked' : ''} onchange="toggleRejectionReason(${idx}, this.checked)">
+              <span class="slider"></span>
+            </label>
+            <span class="payment-status-label" style="color:${item.enabled ? '#2d7a47' : '#8a857e'};">${item.enabled ? 'Açık' : 'Kapalı'}</span>
+            ${!item.isDefault ? `<button type="button" class="btn-action-icon btn-action-delete" title="Bu nedeni kaldır" onclick="removeRejectionReason(${idx})">🗑️</button>` : ''}
           </div>
         </div>
       `).join("");
     }
     window.renderRejectionReasonsEditor = renderRejectionReasonsEditor;
+
+    window.toggleRejectionReason = async function(idx, enabled) {
+      if (!window.StoreStatus) return;
+      const current = adminStoreSettings || await StoreStatus.getSettings();
+      const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+      if (!list[idx]) return;
+      list[idx].enabled = Boolean(enabled);
+      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
+      adminStoreSettings = res.settings;
+      renderRejectionReasonsEditor();
+      showToast(`"${list[idx].label}" ${enabled ? "aktif edildi" : "pasif edildi"}.`);
+    };
 
     window.addCustomRejectionReason = async function() {
       if (!window.StoreStatus) return;
@@ -3300,12 +3318,12 @@
         return;
       }
       const current = adminStoreSettings || await StoreStatus.getSettings();
-      const list = [...getAdminRejectionReasonsSafe(current)];
-      if (list.some(r => r.toLocaleLowerCase("tr-TR") === text.toLocaleLowerCase("tr-TR"))) {
+      const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+      if (list.some(r => r.label.toLocaleLowerCase("tr-TR") === text.toLocaleLowerCase("tr-TR"))) {
         showToast("Bu reddetme nedeni zaten listede var.");
         return;
       }
-      list.push(text);
+      list.push({ label: text, enabled: true, isDefault: false });
       const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
       adminStoreSettings = res.settings;
       if (inputEl) inputEl.value = "";
@@ -3316,23 +3334,29 @@
     window.removeRejectionReason = async function(idx) {
       if (!window.StoreStatus) return;
       const current = adminStoreSettings || await StoreStatus.getSettings();
-      const list = [...getAdminRejectionReasonsSafe(current)];
+      const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
       const removed = list[idx];
-      if (removed === undefined) return;
+      if (!removed || removed.isDefault) return;
       list.splice(idx, 1);
       const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
       adminStoreSettings = res.settings;
       renderRejectionReasonsEditor();
-      showToast(`"${removed}" kaldırıldı.`);
+      showToast(`"${removed.label}" kaldırıldı.`);
     };
 
     window.resetDefaultRejectionReasons = async function() {
       if (!window.StoreStatus) return;
       const current = adminStoreSettings || await StoreStatus.getSettings();
-      const defaults = typeof StoreStatus.getDefaultRejectionReasons === "function"
+      const defaults = (typeof StoreStatus.getDefaultRejectionReasons === "function"
         ? StoreStatus.getDefaultRejectionReasons()
-        : ["Elektrik kesintisi", "Restoran yoğunluğu", "Kurye kaza yaptı", "Seçilen ürün satışta değil", "Servis alanı dışında"];
-      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: defaults });
+        : ["Elektrik kesintisi", "Restoran yoğunluğu", "Kurye kaza yaptı", "Seçilen ürün satışta değil", "Servis alanı dışında"]);
+      const existing = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+      const customOnes = existing.filter(r => !r.isDefault);
+      const merged = [
+        ...defaults.map(label => ({ label, enabled: true, isDefault: true })),
+        ...customOnes
+      ];
+      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: merged });
       adminStoreSettings = res.settings;
       renderRejectionReasonsEditor();
       showToast("Varsayılan reddetme seçenekleri geri yüklendi.");

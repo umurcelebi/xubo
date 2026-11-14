@@ -82,21 +82,44 @@ const DEFAULT_REJECTION_REASONS = [
   "Servis alanı dışında"
 ];
 
-function normalizeRejectionReasons(raw) {
+const DEFAULT_REJECTION_REASON_SET = new Set(
+  DEFAULT_REJECTION_REASONS.map(r => r.toLocaleLowerCase("tr-TR"))
+);
+
+function createDefaultRejectionReasonItems() {
+  return DEFAULT_REJECTION_REASONS.map(label => ({
+    label,
+    enabled: true,
+    isDefault: true
+  }));
+}
+
+function normalizeRejectionReasonItems(raw) {
   if (!Array.isArray(raw)) {
-    return [...DEFAULT_REJECTION_REASONS];
+    return createDefaultRejectionReasonItems();
   }
   const seen = new Set();
   const list = [];
   raw.forEach(item => {
-    const text = String(item ?? "").trim();
+    const isObj = item && typeof item === "object";
+    const text = String(isObj ? (item.label ?? item.text ?? "") : (item ?? "")).trim().slice(0, 120);
     if (!text) return;
     const key = text.toLocaleLowerCase("tr-TR");
     if (seen.has(key)) return;
     seen.add(key);
-    list.push(text.slice(0, 120));
+    list.push({
+      label: text,
+      enabled: isObj ? item.enabled !== false : true,
+      isDefault: Boolean((isObj && item.isDefault) || DEFAULT_REJECTION_REASON_SET.has(key))
+    });
   });
   return list;
+}
+
+function normalizeRejectionReasons(raw) {
+  return normalizeRejectionReasonItems(raw)
+    .filter(item => item.enabled)
+    .map(item => item.label);
 }
 
 function createDefaultStoreSettings() {
@@ -112,7 +135,7 @@ function createDefaultStoreSettings() {
     delivery_fee: 0,
     accepts_online_payment: false,
     payment_methods: createDefaultPaymentMethods(),
-    rejection_reasons: [...DEFAULT_REJECTION_REASONS],
+    rejection_reasons: createDefaultRejectionReasonItems(),
     updated_at: new Date().toISOString()
   };
 }
@@ -158,7 +181,7 @@ function normalizeStoreSettings(raw) {
     delivery_fee: cleanDeliveryFee,
     accepts_online_payment: Boolean(src.accepts_online_payment),
     payment_methods: normalizePaymentMethods(src.payment_methods),
-    rejection_reasons: normalizeRejectionReasons(rawReasons),
+    rejection_reasons: normalizeRejectionReasonItems(rawReasons),
     updated_at: src.updated_at || new Date().toISOString()
   };
 }
@@ -705,6 +728,9 @@ window.StoreStatus = {
   ...StoreStatus,
   getDefaultRejectionReasons() {
     return [...DEFAULT_REJECTION_REASONS];
+  },
+  getRejectionReasonItems(settings) {
+    return normalizeRejectionReasonItems(settings && settings.rejection_reasons);
   },
   getRejectionReasons(settings) {
     return normalizeRejectionReasons(settings && settings.rejection_reasons);
