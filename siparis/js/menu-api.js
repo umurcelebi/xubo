@@ -902,83 +902,111 @@ const MenuAPI = {
   // Tekil ürün fiyatını güncelle
   async updatePrice(itemId, newPricesOrFixed) {
     const sb = getSupabaseClient();
+    let synced = false;
+    let syncError = null;
     if (sb) {
       try {
         if (typeof newPricesOrFixed === "number") {
-          await sb.from("menu_items").update({ fixed_price: newPricesOrFixed, updated_at: new Date() }).eq("id", itemId);
-        } else if (typeof newPricesOrFixed === "object") {
+          const cleanPrice = Math.max(0, Number(newPricesOrFixed) || 0);
+          const { error } = await sb.from("menu_items").update({ fixed_price: cleanPrice, updated_at: new Date() }).eq("id", itemId);
+          if (error) throw error;
+        } else if (typeof newPricesOrFixed === "object" && newPricesOrFixed) {
           for (const [sizeKey, price] of Object.entries(newPricesOrFixed)) {
-            await sb.from("item_variants").update({ price: price }).match({ item_id: itemId, size_key: sizeKey });
+            const cleanPrice = Math.max(0, Number(price) || 0);
+            const { error } = await sb.from("item_variants").update({ price: cleanPrice }).match({ item_id: itemId, size_key: sizeKey });
+            if (error) throw error;
           }
         }
+        synced = true;
       } catch (e) {
+        syncError = (e && e.message) ? e.message : String(e || "Fiyat güncellenemedi");
         console.error("Supabase update price error:", e);
       }
     }
 
-    // LocalStorage senkronizasyonu
+    // LocalStorage senkronizasyonu (bulut modu aktifken hata alındıysa üzerine yazma)
     const menu = getLocalMenu();
     const item = menu.find(i => i.id === itemId);
-    if (item) {
+    if (item && (synced || !sb)) {
       if (typeof newPricesOrFixed === "number") {
-        item.fixedPrice = newPricesOrFixed;
-      } else {
-        item.prices = { ...item.prices, ...newPricesOrFixed };
+        item.fixedPrice = Math.max(0, Number(newPricesOrFixed) || 0);
+      } else if (newPricesOrFixed && typeof newPricesOrFixed === "object") {
+        const sanitized = {};
+        for (const [k, v] of Object.entries(newPricesOrFixed)) {
+          sanitized[k] = Math.max(0, Number(v) || 0);
+        }
+        item.prices = { ...item.prices, ...sanitized };
       }
       saveLocalMenu(menu);
     }
-    return item;
+    return { ...(item || { id: itemId }), _synced: synced, _error: syncError };
   },
 
   // Ürünün stok / yayında durumunu değiştir (Tükendi toggle)
   async toggleAvailability(itemId, isAvailable) {
     const sb = getSupabaseClient();
+    let synced = false;
+    let syncError = null;
     if (sb) {
       try {
-        await sb.from("menu_items").update({ is_available: isAvailable, updated_at: new Date() }).eq("id", itemId);
+        const { error } = await sb.from("menu_items").update({ is_available: Boolean(isAvailable), updated_at: new Date() }).eq("id", itemId);
+        if (error) throw error;
+        synced = true;
       } catch (e) {
+        syncError = (e && e.message) ? e.message : String(e || "Stok durumu güncellenemedi");
         console.error("Supabase toggle availability error:", e);
       }
     }
 
     const menu = getLocalMenu();
     const item = menu.find(i => i.id === itemId);
-    if (item) {
-      item.isAvailable = isAvailable;
+    if (item && (synced || !sb)) {
+      item.isAvailable = Boolean(isAvailable);
       saveLocalMenu(menu);
     }
-    return item;
+    return { ...(item || { id: itemId, isAvailable: Boolean(isAvailable) }), _synced: synced, _error: syncError };
   },
 
   // Yeni ürün ekle veya mevcut ürünü güncelle
   async saveItem(itemData) {
     const rawImg = String((itemData && itemData.image) || "").trim();
     const safeImage = (!rawImg || /^https:\/\//i.test(rawImg) || /^images\//i.test(rawImg)) ? rawImg : "";
+    const resolvedIngredients = String((itemData && (itemData.ingredients ?? itemData.desc)) || "").trim();
+    const resolvedAvailable = itemData && itemData.isAvailable !== undefined
+      ? itemData.isAvailable !== false
+      : (itemData ? itemData.available !== false : true);
     const normalizedItem = {
       ...itemData,
+      name: String((itemData && itemData.name) || "").trim(),
+      ingredients: resolvedIngredients,
+      isAvailable: resolvedAvailable,
       image: safeImage,
-      modifiers: normalizeModifiers(itemData.modifiers)
+      modifiers: normalizeModifiers(itemData && itemData.modifiers)
     };
-
-    const menu = getLocalMenu();
-    const existingIndex = menu.findIndex(i => i.id === normalizedItem.id);
-
-    if (existingIndex >= 0) {
-      menu[existingIndex] = { ...menu[existingIndex], ...normalizedItem };
+    if (!normalizedItem.name) {
+      throw new Error("Ürün adı boş olamaz.");
+    }
+    if (normalizedItem.prices && typeof normalizedItem.prices === "object") {
+      normalizedItem.prices = {
+        small: Math.max(0, Number(normalizedItem.prices.small) || 0),
+        medium: Math.max(0, Number(normalizedItem.prices.medium) || 0),
+        xlarge: Math.max(0, Number(normalizedItem.prices.xlarge) || 0)
+      };
+      normalizedItem.fixedPrice = null;
     } else {
-      normalizedItem.id = normalizedItem.id || "item-" + Date.now();
-      menu.push(normalizedItem);
+      normalizedItem.prices = null;
+      normalizedItem.fixedPrice = Math.max(0, Number(normalizedItem.fixedPrice) || 0);
     }
 
-    saveLocalMenu(menu);
-
-    let synced = false;
     const sb = getSupabaseClient();
+    let synced = false;
+    let syncError = null;
     if (sb) {
       try {
         const isPizza = !!normalizedItem.prices;
         const activeSlug = getMenuRestaurantSlug();
-        const { data: rest } = await sb.from("restaurants").select("id").eq("slug", activeSlug).maybeSingle();
+        const { data: rest, error: rErr } = await sb.from("restaurants").select("id").eq("slug", activeSlug).maybeSingle();
+        if (rErr) throw rErr;
         let catQuery = sb.from("categories").select("id").eq("slug", normalizedItem.category);
         if (rest && rest.id) catQuery = catQuery.eq("restaurant_id", rest.id);
         const { data: cat } = await catQuery.maybeSingle();
@@ -1038,7 +1066,8 @@ const MenuAPI = {
                 ? { small: "Small (24-26 cm)", medium: "Medium (30-32 cm)", xlarge: "Mega / XL (40-42 cm)" }
                 : { small: "Küçük / Seçenek 1", medium: "Orta / Seçenek 2", xlarge: "Büyük / Seçenek 3" });
 
-          await sb.from("item_variants").delete().eq("item_id", targetId);
+          const { error: delVarErr } = await sb.from("item_variants").delete().eq("item_id", targetId);
+          if (delVarErr) throw delVarErr;
           if (isPizza && normalizedItem.prices) {
             const variants = [
               { item_id: targetId, size_key: "small", size_label: existingLabels.small || defaultLabels.small, price: Number(normalizedItem.prices.small) || 0 },
@@ -1052,19 +1081,79 @@ const MenuAPI = {
         }
         synced = true;
       } catch (e) {
-        console.warn("Supabase saveItem fallback to local:", e);
+        syncError = (e && e.message) ? e.message : String(e || "Ürün kaydedilemedi");
+        console.warn("Supabase saveItem error:", e);
       }
     }
 
-    return { ...normalizedItem, _synced: synced };
+    if (synced || !sb) {
+      const menu = getLocalMenu();
+      const existingIndex = menu.findIndex(i => i.id === normalizedItem.id);
+      if (existingIndex >= 0) {
+        menu[existingIndex] = { ...menu[existingIndex], ...normalizedItem };
+      } else {
+        normalizedItem.id = normalizedItem.id || "item-" + Date.now();
+        menu.push(normalizedItem);
+      }
+      saveLocalMenu(menu);
+    }
+
+    return { ...normalizedItem, _synced: synced, _error: syncError };
   },
 
   // İlave & Ek Ürün listesini tüm pizzalara kopyala (mevcut çıkarmaları korur)
   async copyAdditionsToAllPizzas(rawAdditions) {
     const normalizedAdditions = normalizeModifiers({ additions: rawAdditions }).additions;
     const menu = getLocalMenu();
-    let localUpdated = 0;
 
+    let synced = false;
+    let updatedCount = 0;
+    let errorMsg = null;
+    const sb = getSupabaseClient();
+    if (sb) {
+      try {
+        const activeSlug = getMenuRestaurantSlug();
+        const { data: rpcCount, error: rpcErr } = await sb.rpc("copy_additions_to_all_pizzas", {
+          p_additions: normalizedAdditions,
+          p_restaurant_slug: activeSlug
+        });
+        if (!rpcErr) {
+          synced = true;
+          updatedCount = typeof rpcCount === "number" ? rpcCount : 0;
+        } else {
+          // RPC henüz kurulmadıysa satır bazlı güncelleme dene
+          let pizzaQuery = sb.from("menu_items").select("id, modifiers").eq("is_pizza", true);
+          const { data: rest, error: restErr } = await sb.from("restaurants").select("id").eq("slug", activeSlug).maybeSingle();
+          if (restErr) throw restErr;
+          if (rest && rest.id) pizzaQuery = pizzaQuery.eq("restaurant_id", rest.id);
+          const { data: pizzas, error: fetchErr } = await pizzaQuery;
+          if (fetchErr) throw fetchErr;
+
+          if (Array.isArray(pizzas)) {
+            const updateResults = await Promise.all(
+              pizzas.map(p => {
+                const mod = normalizeModifiers(p.modifiers);
+                mod.additions = normalizedAdditions;
+                return sb.from("menu_items").update({ modifiers: mod, updated_at: new Date().toISOString() }).eq("id", p.id);
+              })
+            );
+            const firstErr = updateResults.find(r => r && r.error);
+            if (firstErr) throw firstErr.error;
+            synced = true;
+            updatedCount = pizzas.length;
+          }
+        }
+      } catch (e) {
+        errorMsg = e && e.message ? e.message : String(e || "Supabase hatası");
+        console.warn("Supabase copyAdditionsToAllPizzas failed:", e);
+      }
+
+      if (!synced) {
+        return { updatedCount: 0, synced: false, additions: normalizedAdditions, error: errorMsg || "Veritabanına kaydedilemedi." };
+      }
+    }
+
+    let localUpdated = 0;
     const nextMenu = menu.map(item => {
       if (!item.prices) return item;
       localUpdated += 1;
@@ -1077,63 +1166,32 @@ const MenuAPI = {
       };
     });
     saveLocalMenu(nextMenu);
+    if (!sb) updatedCount = localUpdated;
 
-    let synced = false;
-    let updatedCount = localUpdated;
-    const sb = getSupabaseClient();
-    if (sb) {
-      try {
-        const activeSlug = getMenuRestaurantSlug();
-        const { data: rpcCount, error: rpcErr } = await sb.rpc("copy_additions_to_all_pizzas", {
-          p_additions: normalizedAdditions,
-          p_restaurant_slug: activeSlug
-        });
-        if (!rpcErr) {
-          synced = true;
-          if (typeof rpcCount === "number") updatedCount = rpcCount;
-        } else {
-          // RPC henüz kurulmadıysa satır bazlı güncelleme dene
-          let pizzaQuery = sb.from("menu_items").select("id, modifiers").eq("is_pizza", true);
-          const activeSlug = getMenuRestaurantSlug();
-          const { data: rest } = await sb.from("restaurants").select("id").eq("slug", activeSlug).maybeSingle();
-          if (rest && rest.id) pizzaQuery = pizzaQuery.eq("restaurant_id", rest.id);
-          const { data: pizzas, error: fetchErr } = await pizzaQuery;
-
-          if (!fetchErr && Array.isArray(pizzas)) {
-            await Promise.all(
-              pizzas.map(p => {
-                const mod = normalizeModifiers(p.modifiers);
-                mod.additions = normalizedAdditions;
-                return sb.from("menu_items").update({ modifiers: mod, updated_at: new Date().toISOString() }).eq("id", p.id);
-              })
-            );
-            synced = true;
-            updatedCount = pizzas.length;
-          }
-        }
-      } catch (e) {
-        console.warn("Supabase copyAdditionsToAllPizzas failed, saved locally:", e);
-      }
-    }
-
-    return { updatedCount, synced, additions: normalizedAdditions };
+    return { updatedCount, synced, additions: normalizedAdditions, error: null };
   },
 
   // Ürün sil
   async deleteItem(itemId) {
     const sb = getSupabaseClient();
+    let synced = false;
+    let errorMsg = null;
     if (sb) {
       try {
-        await sb.from("menu_items").delete().eq("id", itemId);
+        const { error } = await sb.from("menu_items").delete().eq("id", itemId);
+        if (error) throw error;
+        synced = true;
       } catch (e) {
+        errorMsg = e && e.message ? e.message : String(e || "Silme hatası");
         console.error("Supabase delete error:", e);
+        return { success: false, synced: false, error: errorMsg };
       }
     }
 
     let menu = getLocalMenu();
     menu = menu.filter(i => i.id !== itemId);
     saveLocalMenu(menu);
-    return true;
+    return { success: true, synced, error: null };
   },
 
   // Yeni kategori ekle (Aktif restoran için izole)

@@ -22,16 +22,23 @@
       --white: #ffffff;
       --bg: #f8f6f2;
       --surface: #ffffff;
+      --sand-50: #faf7f2;
       --sand-100: #eee7dc;
       --sand-200: #e0d4c3;
+      --sand-300: #cebea9;
+      --border: #e0d4c3;
       --ginger-50: #fff5eb;
       --ginger-100: #fde8d3;
+      --ginger-200: #fad2ac;
       --ginger-500: #d86a1a;
       --ginger-600: #b8500c;
       --ink-900: #1c1512;
       --ink-700: #423630;
+      --ink-600: #5a4b43;
       --ink-500: #716259;
       --ink-400: #9c8e85;
+      --text: #1c1512;
+      --muted: #716259;
       --success: #16883b;
       --success-bg: #eaf6ed;
       --danger: #cf222e;
@@ -1219,6 +1226,40 @@
       background: #faf9f6;
     }
 
+    .badge-default {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 999px;
+      background: var(--sand-100);
+      color: var(--ink-600);
+      border: 1px solid var(--sand-200);
+      vertical-align: middle;
+    }
+
+    .payment-status-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-width: 42px;
+      text-align: center;
+    }
+
+    .staff-readonly-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
     .payment-add-row {
       display: flex;
       flex-wrap: wrap;
@@ -1313,7 +1354,8 @@
       .store-message-input,
       .search-input-admin,
       #reportCustomerSearch,
-      #newPaymentLabel {
+      #newPaymentLabel,
+      #newRejectionReasonInput {
         width: 100% !important;
         min-width: 0 !important;
         max-width: none !important;
@@ -1517,6 +1559,10 @@
         </div>
       </div>
 
+      <div id="staffReadOnlyBanner" class="staff-readonly-banner" role="status">
+        🔒 <span>Personel hesabıyla oturum açtınız: Canlı Siparişler ve Mutfak Ekranını yönetebilirsiniz. Menü, fiyat ve mağaza ayarları yalnızca <strong>Restoran Yöneticisi</strong> tarafından değiştirilebilir.</span>
+      </div>
+
       <!-- Dükkan Sipariş Aç/Kapat & Haftalık Çalışma Saatleri -->
       <section class="store-control-card" aria-labelledby="storeControlHeading">
         <div class="store-control-header">
@@ -1631,7 +1677,7 @@
           </div>
         </div>
 
-        <div class="store-discount-card" style="margin-bottom: 16px;">
+        <div class="payment-methods-box" style="margin-top: 12px; margin-bottom: 16px;">
           <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
             <div>
               <div style="font-size: 0.9rem; font-weight: 800; color: var(--ink-900);">🚫 Sipariş Reddetme Nedenleri</div>
@@ -1740,7 +1786,7 @@
             <button type="button" class="reports-subtab" id="subtabBtnCustomers" onclick="switchReportSubtab('customers')">
               👥 Müşteriler
             </button>
-            <button type="button" class="reports-subtab" id="subtabBtnProducts" onclick="switchReportSubtab('products')">
+            <button type="button" class="reports-subtab" id="subtabBtnProducts" data-report-tab="products" onclick="switchReportSubtab('products')">
               🍕 Ürün Raporu
             </button>
             <button type="button" class="btn-reset-sales" id="btnResetSalesAndCustomers" onclick="openResetSalesConfirmModal()">
@@ -1899,7 +1945,7 @@
               <h2 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text);">🏪 Mağaza Profili, Kanallar &amp; Vitrin</h2>
               <p style="margin: 4px 0 0; font-size: 0.85rem; color: var(--muted);">Bu alandan yaptığınız değişiklikler yalnızca kendi mağaza sayfanıza yansır. Linki boş bırakılan sipariş kanalları vitrinde otomatik gizlenir.</p>
             </div>
-            <button type="button" class="btn btn-primary" id="btnSaveStoreProfile" onclick="saveStoreProfile()">💾 Profili Kaydet</button>
+            <button type="button" class="btn-header btn-header-primary" id="btnSaveStoreProfile" onclick="saveStoreProfile()">💾 Profili Kaydet</button>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
@@ -2128,15 +2174,15 @@
         <div id="pizzaPriceFields" class="pizza-price-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
           <div class="form-group">
             <label class="form-label">Small (24-26cm) ₺</label>
-            <input type="number" id="editPriceSmall" class="form-input" value="390">
+            <input type="number" id="editPriceSmall" class="form-input" value="390" min="0" step="any">
           </div>
           <div class="form-group">
             <label class="form-label">Medium (30-32cm) ₺</label>
-            <input type="number" id="editPriceMedium" class="form-input" value="520">
+            <input type="number" id="editPriceMedium" class="form-input" value="520" min="0" step="any">
           </div>
           <div class="form-group">
             <label class="form-label">XL (40-42cm) ₺</label>
-            <input type="number" id="editPriceXlarge" class="form-input" value="850">
+            <input type="number" id="editPriceXlarge" class="form-input" value="850" min="0" step="any">
           </div>
         </div>
 
@@ -2144,7 +2190,7 @@
         <div id="extraPriceFields" style="display: none;">
           <div class="form-group">
             <label class="form-label">Porsiyon Fiyatı (₺)</label>
-            <input type="number" id="editFixedPrice" class="form-input" value="250">
+            <input type="number" id="editFixedPrice" class="form-input" value="250" min="0" step="any">
           </div>
         </div>
 
@@ -2569,7 +2615,7 @@
 
   <!-- Menu API, Dükkan Durumu & Sipariş/Rapor API -->
   <script src="js/config.js?v=20261114c"></script>
-  <script src="js/menu-api.js?v=20261114b"></script>
+  <script src="js/menu-api.js?v=20261114c"></script>
   <script src="js/store-status.js?v=20261114g"></script>
   <script src="js/order-api.js?v=20261114k"></script>
 
@@ -2577,6 +2623,20 @@
     // ========================================================================
     // Kullanıcılar ve Yetkilendirme (Supabase Auth + app_metadata RBAC)
     // ========================================================================
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    const escapeModHtml = escapeHtml;
+    const escapeReportHtml = escapeHtml;
+
+    let activeSessionUser = null;
+
     function getActiveAdminSlug() {
       return (typeof window.getActiveRestaurantSlug === "function"
         ? window.getActiveRestaurantSlug()
@@ -2612,9 +2672,14 @@
     }
 
     function getCurrentUser() {
+      if (activeSessionUser) return activeSessionUser;
       const email = sessionStorage.getItem(getSessionKey("user_email")) || "";
       const authRole = sessionStorage.getItem(getSessionKey("user_auth_role")) || "staff";
       return mapAuthUserToUiUser({ email, app_metadata: { role: authRole } });
+    }
+
+    function isStaffUser() {
+      return getCurrentUser().role === "staff";
     }
 
     function renderUsersManagement() {
@@ -2626,8 +2691,8 @@
           <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <strong style="font-size:0.95rem; color:var(--ink-900);">${user.email || "Yetkili Hesap"}</strong>
-                <span class="admin-pill-tag" style="font-size:0.72rem;">${user.roleLabel}</span>
+                <strong style="font-size:0.95rem; color:var(--ink-900);">${escapeHtml(user.email || "Yetkili Hesap")}</strong>
+                <span class="admin-pill-tag" style="font-size:0.72rem;">${escapeHtml(user.roleLabel)}</span>
               </div>
               <div style="font-size:0.8rem; color:var(--ink-500); margin-top:6px;">
                 Kullanıcı hesapları ve roller Supabase Authentication üzerinden güvenli olarak yönetilmektedir.
@@ -2726,15 +2791,15 @@
         return;
       }
 
-      const oldPass = (document.getElementById("cpOldPassword")?.value || "").trim();
-      const newPass = (document.getElementById("cpNewPassword")?.value || "").trim();
-      const confPass = (document.getElementById("cpConfirmPassword")?.value || "").trim();
+      const oldPass = document.getElementById("cpOldPassword")?.value || "";
+      const newPass = document.getElementById("cpNewPassword")?.value || "";
+      const confPass = document.getElementById("cpConfirmPassword")?.value || "";
 
       if (!oldPass) {
         showChangePasswordFeedback("Lütfen mevcut (eski) şifrenizi girin.", true);
         return;
       }
-      if (newPass.length < 6) {
+      if (!newPass.trim() || newPass.length < 6) {
         showChangePasswordFeedback("Yeni şifreniz en az 6 karakter olmalıdır.", true);
         return;
       }
@@ -2803,13 +2868,37 @@
     // Admin Paneli Mantığı
     // ========================================================================
     let currentMenuItems = [];
+    let toastTimer = null;
 
     // Toast bildirimi göster
     function showToast(msg) {
       const toast = document.getElementById("toast");
+      if (!toast) return;
       toast.textContent = msg;
       toast.style.display = "block";
-      setTimeout(() => { toast.style.display = "none"; }, 2500);
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.style.display = "none"; }, 2500);
+    }
+
+    function applyStoreControlsReadOnlyState(isReadOnly) {
+      const card = document.querySelector(".store-control-card");
+      if (!card) return;
+      card.querySelectorAll("button, input, select, textarea").forEach(el => {
+        el.disabled = Boolean(isReadOnly);
+      });
+    }
+
+    function applyMenuSectionPermissions(user) {
+      const isStaff = !user || user.role === "staff";
+      const banner = document.getElementById("staffReadOnlyBanner");
+      if (banner) banner.style.display = isStaff ? "flex" : "none";
+
+      ["btnOpenBulkImport", "btnAddCategory", "btnOpenNewItem"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = isStaff ? "none" : "inline-flex";
+      });
+
+      applyStoreControlsReadOnlyState(isStaff);
     }
 
     // Oturum ve Yetki Kontrolü (Supabase Auth)
@@ -2835,6 +2924,7 @@
 
       if (validAuthUser) {
         const uiUser = mapAuthUserToUiUser(validAuthUser);
+        activeSessionUser = uiUser;
         sessionStorage.setItem(getSessionKey("admin_logged_in"), "true");
         sessionStorage.setItem(getSessionKey("user_email"), uiUser.email);
         sessionStorage.setItem(getSessionKey("user_role"), uiUser.role);
@@ -2883,12 +2973,14 @@
         if (dbBadge) dbBadge.style.display = user.isSuperAdmin ? "inline-flex" : "none";
         if (tabReports) tabReports.style.display = canViewReports ? "inline-flex" : "none";
         if (tabProfile) tabProfile.style.display = canViewReports ? "inline-flex" : "none";
+        applyMenuSectionPermissions(user);
         if (!canViewReports && typeof window.switchAdminMainTab === "function") {
           window.switchAdminMainTab("menu");
         }
 
         loadDashboard();
       } else {
+        activeSessionUser = null;
         document.getElementById("loginView").style.display = "grid";
         document.getElementById("adminApp").style.display = "none";
       }
@@ -2897,6 +2989,46 @@
     // Dükkan Sipariş & Saat Kontrolü
     let adminStoreSettings = null;
     let storeSubscriptionActive = false;
+    let storeStatusUnsubscribe = null;
+    let storeStatusIntervalId = null;
+    let storeSettingsWriteQueue = Promise.resolve();
+    let weeklyHoursDirty = false;
+    let discountDirty = false;
+    let deliveryDirty = false;
+    let storeMessageDirty = false;
+
+    function enqueueStoreSettingsWrite(taskFn) {
+      const run = storeSettingsWriteQueue.then(taskFn, taskFn);
+      storeSettingsWriteQueue = run.catch(() => {});
+      return run;
+    }
+
+    function requireAdminWriteAccess() {
+      if (isStaffUser()) {
+        showToast("Bu işlem için Restoran Yöneticisi yetkisi gerekir.");
+        return false;
+      }
+      return true;
+    }
+
+    function initStoreControlDirtyListeners() {
+      const bindDirty = (el, evt, setter) => {
+        if (!el || el.dataset.dirtyBound) return;
+        el.dataset.dirtyBound = "1";
+        el.addEventListener(evt, setter);
+      };
+      bindDirty(document.getElementById("adminStoreMessage"), "input", () => { storeMessageDirty = true; });
+      bindDirty(document.getElementById("adminDiscountEnabled"), "change", () => { discountDirty = true; });
+      bindDirty(document.getElementById("adminDiscountPercent"), "input", () => { discountDirty = true; });
+      bindDirty(document.getElementById("adminMinOrderAmount"), "input", () => { deliveryDirty = true; });
+      bindDirty(document.getElementById("adminDeliveryFee"), "input", () => { deliveryDirty = true; });
+      const grid = document.getElementById("weeklyHoursGrid");
+      if (grid && !grid.dataset.dirtyBound) {
+        grid.dataset.dirtyBound = "1";
+        grid.addEventListener("input", () => { weeklyHoursDirty = true; });
+        grid.addEventListener("change", () => { weeklyHoursDirty = true; });
+      }
+    }
 
     function renderAdminStoreStatusOnly() {
       if (!window.StoreStatus) return;
@@ -2962,23 +3094,29 @@
         return `
           <div class="day-schedule-card ${isClosed ? 'is-day-closed' : ''}" data-day="${dayKey}">
             <div class="day-schedule-head">
-              <span>${dayName}</span>
+              <span>${escapeHtml(dayName)}</span>
               <label class="day-toggle-label">
                 <input type="checkbox" class="day-enabled-checkbox" data-day="${dayKey}" ${!isClosed ? 'checked' : ''} onchange="toggleDayEnabled('${dayKey}', this.checked)">
                 <span>${!isClosed ? 'Açık' : 'Kapalı'}</span>
               </label>
             </div>
             <div class="day-time-inputs">
-              <input type="time" class="day-time-input day-open-input" data-day="${dayKey}" value="${cfg.open || '11:30'}" ${isClosed ? 'disabled' : ''}>
+              <input type="time" class="day-time-input day-open-input" data-day="${dayKey}" value="${escapeHtml(cfg.open || '11:30')}" ${isClosed ? 'disabled' : ''}>
               <span style="color:var(--ink-400); font-weight:700;">–</span>
-              <input type="time" class="day-time-input day-close-input" data-day="${dayKey}" value="${cfg.close || '23:00'}" ${isClosed ? 'disabled' : ''}>
+              <input type="time" class="day-time-input day-close-input" data-day="${dayKey}" value="${escapeHtml(cfg.close || '23:00')}" ${isClosed ? 'disabled' : ''}>
             </div>
           </div>
         `;
       }).join("");
+      if (isStaffUser()) applyStoreControlsReadOnlyState(true);
     }
 
     window.toggleDayEnabled = function(dayKey, enabled) {
+      if (!requireAdminWriteAccess()) {
+        renderWeeklyHoursEditor();
+        return;
+      }
+      weeklyHoursDirty = true;
       const card = document.querySelector(`.day-schedule-card[data-day="${dayKey}"]`);
       if (!card) return;
       card.classList.toggle("is-day-closed", !enabled);
@@ -2990,6 +3128,7 @@
     };
 
     window.applyMondayToAllDays = function() {
+      if (!requireAdminWriteAccess()) return;
       const monCard = document.querySelector(`.day-schedule-card[data-day="1"]`);
       if (!monCard || !window.StoreStatus) return;
       const monEnabled = monCard.querySelector(".day-enabled-checkbox")?.checked !== false;
@@ -3008,6 +3147,7 @@
         if (closeInp) closeInp.value = monClose;
         toggleDayEnabled(dayKey, monEnabled);
       });
+      weeklyHoursDirty = true;
       showToast("Pazartesi saatleri tüm günlere uygulandı. Kaydetmeyi unutmayın.");
     };
 
@@ -3046,50 +3186,51 @@
       }
     };
 
-    function syncAdminDiscountInputsFromSettings(settings) {
+    function syncAdminDiscountInputsFromSettings(settings, force = false) {
       if (!settings) return;
       const chk = document.getElementById("adminDiscountEnabled");
       const inp = document.getElementById("adminDiscountPercent");
       const minInp = document.getElementById("adminMinOrderAmount");
       const feeInp = document.getElementById("adminDeliveryFee");
-      if (chk) chk.checked = Boolean(settings.online_discount_enabled);
-      if (inp && document.activeElement !== inp) {
-        inp.value = Number(settings.online_discount_percent) || 0;
+      if (force || (!discountDirty && document.activeElement !== chk && document.activeElement !== inp)) {
+        if (chk) chk.checked = Boolean(settings.online_discount_enabled);
+        if (inp) inp.value = Number(settings.online_discount_percent) || 0;
       }
-      if (minInp && document.activeElement !== minInp) {
-        minInp.value = Math.max(0, Number(settings.min_order_amount) || 0);
-      }
-      if (feeInp && document.activeElement !== feeInp) {
-        feeInp.value = Math.max(0, Number(settings.delivery_fee) || 0);
+      if (force || (!deliveryDirty && document.activeElement !== minInp && document.activeElement !== feeInp)) {
+        if (minInp) minInp.value = Math.max(0, Number(settings.min_order_amount) || 0);
+        if (feeInp) feeInp.value = Math.max(0, Number(settings.delivery_fee) || 0);
       }
       window.renderAdminDiscountUI();
     }
 
     window.saveDeliveryRulesSettings = async function() {
-      if (!window.StoreStatus) return;
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
       const btn = document.getElementById("btnSaveDeliveryRules");
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Kaydediliyor...";
       }
       try {
-        const current = adminStoreSettings || await StoreStatus.getSettings();
-        const minOrder = Math.max(0, Number(document.getElementById("adminMinOrderAmount")?.value) || 0);
-        const deliveryFee = Math.max(0, Number(document.getElementById("adminDeliveryFee")?.value) || 0);
-        const next = {
-          ...current,
-          min_order_amount: minOrder,
-          delivery_fee: deliveryFee
-        };
-        const res = await StoreStatus.saveSettings(next);
-        adminStoreSettings = res.settings;
-        syncAdminDiscountInputsFromSettings(adminStoreSettings);
-        showToast(res.synced
-          ? `Teslimat kuralları kaydedildi! (Min: ${minOrder} ₺, Ücret: ${deliveryFee} ₺)`
-          : "Teslimat kuralları yerel olarak kaydedildi.");
+        await enqueueStoreSettingsWrite(async () => {
+          const current = adminStoreSettings || await StoreStatus.getSettings();
+          const minOrder = Math.max(0, Number(document.getElementById("adminMinOrderAmount")?.value) || 0);
+          const deliveryFee = Math.max(0, Number(document.getElementById("adminDeliveryFee")?.value) || 0);
+          const next = {
+            ...current,
+            min_order_amount: minOrder,
+            delivery_fee: deliveryFee
+          };
+          const res = await StoreStatus.saveSettings(next);
+          adminStoreSettings = res.settings;
+          if (res.synced) deliveryDirty = false;
+          syncAdminDiscountInputsFromSettings(adminStoreSettings, res.synced);
+          showToast(res.synced
+            ? `Teslimat kuralları kaydedildi! (Min: ${minOrder} ₺, Ücret: ${deliveryFee} ₺)`
+            : "Teslimat kuralları yalnızca yerel olarak kaydedildi (bulut senkronizasyonu başarısız).");
+        });
       } finally {
         if (btn) {
-          btn.disabled = false;
+          btn.disabled = isStaffUser();
           btn.textContent = "💾 Kuralları Kaydet";
         }
       }
@@ -3114,8 +3255,8 @@
       const methods = getAdminPaymentMethodsListSafe(adminStoreSettings);
 
       container.innerHTML = methods.map(m => {
-        const safeId = escapeReportHtml(m.id);
-        const safeLabel = escapeReportHtml(m.label);
+        const safeId = escapeHtml(m.id);
+        const safeLabel = escapeHtml(m.label);
         return `
           <div class="payment-method-item ${m.enabled ? '' : 'is-disabled'}">
             <div style="min-width:0;">
@@ -3126,46 +3267,53 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
               <label class="switch" title="Satışa aç / kapat">
-                <input type="checkbox" ${m.enabled ? 'checked' : ''} onchange="togglePaymentMethodEnabled('${safeId}', this.checked)">
+                <input type="checkbox" data-method-id="${safeId}" ${m.enabled ? 'checked' : ''} onchange="togglePaymentMethodEnabled(this.dataset.methodId, this.checked)">
                 <span class="slider"></span>
               </label>
               ${!m.isDefault ? `
-                <button type="button" class="btn-action-icon btn-action-delete" title="Ödeme tipini sil" onclick="removeCustomPaymentMethod('${safeId}')">🗑️</button>
+                <button type="button" class="btn-action-icon btn-action-delete" title="Ödeme tipini sil" data-method-id="${safeId}" onclick="removeCustomPaymentMethod(this.dataset.methodId)">🗑️</button>
               ` : ''}
             </div>
           </div>
         `;
       }).join("");
+      if (isStaffUser()) applyStoreControlsReadOnlyState(true);
     }
     window.renderPaymentMethodsEditor = renderPaymentMethodsEditor;
 
     window.togglePaymentMethodEnabled = async function(methodId, enabled) {
       if (!window.StoreStatus) return;
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const methods = getAdminPaymentMethodsListSafe(current).map(m => ({ ...m }));
-      const target = methods.find(m => m.id === methodId);
-      if (!target) return;
-
-      if (!enabled) {
-        const activeAfter = methods.filter(m => m.id !== methodId && m.enabled).length;
-        if (activeAfter === 0) {
-          showToast("En az 1 ödeme tipi satışa açık kalmalıdır!");
-          renderPaymentMethodsEditor();
-          return;
-        }
+      if (!requireAdminWriteAccess()) {
+        renderPaymentMethodsEditor();
+        return;
       }
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const methods = getAdminPaymentMethodsListSafe(current).map(m => ({ ...m }));
+        const target = methods.find(m => m.id === methodId);
+        if (!target) return;
 
-      target.enabled = Boolean(enabled);
-      const res = await StoreStatus.saveSettings({ ...current, payment_methods: methods });
-      adminStoreSettings = res.settings;
-      renderPaymentMethodsEditor();
-      showToast(res.synced
-        ? `"${target.label}" ${enabled ? "satışa açıldı" : "satışa kapatıldı"}.`
-        : "Ödeme tipi yerel olarak güncellendi.");
+        if (!enabled) {
+          const activeAfter = methods.filter(m => m.id !== methodId && m.enabled).length;
+          if (activeAfter === 0) {
+            showToast("En az 1 ödeme tipi satışa açık kalmalıdır!");
+            renderPaymentMethodsEditor();
+            return;
+          }
+        }
+
+        target.enabled = Boolean(enabled);
+        const res = await StoreStatus.saveSettings({ ...current, payment_methods: methods });
+        adminStoreSettings = res.settings;
+        renderPaymentMethodsEditor();
+        showToast(res.synced
+          ? `"${target.label}" ${enabled ? "satışa açıldı" : "satışa kapatıldı"}.`
+          : `"${target.label}" yalnızca yerel olarak güncellendi (bulut senkronizasyonu başarısız).`);
+      });
     };
 
     window.addCustomPaymentMethod = async function() {
-      if (!window.StoreStatus) return;
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
       const labelEl = document.getElementById("newPaymentLabel");
       const label = labelEl ? labelEl.value.trim() : "";
       if (!label) {
@@ -3174,83 +3322,96 @@
         return;
       }
 
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const methods = getAdminPaymentMethodsListSafe(current).map(m => ({ ...m }));
-      if (methods.some(m => m.label.toLocaleLowerCase("tr-TR") === label.toLocaleLowerCase("tr-TR"))) {
-        showToast("Bu isimde bir ödeme tipi zaten mevcut.");
-        return;
-      }
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const methods = getAdminPaymentMethodsListSafe(current).map(m => ({ ...m }));
+        if (methods.some(m => m.label.toLocaleLowerCase("tr-TR") === label.toLocaleLowerCase("tr-TR"))) {
+          showToast("Bu isimde bir ödeme tipi zaten mevcut.");
+          return;
+        }
 
-      const slugBase = label
-        .toLocaleLowerCase("tr-TR")
-        .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
-        .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
-        .replace(/[^a-z0-9]+/g, "_")
-        .replace(/^_+|_+$/g, "")
-        .slice(0, 28) || "odeme";
-      let newId = slugBase;
-      if (methods.some(m => m.id === newId)) {
-        newId = `${slugBase}_${Date.now().toString().slice(-4)}`;
-      }
+        const slugBase = label
+          .toLocaleLowerCase("tr-TR")
+          .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
+          .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_+|_+$/g, "")
+          .slice(0, 28) || "odeme";
+        let newId = slugBase;
+        if (methods.some(m => m.id === newId)) {
+          newId = `${slugBase}_${Date.now().toString().slice(-4)}`;
+        }
 
-      methods.push({
-        id: newId,
-        label,
-        icon: "",
-        enabled: true,
-        isDefault: false
+        methods.push({
+          id: newId,
+          label,
+          icon: "",
+          enabled: true,
+          isDefault: false
+        });
+
+        const res = await StoreStatus.saveSettings({ ...current, payment_methods: methods });
+        adminStoreSettings = res.settings;
+        if (labelEl) labelEl.value = "";
+        renderPaymentMethodsEditor();
+        showToast(res.synced
+          ? `"${label}" ödeme tipi eklendi!`
+          : `"${label}" yalnızca yerel olarak eklendi (bulut senkronizasyonu başarısız).`);
       });
-
-      const res = await StoreStatus.saveSettings({ ...current, payment_methods: methods });
-      adminStoreSettings = res.settings;
-      if (labelEl) labelEl.value = "";
-      renderPaymentMethodsEditor();
-      showToast(res.synced ? `"${label}" ödeme tipi eklendi!` : `"${label}" yerel olarak eklendi.`);
     };
 
     window.removeCustomPaymentMethod = async function(methodId) {
-      if (!window.StoreStatus) return;
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const methods = getAdminPaymentMethodsListSafe(current).map(m => ({ ...m }));
-      const target = methods.find(m => m.id === methodId);
-      if (!target || target.isDefault) return;
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const methods = getAdminPaymentMethodsListSafe(current).map(m => ({ ...m }));
+        const target = methods.find(m => m.id === methodId);
+        if (!target || target.isDefault) return;
 
-      const remaining = methods.filter(m => m.id !== methodId);
-      if (remaining.filter(m => m.enabled).length === 0 && remaining[0]) {
-        remaining[0].enabled = true;
-      }
+        const remaining = methods.filter(m => m.id !== methodId);
+        if (remaining.filter(m => m.enabled).length === 0 && remaining[0]) {
+          remaining[0].enabled = true;
+        }
 
-      const res = await StoreStatus.saveSettings({ ...current, payment_methods: remaining });
-      adminStoreSettings = res.settings;
-      renderPaymentMethodsEditor();
-      showToast(`"${target.label}" kaldırıldı.`);
+        const res = await StoreStatus.saveSettings({ ...current, payment_methods: remaining });
+        adminStoreSettings = res.settings;
+        renderPaymentMethodsEditor();
+        showToast(res.synced
+          ? `"${target.label}" kaldırıldı.`
+          : `"${target.label}" yalnızca yerel olarak kaldırıldı (bulut senkronizasyonu başarısız).`);
+      });
     };
 
     window.saveOnlineDiscountSettings = async function() {
-      if (!window.StoreStatus) return;
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
       const btn = document.getElementById("btnSaveOnlineDiscount");
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Kaydediliyor...";
       }
       try {
-        const current = adminStoreSettings || await StoreStatus.getSettings();
-        const enabled = Boolean(document.getElementById("adminDiscountEnabled")?.checked);
-        const rawPct = Number(document.getElementById("adminDiscountPercent")?.value) || 0;
-        const pct = Math.min(90, Math.max(0, rawPct));
+        await enqueueStoreSettingsWrite(async () => {
+          const current = adminStoreSettings || await StoreStatus.getSettings();
+          const enabled = Boolean(document.getElementById("adminDiscountEnabled")?.checked);
+          const rawPct = Number(document.getElementById("adminDiscountPercent")?.value) || 0;
+          const pct = Math.min(90, Math.max(0, rawPct));
 
-        const next = {
-          ...current,
-          online_discount_enabled: enabled,
-          online_discount_percent: pct
-        };
-        const res = await StoreStatus.saveSettings(next);
-        adminStoreSettings = res.settings;
-        syncAdminDiscountInputsFromSettings(adminStoreSettings);
-        showToast(res.synced ? "Online indirim ayarları kaydedildi!" : "İndirim yerel olarak kaydedildi.");
+          const next = {
+            ...current,
+            online_discount_enabled: enabled,
+            online_discount_percent: pct
+          };
+          const res = await StoreStatus.saveSettings(next);
+          adminStoreSettings = res.settings;
+          if (res.synced) discountDirty = false;
+          syncAdminDiscountInputsFromSettings(adminStoreSettings, res.synced);
+          showToast(res.synced
+            ? "Online indirim ayarları kaydedildi!"
+            : "İndirim yalnızca yerel olarak kaydedildi (bulut senkronizasyonu başarısız).");
+        });
       } finally {
         if (btn) {
-          btn.disabled = false;
+          btn.disabled = isStaffUser();
           btn.textContent = "💾 İndirimi Kaydet";
         }
       }
@@ -3277,41 +3438,57 @@
         container.innerHTML = `<div style="font-size:0.82rem; color:var(--ink-500); padding:8px 0;">Henüz kayıtlı reddetme nedeni yok. Yeni ekleyebilir veya varsayılanları yükleyebilirsiniz.</div>`;
         return;
       }
-      container.innerHTML = list.map((item, idx) => `
-        <div class="payment-method-item ${item.enabled ? '' : 'is-disabled'}">
-          <div style="display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap;">
-            <span style="font-weight:700; color:var(--ink-900); font-size:0.86rem;">🚫 ${escapeModHtml(item.label)}</span>
-            ${item.isDefault ? '<span class="badge-default">Varsayılan</span>' : ''}
+      container.innerHTML = list.map((item) => {
+        const safeLabel = escapeHtml(item.label);
+        return `
+          <div class="payment-method-item ${item.enabled ? '' : 'is-disabled'}">
+            <div style="display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap;">
+              <span style="font-weight:700; color:var(--ink-900); font-size:0.86rem;">🚫 ${safeLabel}</span>
+              ${item.isDefault ? '<span class="badge-default">Varsayılan</span>' : ''}
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+              <label class="switch" title="${item.enabled ? 'Pasifleştir' : 'Aktifleştir'}">
+                <input type="checkbox" data-reason-label="${safeLabel}" ${item.enabled ? 'checked' : ''} onchange="toggleRejectionReason(this.dataset.reasonLabel, this.checked)">
+                <span class="slider"></span>
+              </label>
+              <span class="payment-status-label" style="color:${item.enabled ? '#2d7a47' : '#8a857e'};">${item.enabled ? 'Açık' : 'Kapalı'}</span>
+              ${!item.isDefault ? `<button type="button" class="btn-action-icon btn-action-delete" title="Bu nedeni kaldır" data-reason-label="${safeLabel}" onclick="removeRejectionReason(this.dataset.reasonLabel)">🗑️</button>` : ''}
+            </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-            <label class="switch" title="${item.enabled ? 'Pasifleştir' : 'Aktifleştir'}">
-              <input type="checkbox" ${item.enabled ? 'checked' : ''} onchange="toggleRejectionReason(${idx}, this.checked)">
-              <span class="slider"></span>
-            </label>
-            <span class="payment-status-label" style="color:${item.enabled ? '#2d7a47' : '#8a857e'};">${item.enabled ? 'Açık' : 'Kapalı'}</span>
-            ${!item.isDefault ? `<button type="button" class="btn-action-icon btn-action-delete" title="Bu nedeni kaldır" onclick="removeRejectionReason(${idx})">🗑️</button>` : ''}
-          </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
+      if (isStaffUser()) applyStoreControlsReadOnlyState(true);
     }
     window.renderRejectionReasonsEditor = renderRejectionReasonsEditor;
 
-    window.toggleRejectionReason = async function(idx, enabled) {
+    window.toggleRejectionReason = async function(reasonKey, enabled) {
       if (!window.StoreStatus) return;
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
-      if (!list[idx]) return;
-      list[idx].enabled = Boolean(enabled);
-      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
-      adminStoreSettings = res.settings;
-      renderRejectionReasonsEditor();
-      showToast(res.synced
-        ? `"${list[idx].label}" ${enabled ? "aktif edildi" : "pasif edildi"}.`
-        : `"${list[idx].label}" yalnızca yerel olarak güncellendi (bulut senkronizasyonu başarısız).`);
+      if (!requireAdminWriteAccess()) {
+        renderRejectionReasonsEditor();
+        return;
+      }
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+        const target = typeof reasonKey === "number"
+          ? list[reasonKey]
+          : list.find(r => r.label === reasonKey);
+        if (!target) {
+          renderRejectionReasonsEditor();
+          return;
+        }
+        target.enabled = Boolean(enabled);
+        const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
+        adminStoreSettings = res.settings;
+        renderRejectionReasonsEditor();
+        showToast(res.synced
+          ? `"${target.label}" ${enabled ? "aktif edildi" : "pasif edildi"}.`
+          : `"${target.label}" yalnızca yerel olarak güncellendi (bulut senkronizasyonu başarısız).`);
+      });
     };
 
     window.addCustomRejectionReason = async function() {
-      if (!window.StoreStatus) return;
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
       const inputEl = document.getElementById("newRejectionReasonInput");
       const text = inputEl ? inputEl.value.trim() : "";
       if (!text) {
@@ -3319,55 +3496,64 @@
         if (inputEl) inputEl.focus();
         return;
       }
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
-      if (list.some(r => r.label.toLocaleLowerCase("tr-TR") === text.toLocaleLowerCase("tr-TR"))) {
-        showToast("Bu reddetme nedeni zaten listede var.");
-        return;
-      }
-      list.push({ label: text, enabled: true, isDefault: false });
-      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
-      adminStoreSettings = res.settings;
-      if (inputEl) inputEl.value = "";
-      renderRejectionReasonsEditor();
-      showToast(res.synced
-        ? `"${text}" reddetme seçeneklerine eklendi.`
-        : `"${text}" yerel olarak eklendi (bulut senkronizasyonu başarısız).`);
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+        if (list.some(r => r.label.toLocaleLowerCase("tr-TR") === text.toLocaleLowerCase("tr-TR"))) {
+          showToast("Bu reddetme nedeni zaten listede var.");
+          return;
+        }
+        list.push({ label: text, enabled: true, isDefault: false });
+        const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
+        adminStoreSettings = res.settings;
+        if (inputEl) inputEl.value = "";
+        renderRejectionReasonsEditor();
+        showToast(res.synced
+          ? `"${text}" reddetme seçeneklerine eklendi.`
+          : `"${text}" yalnızca yerel olarak eklendi (bulut senkronizasyonu başarısız).`);
+      });
     };
 
-    window.removeRejectionReason = async function(idx) {
-      if (!window.StoreStatus) return;
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
-      const removed = list[idx];
-      if (!removed || removed.isDefault) return;
-      list.splice(idx, 1);
-      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
-      adminStoreSettings = res.settings;
-      renderRejectionReasonsEditor();
-      showToast(res.synced
-        ? `"${removed.label}" kaldırıldı.`
-        : `"${removed.label}" yerel olarak kaldırıldı (bulut senkronizasyonu başarısız).`);
+    window.removeRejectionReason = async function(reasonKey) {
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const list = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+        const idx = typeof reasonKey === "number"
+          ? reasonKey
+          : list.findIndex(r => r.label === reasonKey);
+        const removed = idx >= 0 ? list[idx] : null;
+        if (!removed || removed.isDefault) return;
+        list.splice(idx, 1);
+        const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
+        adminStoreSettings = res.settings;
+        renderRejectionReasonsEditor();
+        showToast(res.synced
+          ? `"${removed.label}" kaldırıldı.`
+          : `"${removed.label}" yalnızca yerel olarak kaldırıldı (bulut senkronizasyonu başarısız).`);
+      });
     };
 
     window.resetDefaultRejectionReasons = async function() {
-      if (!window.StoreStatus) return;
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const defaults = (typeof StoreStatus.getDefaultRejectionReasons === "function"
-        ? StoreStatus.getDefaultRejectionReasons()
-        : ["Elektrik kesintisi", "Restoran yoğunluğu", "Kurye kaza yaptı", "Seçilen ürün satışta değil", "Servis alanı dışında"]);
-      const existing = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
-      const customOnes = existing.filter(r => !r.isDefault);
-      const merged = [
-        ...defaults.map(label => ({ label, enabled: true, isDefault: true })),
-        ...customOnes
-      ];
-      const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: merged });
-      adminStoreSettings = res.settings;
-      renderRejectionReasonsEditor();
-      showToast(res.synced
-        ? "Varsayılan reddetme seçenekleri geri yüklendi."
-        : "Varsayılanlar yerel olarak geri yüklendi (bulut senkronizasyonu başarısız).");
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const defaults = (typeof StoreStatus.getDefaultRejectionReasons === "function"
+          ? StoreStatus.getDefaultRejectionReasons()
+          : ["Elektrik kesintisi", "Restoran yoğunluğu", "Kurye kaza yaptı", "Seçilen ürün satışta değil", "Servis alanı dışında"]);
+        const existing = getAdminRejectionReasonsSafe(current).map(r => ({ ...r }));
+        const customOnes = existing.filter(r => !r.isDefault);
+        const merged = [
+          ...defaults.map(label => ({ label, enabled: true, isDefault: true })),
+          ...customOnes
+        ];
+        const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: merged });
+        adminStoreSettings = res.settings;
+        renderRejectionReasonsEditor();
+        showToast(res.synced
+          ? "Varsayılan reddetme seçenekleri geri yüklendi."
+          : "Varsayılanlar yalnızca yerel olarak geri yüklendi (bulut senkronizasyonu başarısız).");
+      });
     };
 
     function renderPaytrConfigState(cfg) {
@@ -3463,7 +3649,23 @@
         if (/UNAUTHORIZED/i.test(String(err && err.message || ""))) {
           if (box) box.style.display = "none";
         } else {
-          renderPaytrConfigState(null);
+          if (box) box.style.display = "";
+          const badge = document.getElementById("adminPaytrStatusBadge");
+          const keyHint = document.getElementById("adminPaytrKeyHint");
+          const saltHint = document.getElementById("adminPaytrSaltHint");
+          if (badge) {
+            badge.textContent = "⚠️ Durum Alınamadı";
+            badge.style.background = "#fef3c7";
+            badge.style.color = "#92400e";
+          }
+          if (keyHint) {
+            keyHint.textContent = "⚠️ Sunucu bilgisi geçici olarak alınamadı";
+            keyHint.style.color = "#b45309";
+          }
+          if (saltHint) {
+            saltHint.textContent = "⚠️ Sunucu bilgisi geçici olarak alınamadı";
+            saltHint.style.color = "#b45309";
+          }
         }
       }
     }
@@ -3481,6 +3683,7 @@
     };
 
     window.requestPaytrSaveWithPassword = function() {
+      if (!requireAdminWriteAccess()) return;
       const modal = document.getElementById("paytrPasswordModal");
       const passInput = document.getElementById("paytrConfirmAdminPassword");
       const errBox = document.getElementById("paytrPasswordError");
@@ -3495,10 +3698,14 @@
 
     document.getElementById("paytrPasswordForm")?.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (!requireAdminWriteAccess()) {
+        closePaytrPasswordModal();
+        return;
+      }
       const passInput = document.getElementById("paytrConfirmAdminPassword");
       const errBox = document.getElementById("paytrPasswordError");
       const submitBtn = document.getElementById("btnConfirmPaytrPassword");
-      const entered = (passInput?.value || "").trim();
+      const entered = passInput?.value || "";
       if (!entered) {
         if (errBox) {
           errBox.textContent = "Lütfen restoran admin şifrenizi girin.";
@@ -3550,7 +3757,7 @@
     });
 
     window.savePaytrSettings = async function() {
-      if (!window.StoreStatus || typeof StoreStatus.savePaytrConfig !== "function") return;
+      if (!window.StoreStatus || typeof StoreStatus.savePaytrConfig !== "function" || !requireAdminWriteAccess()) return;
       const btn = document.getElementById("btnSavePaytrConfig");
       const isEnabled = Boolean(document.getElementById("adminPaytrEnabled")?.checked);
       const testMode = Boolean(document.getElementById("adminPaytrTestMode")?.checked);
@@ -3582,6 +3789,7 @@
       } catch (err) {
         const msg = String((err && err.message) || "PayTR ayarları kaydedilemedi.").replace(/^[A-Z_]+:\s*/, "");
         alert(msg);
+        await loadPaytrConfigPanel();
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -3590,120 +3798,190 @@
       }
     };
 
+    function stopStoreControlWatcher() {
+      if (typeof storeStatusUnsubscribe === "function") {
+        try { storeStatusUnsubscribe(); } catch (e) {}
+      }
+      storeStatusUnsubscribe = null;
+      if (storeStatusIntervalId) {
+        clearInterval(storeStatusIntervalId);
+        storeStatusIntervalId = null;
+      }
+      storeSubscriptionActive = false;
+    }
+
     async function loadStoreControlPanel() {
       if (!window.StoreStatus) return;
+      initStoreControlDirtyListeners();
       adminStoreSettings = await StoreStatus.getSettings();
       const msgInput = document.getElementById("adminStoreMessage");
-      if (msgInput) msgInput.value = adminStoreSettings.status_message || "";
+      if (msgInput && !storeMessageDirty && document.activeElement !== msgInput) {
+        msgInput.value = adminStoreSettings.status_message || "";
+      }
       renderAdminStoreStatusOnly();
       syncAdminDiscountInputsFromSettings(adminStoreSettings);
-      renderWeeklyHoursEditor();
+      if (!weeklyHoursDirty) renderWeeklyHoursEditor();
       try { renderPaymentMethodsEditor(); } catch (e) { console.warn("Payment methods render skipped:", e); }
       try { renderRejectionReasonsEditor(); } catch (e) { console.warn("Rejection reasons render skipped:", e); }
       try { await loadPaytrConfigPanel(); } catch (e) { console.warn("PayTR config render skipped:", e); }
+      applyStoreControlsReadOnlyState(isStaffUser());
 
       if (!storeSubscriptionActive) {
         storeSubscriptionActive = true;
-        StoreStatus.subscribe((nextSettings) => {
+        storeStatusUnsubscribe = StoreStatus.subscribe((nextSettings) => {
           adminStoreSettings = nextSettings;
-          const msgInput = document.getElementById("adminStoreMessage");
-          if (msgInput && document.activeElement !== msgInput) {
-            msgInput.value = adminStoreSettings.status_message || "";
+          const mInp = document.getElementById("adminStoreMessage");
+          if (mInp && !storeMessageDirty && document.activeElement !== mInp) {
+            mInp.value = adminStoreSettings.status_message || "";
           }
           renderAdminStoreStatusOnly();
           syncAdminDiscountInputsFromSettings(adminStoreSettings);
-          renderWeeklyHoursEditor();
+          if (!weeklyHoursDirty) renderWeeklyHoursEditor();
           try { renderPaymentMethodsEditor(); } catch (e) { console.warn("Payment methods render skipped:", e); }
           try { renderRejectionReasonsEditor(); } catch (e) { console.warn("Rejection reasons render skipped:", e); }
+          if (isStaffUser()) applyStoreControlsReadOnlyState(true);
         });
-        setInterval(renderAdminStoreStatusOnly, 30000);
+        storeStatusIntervalId = setInterval(renderAdminStoreStatusOnly, 30000);
       }
     }
 
     window.handleQuickStoreMode = async function(mode, durationMinutes = null) {
-      if (!window.StoreStatus) return;
-      const msgInput = document.getElementById("adminStoreMessage");
-      const statusMessage = msgInput ? msgInput.value.trim() : "";
-      const res = await StoreStatus.setOrderMode(mode, { durationMinutes, statusMessage });
-      adminStoreSettings = res.settings;
-      renderAdminStoreStatusOnly();
-      if (res.synced) {
-        showToast("Sipariş durumu canlı olarak güncellendi!");
-      } else {
-        showToast("Yerel olarak güncellendi (Supabase tablosu henüz kurulmadıysa store_settings_schema.sql çalıştırın).");
-      }
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
+      await enqueueStoreSettingsWrite(async () => {
+        const msgInput = document.getElementById("adminStoreMessage");
+        const statusMessage = msgInput ? msgInput.value.trim() : "";
+        const res = await StoreStatus.setOrderMode(mode, { durationMinutes, statusMessage });
+        adminStoreSettings = res.settings;
+        if (res.synced) storeMessageDirty = false;
+        renderAdminStoreStatusOnly();
+        if (res.synced) {
+          showToast("Sipariş durumu canlı olarak güncellendi!");
+        } else {
+          showToast("Yerel olarak güncellendi (bulut senkronizasyonu başarısız).");
+        }
+      });
     };
 
     window.handleSaveStoreMessage = async function() {
-      if (!window.StoreStatus) return;
-      const current = adminStoreSettings || await StoreStatus.getSettings();
-      const msgInput = document.getElementById("adminStoreMessage");
-      const next = {
-        ...current,
-        status_message: msgInput ? msgInput.value.trim() : ""
-      };
-      const res = await StoreStatus.saveSettings(next);
-      adminStoreSettings = res.settings;
-      renderAdminStoreStatusOnly();
-      showToast(res.synced ? "Müşteri mesajı kaydedildi!" : "Mesaj yerel olarak kaydedildi.");
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
+      await enqueueStoreSettingsWrite(async () => {
+        const current = adminStoreSettings || await StoreStatus.getSettings();
+        const msgInput = document.getElementById("adminStoreMessage");
+        const next = {
+          ...current,
+          status_message: msgInput ? msgInput.value.trim() : ""
+        };
+        const res = await StoreStatus.saveSettings(next);
+        adminStoreSettings = res.settings;
+        if (res.synced) storeMessageDirty = false;
+        renderAdminStoreStatusOnly();
+        showToast(res.synced
+          ? "Müşteri mesajı kaydedildi!"
+          : "Mesaj yalnızca yerel olarak kaydedildi (bulut senkronizasyonu başarısız).");
+      });
     };
 
     window.saveStoreScheduleSettings = async function() {
-      if (!window.StoreStatus) return;
+      if (!window.StoreStatus || !requireAdminWriteAccess()) return;
       const btn = document.getElementById("btnSaveStoreHours");
       if (btn) {
         btn.disabled = true;
         btn.textContent = "Kaydediliyor...";
       }
       try {
-        const current = adminStoreSettings || await StoreStatus.getSettings();
-        const msgInput = document.getElementById("adminStoreMessage");
-        const next = {
-          ...current,
-          weekly_hours: readWeeklyHoursFromDOM(),
-          status_message: msgInput ? msgInput.value.trim() : ""
-        };
-        const res = await StoreStatus.saveSettings(next);
-        adminStoreSettings = res.settings;
-        renderAdminStoreStatusOnly();
-        renderWeeklyHoursEditor();
-        showToast(res.synced ? "Çalışma saatleri kaydedildi!" : "Çalışma saatleri yerel olarak kaydedildi.");
+        await enqueueStoreSettingsWrite(async () => {
+          const current = adminStoreSettings || await StoreStatus.getSettings();
+          const msgInput = document.getElementById("adminStoreMessage");
+          const next = {
+            ...current,
+            weekly_hours: readWeeklyHoursFromDOM(),
+            status_message: msgInput ? msgInput.value.trim() : ""
+          };
+          const res = await StoreStatus.saveSettings(next);
+          adminStoreSettings = res.settings;
+          if (res.synced) {
+            weeklyHoursDirty = false;
+            storeMessageDirty = false;
+          }
+          renderAdminStoreStatusOnly();
+          renderWeeklyHoursEditor();
+          showToast(res.synced
+            ? "Çalışma saatleri kaydedildi!"
+            : "Çalışma saatleri yalnızca yerel olarak kaydedildi (bulut senkronizasyonu başarısız).");
+        });
       } finally {
         if (btn) {
-          btn.disabled = false;
+          btn.disabled = isStaffUser();
           btn.textContent = "💾 Çalışma Saatlerini Kaydet";
         }
       }
     };
 
+    const DEFAULT_CATEGORY_NAMES = {
+      "imza": "İmza Pizzalar",
+      "klasik": "Klasik & Tavuk",
+      "tavuk": "Tavuklu",
+      "vejetaryen": "Vejetaryen",
+      "vegan": "Vegan",
+      "yan-urunler": "Ekstralar & İçecekler"
+    };
+    let adminCategoryNamesMap = { ...DEFAULT_CATEGORY_NAMES };
+
+    function getCategoryDisplayName(slug, fallbackName) {
+      if (fallbackName && String(fallbackName).trim()) return String(fallbackName).trim();
+      const s = String(slug || "").trim();
+      return adminCategoryNamesMap[s] || s || "Genel";
+    }
+
     // Verileri Yükle ve Render Et
     async function syncAdminDynamicCategories() {
-      if (getActiveAdminSlug() === "ginger-pizza") return;
       if (!window.MenuAPI || typeof window.MenuAPI.getCategories !== "function") return;
+      const activeSlug = getActiveAdminSlug();
       let cats = await MenuAPI.getCategories();
-      if (!cats || cats.length === 0) {
+      if (!Array.isArray(cats)) cats = [];
+
+      if (cats.length === 0) {
         const seen = new Map();
         currentMenuItems.forEach(it => {
           if (it.category && !seen.has(it.category)) {
-            seen.set(it.category, { slug: it.category, name: it.categoryName || it.category });
+            seen.set(it.category, { slug: it.category, name: getCategoryDisplayName(it.category, it.categoryName) });
           }
         });
         cats = Array.from(seen.values());
       }
+
+      if (cats.length === 0 && activeSlug === "ginger-pizza") {
+        cats = Object.entries(DEFAULT_CATEGORY_NAMES).map(([slug, name]) => ({ slug, name }));
+      }
       if (cats.length === 0) return;
+
+      const seenSlugs = new Set(cats.map(c => c && c.slug).filter(Boolean));
+      currentMenuItems.forEach(it => {
+        if (it.category && !seenSlugs.has(it.category)) {
+          seenSlugs.add(it.category);
+          cats.push({ slug: it.category, name: getCategoryDisplayName(it.category, it.categoryName) });
+        }
+      });
+
+      adminCategoryNamesMap = {
+        ...(activeSlug === "ginger-pizza" ? DEFAULT_CATEGORY_NAMES : {})
+      };
+      cats.forEach(c => {
+        if (c && c.slug) adminCategoryNamesMap[c.slug] = c.name || c.slug;
+      });
 
       const filterSel = document.getElementById("filterCategory");
       if (filterSel) {
         const prev = filterSel.value || "all";
         filterSel.innerHTML = `<option value="all">Tüm Kategoriler</option>` +
-          cats.map(c => `<option value="${c.slug}">${c.name}</option>`).join("");
+          cats.map(c => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.name || c.slug)}</option>`).join("");
         filterSel.value = cats.some(c => c.slug === prev) ? prev : "all";
       }
 
       const editSel = document.getElementById("editCategory");
       if (editSel) {
         const prevEdit = editSel.value;
-        editSel.innerHTML = cats.map(c => `<option value="${c.slug}">${c.name}</option>`).join("");
+        editSel.innerHTML = cats.map(c => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.name || c.slug)}</option>`).join("");
         if (cats.some(c => c.slug === prevEdit)) editSel.value = prevEdit;
       }
     }
@@ -3711,6 +3989,29 @@
     let adminWatcherStarted = false;
     let adminInitialOrdersLoaded = false;
     const adminKnownNewOrderIds = new Set();
+    let adminOrderUnsubscribe = null;
+    let adminOrderTickerStop = null;
+    let adminOrderFallbackInterval = null;
+
+    function stopAdminOrderAlertWatcher() {
+      if (typeof adminOrderUnsubscribe === "function") {
+        try { adminOrderUnsubscribe(); } catch (e) {}
+      }
+      adminOrderUnsubscribe = null;
+      if (typeof adminOrderTickerStop === "function") {
+        try { adminOrderTickerStop(); } catch (e) {}
+      }
+      adminOrderTickerStop = null;
+      if (adminOrderFallbackInterval) {
+        clearInterval(adminOrderFallbackInterval);
+        adminOrderFallbackInterval = null;
+      }
+      adminWatcherStarted = false;
+      adminInitialOrdersLoaded = false;
+      adminKnownNewOrderIds.clear();
+      const navLink = document.getElementById("navLinkOrders");
+      if (navLink) navLink.textContent = "🔔 Canlı Siparişler";
+    }
 
     function startAdminOrderAlertWatcher() {
       if (adminWatcherStarted || typeof OrderAPI === "undefined") return;
@@ -3752,11 +4053,11 @@
       };
 
       checkOrders();
-      OrderAPI.subscribe(() => { checkOrders(); });
+      adminOrderUnsubscribe = OrderAPI.subscribe(() => { checkOrders(); });
       if (window.SoundAlert && typeof SoundAlert.startBackgroundTicker === "function") {
-        SoundAlert.startBackgroundTicker(checkOrders, 7000);
+        adminOrderTickerStop = SoundAlert.startBackgroundTicker(checkOrders, 7000);
       } else {
-        setInterval(checkOrders, 7000);
+        adminOrderFallbackInterval = setInterval(checkOrders, 7000);
       }
     }
 
@@ -3809,11 +4110,17 @@
       }
     }
 
+    function isSafeImageUrl(url) {
+      return /^(https:\/\/|images\/)/i.test(String(url || "").trim());
+    }
+
     // Tabloyu Render Et
     function renderTable() {
       const tbody = document.getElementById("itemsTableBody");
+      if (!tbody) return;
       const categoryFilter = document.getElementById("filterCategory").value;
       const query = document.getElementById("searchAdmin").value.toLowerCase().trim();
+      const staffReadOnly = isStaffUser();
 
       let filtered = currentMenuItems;
 
@@ -3823,8 +4130,8 @@
 
       if (query !== "") {
         filtered = filtered.filter(item =>
-          item.name.toLowerCase().includes(query) ||
-          (item.ingredients && item.ingredients.toLowerCase().includes(query))
+          String(item.name || "").toLowerCase().includes(query) ||
+          (item.ingredients && String(item.ingredients).toLowerCase().includes(query))
         );
       }
 
@@ -3836,34 +4143,45 @@
       tbody.innerHTML = filtered.map(item => {
         const isPizza = !!item.prices;
         const isAvailable = item.isAvailable !== false;
+        const safeId = escapeHtml(item.id);
+        const safeName = escapeHtml(item.name);
+        const safeDesc = escapeHtml(item.ingredients || "");
+        const safeBadge = escapeHtml(item.badge || "");
+        const safeCategoryLabel = escapeHtml(getCategoryDisplayName(item.category, item.categoryName));
+        const safeImage = isSafeImageUrl(item.image) ? escapeHtml(String(item.image).trim()) : "";
+        const disabledAttr = staffReadOnly ? "disabled" : "";
 
         let priceInputsHtml = "";
         if (isPizza) {
+          const pSm = Number(item.prices.small) || 0;
+          const pMd = Number(item.prices.medium) || 0;
+          const pXl = Number(item.prices.xlarge) || 0;
           priceInputsHtml = `
             <div class="price-inputs-row">
               <div class="price-box">
                 <span class="price-box-label">Small</span>
-                <input type="number" class="price-field-mini" id="input-sm-${item.id}" value="${item.prices.small || 0}">
+                <input type="number" min="0" step="any" class="price-field-mini" id="input-sm-${safeId}" value="${pSm}" ${disabledAttr}>
               </div>
               <div class="price-box">
                 <span class="price-box-label">Med</span>
-                <input type="number" class="price-field-mini" id="input-md-${item.id}" value="${item.prices.medium || 0}">
+                <input type="number" min="0" step="any" class="price-field-mini" id="input-md-${safeId}" value="${pMd}" ${disabledAttr}>
               </div>
               <div class="price-box">
                 <span class="price-box-label">XL</span>
-                <input type="number" class="price-field-mini" id="input-xl-${item.id}" value="${item.prices.xlarge || 0}">
+                <input type="number" min="0" step="any" class="price-field-mini" id="input-xl-${safeId}" value="${pXl}" ${disabledAttr}>
               </div>
-              <button type="button" class="btn-quick-save" onclick="handleQuickPriceSave('${item.id}', true)">Kaydet</button>
+              ${staffReadOnly ? "" : `<button type="button" class="btn-quick-save" data-item-id="${safeId}" onclick="handleQuickPriceSave(this.dataset.itemId, true)">Kaydet</button>`}
             </div>
           `;
         } else {
+          const pFix = Number(item.fixedPrice) || 0;
           priceInputsHtml = `
             <div class="price-inputs-row">
               <div class="price-box">
                 <span class="price-box-label">Porsiyon (₺)</span>
-                <input type="number" class="price-field-mini" id="input-fixed-${item.id}" value="${item.fixedPrice || 0}">
+                <input type="number" min="0" step="any" class="price-field-mini" id="input-fixed-${safeId}" value="${pFix}" ${disabledAttr}>
               </div>
-              <button type="button" class="btn-quick-save" onclick="handleQuickPriceSave('${item.id}', false)">Kaydet</button>
+              ${staffReadOnly ? "" : `<button type="button" class="btn-quick-save" data-item-id="${safeId}" onclick="handleQuickPriceSave(this.dataset.itemId, false)">Kaydet</button>`}
             </div>
           `;
         }
@@ -3873,15 +4191,15 @@
         const addCount = (mod.additions || []).length;
 
         return `
-          <tr id="row-${item.id}">
+          <tr id="row-${safeId}">
             <td>
               <div style="display:flex; align-items:flex-start; gap:12px;">
-                ${item.image ? `<img src="${item.image}" alt="${item.name}" style="width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid var(--sand-200);">` : ''}
+                ${safeImage ? `<img src="${safeImage}" alt="${safeName}" style="width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid var(--sand-200);">` : ''}
                 <div>
-                  <div class="item-cell-title">${item.name}</div>
-                  <div class="item-cell-desc">${item.ingredients || ""}</div>
+                  <div class="item-cell-title">${safeName}</div>
+                  <div class="item-cell-desc">${safeDesc}</div>
                   <div style="display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;">
-                    ${item.badge ? `<span style="display:inline-block; font-size:0.7rem; font-weight:700; background:var(--sand-100); padding:2px 8px; border-radius:999px;">${item.badge}</span>` : ""}
+                    ${safeBadge ? `<span style="display:inline-block; font-size:0.7rem; font-weight:700; background:var(--sand-100); padding:2px 8px; border-radius:999px;">${safeBadge}</span>` : ""}
                     ${remCount > 0 ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; background:#fdf0f1; color:var(--danger); padding:2px 7px; border-radius:999px;">🚫 ${remCount} çıkar</span>` : ""}
                     ${addCount > 0 ? `<span style="display:inline-block; font-size:0.68rem; font-weight:700; background:var(--ginger-50); color:var(--ginger-600); padding:2px 7px; border-radius:999px;">➕ ${addCount} ilave</span>` : ""}
                   </div>
@@ -3889,21 +4207,23 @@
               </div>
             </td>
             <td>
-              <span style="font-size: 0.82rem; font-weight: 600; text-transform: capitalize; color: var(--ink-500);">${item.category}</span>
+              <span style="font-size: 0.82rem; font-weight: 600; color: var(--ink-500);">${safeCategoryLabel}</span>
             </td>
             <td>
               ${priceInputsHtml}
             </td>
             <td style="text-align: center;">
               <label class="switch" title="${isAvailable ? 'Yayında' : 'Tükendi (Gizli)'}">
-                <input type="checkbox" ${isAvailable ? "checked" : ""} onchange="handleAvailabilityToggle('${item.id}', this.checked)">
+                <input type="checkbox" data-item-id="${safeId}" ${isAvailable ? "checked" : ""} ${disabledAttr} onchange="handleAvailabilityToggle(this.dataset.itemId, this.checked)">
                 <span class="slider"></span>
               </label>
             </td>
             <td style="text-align: right;">
               <div class="action-btns" style="justify-content: flex-end;">
-                <button type="button" class="btn-action-icon" title="Düzenle" onclick="openEditItemModal('${item.id}')">✏️</button>
-                <button type="button" class="btn-action-icon btn-action-delete" title="Sil" onclick="handleDeleteItem('${item.id}')">🗑️</button>
+                ${staffReadOnly
+                  ? `<span style="font-size:0.75rem; color:var(--ink-400);">Salt okunur</span>`
+                  : `<button type="button" class="btn-action-icon" title="Düzenle" data-item-id="${safeId}" onclick="openEditItemModal(this.dataset.itemId)">✏️</button>
+                     <button type="button" class="btn-action-icon btn-action-delete" title="Sil" data-item-id="${safeId}" onclick="handleDeleteItem(this.dataset.itemId)">🗑️</button>`}
               </div>
             </td>
           </tr>
@@ -3911,50 +4231,85 @@
       }).join("");
     }
 
+    function parseNonNegativeNumberInput(el) {
+      if (!el || String(el.value).trim() === "") return null;
+      const num = Number(el.value);
+      if (!Number.isFinite(num) || num < 0) return null;
+      return num;
+    }
+
     // Hızlı Fiyat Kaydetme
     window.handleQuickPriceSave = async function(itemId, isPizza) {
+      if (!requireAdminWriteAccess()) return;
+      let res = null;
       if (isPizza) {
-        const sm = Number(document.getElementById(`input-sm-${itemId}`).value);
-        const md = Number(document.getElementById(`input-md-${itemId}`).value);
-        const xl = Number(document.getElementById(`input-xl-${itemId}`).value);
-        await MenuAPI.updatePrice(itemId, { small: sm, medium: md, xlarge: xl });
+        const sm = parseNonNegativeNumberInput(document.getElementById(`input-sm-${itemId}`));
+        const md = parseNonNegativeNumberInput(document.getElementById(`input-md-${itemId}`));
+        const xl = parseNonNegativeNumberInput(document.getElementById(`input-xl-${itemId}`));
+        if (sm === null || md === null || xl === null) {
+          showToast("⚠️ Lütfen Small, Med ve XL için geçerli (0 veya pozitif) fiyat girin.");
+          return;
+        }
+        res = await MenuAPI.updatePrice(itemId, { small: sm, medium: md, xlarge: xl });
       } else {
-        const fixed = Number(document.getElementById(`input-fixed-${itemId}`).value);
-        await MenuAPI.updatePrice(itemId, fixed);
+        const fixed = parseNonNegativeNumberInput(document.getElementById(`input-fixed-${itemId}`));
+        if (fixed === null) {
+          showToast("⚠️ Lütfen geçerli (0 veya pozitif) bir porsiyon fiyatı girin.");
+          return;
+        }
+        res = await MenuAPI.updatePrice(itemId, fixed);
       }
-      showToast("Fiyat güncellendi ve siteye yansıtıldı!");
-      loadDashboard();
+
+      if (!res) {
+        showToast("❌ Fiyat güncellenemedi.");
+        return;
+      }
+      if (!res._synced && res._error) {
+        showToast("⚠️ Buluta kaydedilemedi: " + res._error);
+      } else if (!res._synced) {
+        showToast("Fiyat yerel olarak güncellendi.");
+      } else {
+        showToast("Fiyat güncellendi ve siteye yansıtıldı!");
+      }
+      await loadDashboard();
     };
 
     // Stok / Yayında Durumu Değiştirme
     window.handleAvailabilityToggle = async function(itemId, isAvailable) {
-      await MenuAPI.toggleAvailability(itemId, isAvailable);
-      showToast(isAvailable ? "Ürün yayına alındı!" : "Ürün 'Tükendi' olarak işaretlendi!");
-      loadDashboard();
+      if (!requireAdminWriteAccess()) {
+        renderTable();
+        return;
+      }
+      const res = await MenuAPI.toggleAvailability(itemId, isAvailable);
+      if (!res || (!res._synced && res._error)) {
+        showToast(res && res._error ? "⚠️ Stok durumu buluta kaydedilemedi: " + res._error : "⚠️ Stok durumu buluta kaydedilemedi.");
+      } else if (!res._synced) {
+        showToast(isAvailable ? "Ürün yerel olarak yayına alındı." : "Ürün yerel olarak 'Tükendi' işaretlendi.");
+      } else {
+        showToast(isAvailable ? "Ürün yayına alındı!" : "Ürün 'Tükendi' olarak işaretlendi!");
+      }
+      await loadDashboard();
     };
 
     // Ürün Silme
     window.handleDeleteItem = async function(itemId) {
+      if (!requireAdminWriteAccess()) return;
       const item = currentMenuItems.find(i => i.id === itemId);
       if (!item) return;
       if (confirm(`"${item.name}" ürününü menüden silmek istediğinize emin misiniz?`)) {
-        await MenuAPI.deleteItem(itemId);
+        const res = await MenuAPI.deleteItem(itemId);
+        if (res === false || (res && res.success === false)) {
+          showToast("❌ Ürün silinemedi: " + ((res && res.error) || "Yetki veya bağlantı hatası"));
+          return;
+        }
         showToast("Ürün menüden silindi!");
-        loadDashboard();
+        await loadDashboard();
       }
     };
 
     // Ürün Modifiers (Çıkarılacaklar & Fiyatlı İlaveler) Editörü
     let modalRemovals = [];
     let modalAdditions = [];
-
-    function escapeModHtml(str) {
-      return String(str || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
 
     function renderRemovalsEditor() {
       const container = document.getElementById("removalsChipsList");
@@ -4139,6 +4494,7 @@
     };
 
     window.handleCopyAdditionsToAllPizzas = async function() {
+      if (!requireAdminWriteAccess()) return;
       syncAdditionsFromDOM();
       const cleaned = MenuAPI.normalizeModifiers({ additions: modalAdditions }).additions;
       const msg = cleaned.length === 0
@@ -4147,10 +4503,14 @@
 
       if (!confirm(msg)) return;
       const res = await MenuAPI.copyAdditionsToAllPizzas(cleaned);
-      modalAdditions = res.additions;
+      if (res && res.synced === false && res.error) {
+        showToast("⚠️ Kopyalama buluta kaydedilemedi: " + res.error);
+        return;
+      }
+      modalAdditions = (res && Array.isArray(res.additions)) ? res.additions : cleaned;
       renderAdditionsEditor();
-      showToast(`${res.updatedCount} pizzaya ilave/ek ürün listesi kopyalandı!`);
-      loadDashboard();
+      showToast(`${(res && res.updatedCount) || 0} pizzaya ilave/ek ürün listesi kopyalandı!`);
+      await loadDashboard();
     };
 
     document.getElementById("newRemovalInput")?.addEventListener("keydown", (e) => {
@@ -4160,8 +4520,20 @@
       }
     });
 
+    function closeItemModal() {
+      const modal = document.getElementById("itemModal");
+      if (modal) modal.classList.remove("open");
+      modalRemovals = [];
+      modalAdditions = [];
+      const addList = document.getElementById("additionsEditorList");
+      if (addList) addList.innerHTML = "";
+      const remList = document.getElementById("removalsChipsList");
+      if (remList) remList.innerHTML = "";
+    }
+
     // Modal Açma: Yeni Ürün
     document.getElementById("btnOpenNewItem").addEventListener("click", () => {
+      if (!requireAdminWriteAccess()) return;
       document.getElementById("itemForm").reset();
       document.getElementById("editItemId").value = "";
       document.getElementById("itemModalTitle").textContent = "Yeni Ürün Ekle";
@@ -4170,7 +4542,9 @@
       document.getElementById("typeExtra").checked = !defaultIsPizza;
       modalRemovals = [];
       modalAdditions = [];
-      toggleTypeFields(defaultIsPizza);
+      const addList = document.getElementById("additionsEditorList");
+      if (addList) addList.innerHTML = "";
+      toggleTypeFields(defaultIsPizza, false);
       renderRemovalsEditor();
       renderAdditionsEditor();
       document.getElementById("itemModal").classList.add("open");
@@ -4178,6 +4552,7 @@
 
     // Modal Açma: Düzenle
     window.openEditItemModal = function(itemId) {
+      if (!requireAdminWriteAccess()) return;
       const item = currentMenuItems.find(i => i.id === itemId);
       if (!item) return;
 
@@ -4203,15 +4578,15 @@
       modalRemovals = [...mod.removals];
       modalAdditions = mod.additions.map(a => ({ ...a, prices: { ...a.prices } }));
 
-      toggleTypeFields(isPizza);
+      toggleTypeFields(isPizza, false);
       renderRemovalsEditor();
       renderAdditionsEditor();
       document.getElementById("itemModalTitle").textContent = "Ürünü Düzenle";
       document.getElementById("itemModal").classList.add("open");
     };
 
-    function toggleTypeFields(isPizza) {
-      syncAdditionsFromDOM();
+    function toggleTypeFields(isPizza, syncRows = true) {
+      if (syncRows) syncAdditionsFromDOM();
       document.getElementById("pizzaPriceFields").style.display = isPizza ? "grid" : "none";
       document.getElementById("extraPriceFields").style.display = !isPizza ? "block" : "none";
       const copyBtn = document.getElementById("btnCopyAdditionsToPizzas");
@@ -4223,28 +4598,37 @@
 
     document.getElementById("typePizza").addEventListener("change", () => toggleTypeFields(true));
     document.getElementById("typeExtra").addEventListener("change", () => toggleTypeFields(false));
-    document.getElementById("btnCloseItemModal").addEventListener("click", () => {
-      document.getElementById("itemModal").classList.remove("open");
-    });
+    document.getElementById("btnCloseItemModal").addEventListener("click", closeItemModal);
 
     // Ürün Formu Kaydet
     document.getElementById("itemForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (!requireAdminWriteAccess()) return;
       syncAdditionsFromDOM();
       const id = document.getElementById("editItemId").value;
       const existing = id ? currentMenuItems.find(i => i.id === id) : null;
       const isPizza = document.getElementById("typePizza").checked;
 
+      const cleanName = document.getElementById("editName").value.trim();
+      if (!cleanName) {
+        showToast("⚠️ Ürün adı boş olamaz.");
+        document.getElementById("editName").focus();
+        return;
+      }
+
       const rawImage = document.getElementById("editImage").value.trim();
-      if (rawImage && !/^(https:\/\/|images\/)/i.test(rawImage)) {
+      if (rawImage && !isSafeImageUrl(rawImage)) {
         alert("Güvenlik uyarısı: Görsel adresi yalnızca 'https://' ile başlayan güvenli bir link veya 'images/...' yerel görsel yolu olabilir.");
         return;
       }
 
+      const catSelect = document.getElementById("editCategory");
+      const categorySlug = (catSelect && catSelect.value) || (existing && existing.category) || "ana-urunler";
+
       const itemData = {
         id: id || undefined,
-        name: document.getElementById("editName").value.trim(),
-        category: document.getElementById("editCategory").value,
+        name: cleanName,
+        category: categorySlug,
         ingredients: document.getElementById("editDesc").value.trim(),
         badge: document.getElementById("editBadge").value.trim(),
         image: rawImage,
@@ -4257,21 +4641,35 @@
       };
 
       if (isPizza) {
-        itemData.prices = {
-          small: Number(document.getElementById("editPriceSmall").value),
-          medium: Number(document.getElementById("editPriceMedium").value),
-          xlarge: Number(document.getElementById("editPriceXlarge").value)
-        };
+        const sm = parseNonNegativeNumberInput(document.getElementById("editPriceSmall"));
+        const md = parseNonNegativeNumberInput(document.getElementById("editPriceMedium"));
+        const xl = parseNonNegativeNumberInput(document.getElementById("editPriceXlarge"));
+        if (sm === null || md === null || xl === null) {
+          showToast("⚠️ Small, Medium ve XL fiyatlarının tamamı 0 veya pozitif geçerli bir sayı olmalıdır.");
+          return;
+        }
+        itemData.prices = { small: sm, medium: md, xlarge: xl };
         itemData.fixedPrice = null;
       } else {
-        itemData.fixedPrice = Number(document.getElementById("editFixedPrice").value);
+        const fixed = parseNonNegativeNumberInput(document.getElementById("editFixedPrice"));
+        if (fixed === null) {
+          showToast("⚠️ Porsiyon fiyatı 0 veya pozitif geçerli bir sayı olmalıdır.");
+          return;
+        }
+        itemData.fixedPrice = fixed;
         itemData.prices = null;
       }
 
-      await MenuAPI.saveItem(itemData);
-      document.getElementById("itemModal").classList.remove("open");
-      showToast("Ürün başarıyla kaydedildi!");
-      loadDashboard();
+      const saveRes = await MenuAPI.saveItem(itemData);
+      if (saveRes && !saveRes._synced && saveRes._error) {
+        showToast("⚠️ Buluta kaydedilemedi: " + saveRes._error);
+      } else if (saveRes && !saveRes._synced) {
+        showToast("Ürün yerel olarak kaydedildi.");
+      } else {
+        showToast("Ürün başarıyla kaydedildi!");
+      }
+      closeItemModal();
+      await loadDashboard();
     });
 
     // Filtre & Arama
@@ -4505,6 +4903,7 @@
     const btnAddCategory = document.getElementById("btnAddCategory");
     if (btnAddCategory) {
       btnAddCategory.addEventListener("click", async () => {
+        if (!requireAdminWriteAccess()) return;
         const name = prompt("Yeni kategori adını girin (örn: Tatlılar, Soslar, Özel Burgerler):");
         if (!name || !name.trim()) return;
         try {
@@ -4542,21 +4941,31 @@
     });
 
     document.getElementById("btnClearDbConfig").addEventListener("click", () => {
+      const hasStaticConfig = Boolean(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey);
       MenuAPI.saveConfig("", "");
       document.getElementById("sbUrl").value = "";
       document.getElementById("sbKey").value = "";
       document.getElementById("dbModal").classList.remove("open");
-      showToast("Yerel moda geçildi.");
+      if (hasStaticConfig) {
+        showToast("Tarayıcı özel ayarı temizlendi (js/config.js bulut bağlantısı etkin kalır).");
+      } else {
+        showToast("Yerel moda geçildi.");
+      }
       loadDashboard();
     });
 
     document.getElementById("dbConfigForm").addEventListener("submit", (e) => {
       e.preventDefault();
+      const hasStaticConfig = Boolean(window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url && window.SUPABASE_CONFIG.anonKey);
       const url = document.getElementById("sbUrl").value.trim();
       const key = document.getElementById("sbKey").value.trim();
       MenuAPI.saveConfig(url, key);
       document.getElementById("dbModal").classList.remove("open");
-      showToast("Veritabanı ayarları kaydedildi!");
+      if (hasStaticConfig) {
+        showToast("Özel override kaydedildi (aktif bağlantı önceliği js/config.js üzerindedir).");
+      } else {
+        showToast("Veritabanı ayarları kaydedildi!");
+      }
       loadDashboard();
     });
 
@@ -4593,6 +5002,7 @@
       }
 
       const uiUser = mapAuthUserToUiUser(data.user);
+      activeSessionUser = uiUser;
       errBox.style.display = "none";
       sessionStorage.setItem(getSessionKey("admin_logged_in"), "true");
       sessionStorage.setItem(getSessionKey("user_email"), uiUser.email);
@@ -4607,6 +5017,24 @@
       if (sb && sb.auth) {
         try { await sb.auth.signOut(); } catch (e) {}
       }
+      stopAdminOrderAlertWatcher();
+      stopStoreControlWatcher();
+      closeItemModal();
+      document.querySelectorAll(".modal-backdrop.open").forEach(m => m.classList.remove("open"));
+      activeSessionUser = null;
+      adminStoreSettings = null;
+      weeklyHoursDirty = false;
+      discountDirty = false;
+      deliveryDirty = false;
+      storeMessageDirty = false;
+      currentMenuItems = [];
+      cachedDailyOrders = [];
+      cachedCustomersList = [];
+      cachedProductRows = [];
+      reportsInitialized = false;
+      adminCategoryNamesMap = { ...DEFAULT_CATEGORY_NAMES };
+      const passField = document.getElementById("loginPass");
+      if (passField) passField.value = "";
       sessionStorage.removeItem(getSessionKey("admin_logged_in"));
       sessionStorage.removeItem(getSessionKey("user_email"));
       sessionStorage.removeItem(getSessionKey("user_role"));
@@ -4624,15 +5052,7 @@
     let cachedCustomersList = [];
     let cachedProductRows = [];
     let reportsInitialized = false;
-
-    function escapeReportHtml(str) {
-      return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
+    let customersReportRequestSeq = 0;
 
     function formatTry(val) {
       const num = Number(val) || 0;
@@ -4669,8 +5089,10 @@
     }
 
     function shiftYmdDate(ymd, deltaDays) {
-      const [y, m, d] = ymd.split("-").map(Number);
-      const dt = new Date(Date.UTC(y, m - 1, d + deltaDays));
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(ymd || "").trim());
+      if (!m) return String(ymd || "");
+      const dt = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]) + (Number(deltaDays) || 0)));
+      if (Number.isNaN(dt.getTime())) return String(ymd || "");
       return dt.toISOString().slice(0, 10);
     }
 
@@ -5049,8 +5471,18 @@
       if (modal) modal.classList.remove("open");
     };
 
+    function formatWhatsAppDigits(rawPhone) {
+      const digits = String(rawPhone || "").replace(/\D/g, "");
+      if (!digits) return "";
+      if (digits.startsWith("00")) return digits.slice(2);
+      if (digits.length === 11 && digits.startsWith("0")) return "9" + digits;
+      if (digits.length === 10 && !digits.startsWith("0")) return "90" + digits;
+      return digits;
+    }
+
     window.loadCustomersReport = async function() {
       if (!window.OrderAPI) return;
+      const reqSeq = ++customersReportRequestSeq;
       const search = document.getElementById("reportCustomerSearch")?.value || "";
       const sortBy = document.getElementById("reportCustomerSort")?.value || "total_spent";
       const tbody = document.getElementById("reportCustomersTableBody");
@@ -5058,6 +5490,7 @@
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="report-empty-cell">Müşteri listesi yükleniyor...</td></tr>`;
 
       const list = await OrderAPI.getCustomers(search, sortBy);
+      if (reqSeq !== customersReportRequestSeq) return;
       cachedCustomersList = list;
 
       const totalOrders = list.reduce((s, c) => s + (Number(c.order_count) || 0), 0);
@@ -5073,24 +5506,22 @@
       }
 
       tbody.innerHTML = list.map((c, idx) => {
-        const waDigits = c.phone_normalized && c.phone_normalized.startsWith("0")
-          ? "9" + c.phone_normalized
-          : (c.phone_normalized || "");
+        const waDigits = formatWhatsAppDigits(c.phone_normalized || c.phone_display);
         const waLink = waDigits.length >= 10
-          ? `<a href="https://wa.me/${escapeReportHtml(waDigits)}" target="_blank" rel="noopener" style="font-size:0.74rem; color:#1b6b3a; font-weight:700; text-decoration:none; margin-left:6px;" title="WhatsApp ile mesaj aç">💬</a>`
+          ? `<a href="https://wa.me/${escapeHtml(waDigits)}" target="_blank" rel="noopener" style="font-size:0.74rem; color:#1b6b3a; font-weight:700; text-decoration:none; margin-left:6px;" title="WhatsApp ile mesaj aç">💬</a>`
           : "";
         const noteText = (c.notes || "").trim();
         return `
           <tr>
-            <td style="font-weight:700; color:var(--ink-900);">${escapeReportHtml(c.customer_name || "Müşteri")}</td>
-            <td style="white-space:nowrap;">${escapeReportHtml(c.phone_display || c.phone_normalized || "—")}${waLink}</td>
-            <td style="max-width:240px; font-size:0.82rem; color:var(--ink-500);">${escapeReportHtml(c.last_address || "—")}</td>
+            <td style="font-weight:700; color:var(--ink-900);">${escapeHtml(c.customer_name || "Müşteri")}</td>
+            <td style="white-space:nowrap;">${escapeHtml(c.phone_display || c.phone_normalized || "—")}${waLink}</td>
+            <td style="max-width:240px; font-size:0.82rem; color:var(--ink-500);">${escapeHtml(c.last_address || "—")}</td>
             <td style="text-align:center; font-weight:700;">${Number(c.order_count) || 0}</td>
             <td style="font-weight:700; color:var(--ginger-600);">${formatTry(c.total_spent)}</td>
-            <td style="font-size:0.8rem; color:var(--ink-500); white-space:nowrap;">${escapeReportHtml(formatIstanbulDateTime(c.last_order_at))}</td>
+            <td style="font-size:0.8rem; color:var(--ink-500); white-space:nowrap;">${escapeHtml(formatIstanbulDateTime(c.last_order_at))}</td>
             <td>
-              <button type="button" class="btn-header" style="padding:4px 9px; font-size:0.75rem;" onclick="editCustomerNote(${idx})" title="${escapeReportHtml(noteText || 'Müşteri notu ekle')}">
-                ${noteText ? "📝 " + escapeReportHtml(noteText.slice(0, 18) + (noteText.length > 18 ? "…" : "")) : "+ Not"}
+              <button type="button" class="btn-header" style="padding:4px 9px; font-size:0.75rem;" onclick="editCustomerNote(${idx})" title="${escapeHtml(noteText || 'Müşteri notu ekle')}">
+                ${noteText ? "📝 " + escapeHtml(noteText.slice(0, 18) + (noteText.length > 18 ? "…" : "")) : "+ Not"}
               </button>
             </td>
           </tr>
@@ -5126,21 +5557,24 @@
     window.loadProductRangeReport = async function() {
       if (!window.OrderAPI) return;
       const today = OrderAPI.getIstanbulTodayStr();
-      const start = document.getElementById("reportRangeStart")?.value || today;
-      const end = document.getElementById("reportRangeEnd")?.value || today;
+      const rawStart = document.getElementById("reportRangeStart")?.value || today;
+      const rawEnd = document.getElementById("reportRangeEnd")?.value || today;
+      const [start, end] = rawStart <= rawEnd ? [rawStart, rawEnd] : [rawEnd, rawStart];
       const tbody = document.getElementById("reportProductsTableBody");
       const summary = document.getElementById("reportProductsSummary");
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="report-empty-cell">Ürün satışları hesaplanıyor...</td></tr>`;
 
       const orders = await OrderAPI.getOrdersByDateRange(start, end);
-      const validOrders = orders.filter(o => o.status !== "cancelled");
+      const validOrders = orders.filter(
+        o => o && o.status !== "cancelled" && o.status !== "pending_payment" && o.payment_status !== "payment_failed"
+      );
       const rows = OrderAPI.aggregateProductReport(orders);
       cachedProductRows = rows;
 
       const totalUnits = rows.reduce((s, r) => s + r.totalQty, 0);
       const totalItemRev = rows.reduce((s, r) => s + r.revenue, 0);
       if (summary) {
-        summary.innerHTML = `<span><strong>${escapeReportHtml(start)}</strong> – <strong>${escapeReportHtml(end)}</strong> (${validOrders.length} geçerli sipariş)</span><span>Toplam <strong>${totalUnits}</strong> adet ürün • Kalem Cirosu: <strong>${formatTry(totalItemRev)}</strong></span>`;
+        summary.innerHTML = `<span><strong>${escapeHtml(start)}</strong> – <strong>${escapeHtml(end)}</strong> (${validOrders.length} geçerli sipariş)</span><span>Toplam <strong>${totalUnits}</strong> adet ürün • Kalem Cirosu: <strong>${formatTry(totalItemRev)}</strong></span>`;
       }
 
       if (!tbody) return;
@@ -5151,7 +5585,7 @@
 
       tbody.innerHTML = rows.map(r => `
         <tr>
-          <td style="font-weight:700; color:var(--ink-900);">${escapeReportHtml(r.name)}</td>
+          <td style="font-weight:700; color:var(--ink-900);">${escapeHtml(r.name)}</td>
           <td style="text-align:center; font-weight:700; color:var(--ginger-600);">${r.totalQty}</td>
           <td style="text-align:center;">${r.smallQty || "—"}</td>
           <td style="text-align:center;">${r.mediumQty || "—"}</td>
@@ -5162,9 +5596,16 @@
       `).join("");
     };
 
+    function formatCsvCell(v) {
+      let s = String(v ?? "");
+      if (/^[=+\-@\t\r]/.test(s)) {
+        s = "'" + s;
+      }
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+
     function downloadCsvRows(filename, headers, rows) {
-      const csvEscape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const lines = [headers.map(csvEscape).join(";"), ...rows.map(r => r.map(csvEscape).join(";"))];
+      const lines = [headers.map(formatCsvCell).join(";"), ...rows.map(r => r.map(formatCsvCell).join(";"))];
       const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -5335,6 +5776,7 @@
       const targetUrl = getQrTargetUrl();
       const info = window.__ACTIVE_RESTAURANT_INFO__;
       const brandName = (info && info.name) ? info.name : "Ginger Pizza";
+      const safeBrandName = escapeHtml(brandName);
       const hiRes = document.createElement("canvas");
       if (!drawQrToCanvas(hiRes, targetUrl, 700)) {
         showToast("QR kütüphanesi henüz yüklenemedi.");
@@ -5346,9 +5788,9 @@
         showToast("Lütfen açılır pencere (popup) izni verin.");
         return;
       }
-      win.document.write(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>${brandName} — Paket Servis QR</title>
+      win.document.write(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>${safeBrandName} — Paket Servis QR</title>
         <style>body{font-family:system-ui,sans-serif;text-align:center;padding:40px 24px;color:#1b1411;} .card{border:2px solid #d86a1a;border-radius:20px;padding:32px 24px;max-width:380px;margin:0 auto;} h1{font-size:24px;margin:0 0 8px;} p{font-size:15px;color:#554740;margin:0 0 20px;} img{width:260px;height:260px;display:block;margin:0 auto 18px;} .foot{font-size:13px;font-weight:700;color:#b8500c;}</style>
-        </head><body><div class="card"><h1>${brandName}</h1><p>Online Paket Servis Siparişi İçin Okutun</p><img src="${dataUrl}" alt="QR Kod"><div class="foot">Hızlı Menü &amp; Online Sipariş</div></div>
+        </head><body><div class="card"><h1>${safeBrandName}</h1><p>Online Paket Servis Siparişi İçin Okutun</p><img src="${dataUrl}" alt="QR Kod"><div class="foot">Hızlı Menü &amp; Online Sipariş</div></div>
         <script>window.onload=function(){setTimeout(function(){window.print();},200);};<\/script></body></html>`);
       win.document.close();
     };
@@ -5438,7 +5880,42 @@
     };
 
     // Toplu Ürün İçe Aktarma (Excel / Liste Yapıştır)
+    function parseBulkPrice(raw) {
+      let cleaned = String(raw ?? "").replace(/[^\d.,-]/g, "").trim();
+      if (!cleaned) return NaN;
+      const lastComma = cleaned.lastIndexOf(",");
+      const lastDot = cleaned.lastIndexOf(".");
+      if (lastComma !== -1 && lastDot !== -1) {
+        cleaned = lastComma > lastDot
+          ? cleaned.replace(/\./g, "").replace(",", ".")
+          : cleaned.replace(/,/g, "");
+      } else if (lastComma !== -1) {
+        const decPart = cleaned.slice(lastComma + 1);
+        const intPartDigits = cleaned.slice(0, lastComma).replace(/\D/g, "");
+        cleaned = (decPart.length === 3 && intPartDigits.length >= 1)
+          ? cleaned.replace(/,/g, "")
+          : cleaned.replace(",", ".");
+      } else if (lastDot !== -1) {
+        const dotParts = cleaned.split(".");
+        if (dotParts.length > 2 || (dotParts.length === 2 && dotParts[1].length === 3 && Number(dotParts[0]) >= 1)) {
+          cleaned = cleaned.replace(/\./g, "");
+        }
+      }
+      const num = Number(cleaned);
+      return Number.isFinite(num) ? Math.max(0, num) : NaN;
+    }
+
+    function slugifyBulkCategoryName(name) {
+      return String(name || "")
+        .trim()
+        .toLocaleLowerCase("tr-TR")
+        .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
+        .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || ("kategori-" + Date.now());
+    }
+
     window.openBulkImportModal = function() {
+      if (!requireAdminWriteAccess()) return;
       const st = document.getElementById("bulkImportStatus");
       if (st) st.style.display = "none";
       document.getElementById("bulkImportModal")?.classList.add("open");
@@ -5449,6 +5926,7 @@
     };
 
     window.handleRunBulkImport = async function() {
+      if (!requireAdminWriteAccess()) return;
       const ta = document.getElementById("bulkImportTextarea");
       const st = document.getElementById("bulkImportStatus");
       const btn = document.getElementById("btnRunBulkImport");
@@ -5473,7 +5951,10 @@
 
       try {
         let cats = await MenuAPI.getCategories();
+        if (!Array.isArray(cats)) cats = [];
+        const hasCloudDb = Boolean(typeof window.getSupabaseClient === "function" && window.getSupabaseClient());
         let addedCount = 0;
+        let unsyncedCount = 0;
 
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
@@ -5494,56 +5975,79 @@
           let fixedPrice = 0;
           let prices = null;
 
-          if (parts.length >= 6 && !isNaN(Number(parts[3])) && !isNaN(Number(parts[4])) && !isNaN(Number(parts[5]))) {
+          const smCandidate = parts.length >= 6 ? parseBulkPrice(parts[3]) : NaN;
+          const mdCandidate = parts.length >= 6 ? parseBulkPrice(parts[4]) : NaN;
+          const xlCandidate = parts.length >= 6 ? parseBulkPrice(parts[5]) : NaN;
+
+          if (parts.length >= 6 && Number.isFinite(smCandidate) && Number.isFinite(mdCandidate) && Number.isFinite(xlCandidate)) {
             desc = parts[2] || "";
             isPizza = true;
             prices = {
-              small: Math.max(0, Number(parts[3]) || 0),
-              medium: Math.max(0, Number(parts[4]) || 0),
-              xlarge: Math.max(0, Number(parts[5]) || 0)
+              small: smCandidate,
+              medium: mdCandidate,
+              xlarge: xlCandidate
             };
           } else if (parts.length >= 4) {
             desc = parts[2] || "";
-            fixedPrice = Math.max(0, Number(String(parts[3]).replace(/[^\d.]/g, "")) || 0);
+            const parsed = parseBulkPrice(parts[3]);
+            if (!Number.isFinite(parsed)) continue;
+            fixedPrice = parsed;
           } else {
-            fixedPrice = Math.max(0, Number(String(parts[2]).replace(/[^\d.]/g, "")) || 0);
+            const parsed = parseBulkPrice(parts[2]);
+            if (!Number.isFinite(parsed)) continue;
+            fixedPrice = parsed;
           }
 
           let targetCat = cats.find(c =>
-            c.name.toLocaleLowerCase("tr-TR") === catName.toLocaleLowerCase("tr-TR")
+            String(c.name || "").toLocaleLowerCase("tr-TR") === catName.toLocaleLowerCase("tr-TR")
             || c.slug === catName.toLocaleLowerCase("tr-TR")
+            || c.slug === slugifyBulkCategoryName(catName)
           );
           if (!targetCat) {
-            const created = await MenuAPI.createCategory(catName);
-            if (created && created.slug) {
-              cats = await MenuAPI.getCategories();
-              targetCat = cats.find(c => c.slug === created.slug) || created;
+            if (hasCloudDb) {
+              const created = await MenuAPI.createCategory(catName);
+              if (created && created.slug) {
+                cats = await MenuAPI.getCategories();
+                targetCat = cats.find(c => c.slug === created.slug) || created;
+              }
+            } else {
+              targetCat = { slug: slugifyBulkCategoryName(catName), name: catName };
+              cats.push(targetCat);
             }
           }
 
           const categorySlug = (targetCat && targetCat.slug) || (cats[0] && cats[0].slug) || "ana-urunler";
 
-          await MenuAPI.saveItem({
+          const saveRes = await MenuAPI.saveItem({
             name: itemName,
             category: categorySlug,
-            desc,
+            ingredients: desc,
             badge: "",
             image: "",
-            available: true,
-            isPizza,
+            isAvailable: true,
             prices: isPizza ? prices : null,
             fixedPrice: isPizza ? null : fixedPrice,
             modifiers: { removals: [], additions: [] }
           });
 
-          addedCount++;
-          if (st) st.textContent = `${addedCount} / ${lines.length} ürün eklendi...`;
+          if (hasCloudDb && saveRes && saveRes._synced === false) {
+            unsyncedCount++;
+          } else {
+            addedCount++;
+          }
+          if (st) st.textContent = `${addedCount + unsyncedCount} / ${lines.length} ürün işlendi...`;
         }
 
         if (ta) ta.value = "";
         closeBulkImportModal();
         await loadDashboard();
-        showToast(`🎉 ${addedCount} ürün başarıyla menüye eklendi!`);
+        if (unsyncedCount > 0 && addedCount === 0) {
+          showToast(`⚠️ ${unsyncedCount} ürün buluta senkronize edilemedi.`);
+        } else if (unsyncedCount > 0) {
+          showToast(`🎉 ${addedCount} ürün buluta eklendi, ${unsyncedCount} ürün senkronize edilemedi.`);
+        } else {
+          showToast(`🎉 ${addedCount} ürün başarıyla menüye eklendi!`);
+        }
       } catch (err) {
         alert("Toplu ürün aktarımında hata: " + (err.message || err));
       } finally {
@@ -5618,6 +6122,41 @@
         }
       }
     };
+
+    function closeOpenAdminModal(modal) {
+      if (!modal) return;
+      const closeMap = {
+        itemModal: closeItemModal,
+        resetConfirmModal: window.closeResetConfirmModal,
+        resetSalesConfirmModal: window.closeResetSalesConfirmModal,
+        paytrPasswordModal: window.closePaytrPasswordModal,
+        reportOrderDetailModal: window.closeReportOrderDetail,
+        bulkImportModal: window.closeBulkImportModal,
+        cloneMenuModal: window.closeCloneMenuModal,
+        qrCodeModal: window.closeQrCodeModal,
+        changePasswordModal: window.closeChangePasswordModal
+      };
+      const fn = closeMap[modal.id];
+      if (typeof fn === "function") {
+        fn();
+      } else {
+        modal.classList.remove("open");
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      if (e.target && e.target.classList && e.target.classList.contains("modal-backdrop") && e.target.classList.contains("open")) {
+        closeOpenAdminModal(e.target);
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      const openModals = document.querySelectorAll(".modal-backdrop.open");
+      if (openModals.length > 0) {
+        closeOpenAdminModal(openModals[openModals.length - 1]);
+      }
+    });
 
     // Başlat
     (async () => {
