@@ -3280,7 +3280,7 @@
       container.innerHTML = list.map((item, idx) => `
         <div class="payment-method-item ${item.enabled ? '' : 'is-disabled'}">
           <div style="display:flex; align-items:center; gap:8px; min-width:0; flex-wrap:wrap;">
-            <span style="font-weight:700; color:var(--ink-900); font-size:0.86rem;">🚫 ${escapeHtml(item.label)}</span>
+            <span style="font-weight:700; color:var(--ink-900); font-size:0.86rem;">🚫 ${escapeModHtml(item.label)}</span>
             ${item.isDefault ? '<span class="badge-default">Varsayılan</span>' : ''}
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
