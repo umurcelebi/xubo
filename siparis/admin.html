@@ -2570,7 +2570,7 @@
   <!-- Menu API, Dükkan Durumu & Sipariş/Rapor API -->
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/menu-api.js?v=20261114b"></script>
-  <script src="js/store-status.js?v=20261114e"></script>
+  <script src="js/store-status.js?v=20261114f"></script>
   <script src="js/order-api.js?v=20261114k"></script>
 
   <script>
@@ -3305,7 +3305,9 @@
       const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
       adminStoreSettings = res.settings;
       renderRejectionReasonsEditor();
-      showToast(`"${list[idx].label}" ${enabled ? "aktif edildi" : "pasif edildi"}.`);
+      showToast(res.synced
+        ? `"${list[idx].label}" ${enabled ? "aktif edildi" : "pasif edildi"}.`
+        : `"${list[idx].label}" yalnızca yerel olarak güncellendi (bulut senkronizasyonu başarısız).`);
     };
 
     window.addCustomRejectionReason = async function() {
@@ -3328,7 +3330,9 @@
       adminStoreSettings = res.settings;
       if (inputEl) inputEl.value = "";
       renderRejectionReasonsEditor();
-      showToast(`"${text}" reddetme seçeneklerine eklendi.`);
+      showToast(res.synced
+        ? `"${text}" reddetme seçeneklerine eklendi.`
+        : `"${text}" yerel olarak eklendi (bulut senkronizasyonu başarısız).`);
     };
 
     window.removeRejectionReason = async function(idx) {
@@ -3341,7 +3345,9 @@
       const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: list });
       adminStoreSettings = res.settings;
       renderRejectionReasonsEditor();
-      showToast(`"${removed.label}" kaldırıldı.`);
+      showToast(res.synced
+        ? `"${removed.label}" kaldırıldı.`
+        : `"${removed.label}" yerel olarak kaldırıldı (bulut senkronizasyonu başarısız).`);
     };
 
     window.resetDefaultRejectionReasons = async function() {
@@ -3359,7 +3365,9 @@
       const res = await StoreStatus.saveSettings({ ...current, rejection_reasons: merged });
       adminStoreSettings = res.settings;
       renderRejectionReasonsEditor();
-      showToast("Varsayılan reddetme seçenekleri geri yüklendi.");
+      showToast(res.synced
+        ? "Varsayılan reddetme seçenekleri geri yüklendi."
+        : "Varsayılanlar yerel olarak geri yüklendi (bulut senkronizasyonu başarısız).");
     };
 
     function renderPaytrConfigState(cfg) {
@@ -3606,6 +3614,7 @@
           syncAdminDiscountInputsFromSettings(adminStoreSettings);
           renderWeeklyHoursEditor();
           try { renderPaymentMethodsEditor(); } catch (e) { console.warn("Payment methods render skipped:", e); }
+          try { renderRejectionReasonsEditor(); } catch (e) { console.warn("Rejection reasons render skipped:", e); }
         });
         setInterval(renderAdminStoreStatusOnly, 30000);
       }

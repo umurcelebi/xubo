@@ -721,18 +721,19 @@ const StoreStatus = {
       window.removeEventListener("storage", handleStorage);
       if (channel && sb) sb.removeChannel(channel);
     };
-  }
-};
+  },
 
-window.StoreStatus = {
-  ...StoreStatus,
   getDefaultRejectionReasons() {
     return [...DEFAULT_REJECTION_REASONS];
   },
+
   getRejectionReasonItems(settings) {
     return normalizeRejectionReasonItems(settings && settings.rejection_reasons);
   },
+
   getRejectionReasons(settings) {
     return normalizeRejectionReasons(settings && settings.rejection_reasons);
   }
 };
+
+window.StoreStatus = StoreStatus;
