@@ -1631,65 +1631,6 @@
           </div>
         </div>
 
-        <!-- PayTR Online Kredi / Banka Kartı Entegrasyonu (Restoran Bazlı) -->
-        <div id="adminPaytrConfigBox" class="payment-methods-box" style="margin-top: 12px;">
-          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 10px;">
-            <div>
-              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <span style="font-size: 0.92rem; font-weight: 800; color: var(--ink-900);">💳 PayTR Online Kredi / Banka Kartı (3D Secure)</span>
-                <span id="adminPaytrStatusBadge" style="font-size:0.74rem; font-weight:700; padding:3px 10px; border-radius:999px; background:#f3f4f6; color:#4b5563;">⚪ Kapalı</span>
-              </div>
-              <div style="font-size: 0.8rem; color: var(--ink-500); margin-top: 3px;">
-                Kendi PayTR mağaza bilgilerinizi girerek web sitenizden doğrudan kredi/banka kartı ile tahsilat alabilirsiniz.
-              </div>
-            </div>
-            <div style="display:inline-flex; align-items:center; gap:10px;">
-              <label class="switch" title="Online kart ödemesini aç / kapat">
-                <input type="checkbox" id="adminPaytrEnabled" onchange="updatePaytrBadgePreview()">
-                <span class="slider"></span>
-              </label>
-              <label for="adminPaytrEnabled" id="adminPaytrToggleText" style="font-size:0.84rem; font-weight:700; cursor:pointer;">Kapalı</label>
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:10px; margin-bottom:10px;">
-            <div>
-              <label class="form-label" for="adminPaytrMerchantId" style="font-size:0.78rem; margin-bottom:4px;">Mağaza No (Merchant ID)</label>
-              <input type="text" id="adminPaytrMerchantId" class="report-input" style="width:100%;" placeholder="Örn: 123456" autocomplete="off">
-            </div>
-            <div>
-              <label class="form-label" for="adminPaytrMerchantKey" style="font-size:0.78rem; margin-bottom:4px;">Mağaza Parolası (Merchant Key)</label>
-              <input type="password" id="adminPaytrMerchantKey" class="report-input" style="width:100%;" placeholder="Yeni key girin" autocomplete="new-password">
-              <div id="adminPaytrKeyHint" style="font-size:0.72rem; color:var(--ink-500); margin-top:3px;">Henüz kayıtlı değil</div>
-            </div>
-            <div>
-              <label class="form-label" for="adminPaytrMerchantSalt" style="font-size:0.78rem; margin-bottom:4px;">Mağaza Gizli Anahtarı (Merchant Salt)</label>
-              <input type="password" id="adminPaytrMerchantSalt" class="report-input" style="width:100%;" placeholder="Yeni salt girin" autocomplete="new-password">
-              <div id="adminPaytrSaltHint" style="font-size:0.72rem; color:var(--ink-500); margin-top:3px;">Henüz kayıtlı değil</div>
-            </div>
-          </div>
-
-          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--sand-50); border:1px dashed var(--sand-300); border-radius:8px; margin-bottom:10px;">
-            <div style="min-width:0; flex:1;">
-              <div style="font-size:0.76rem; font-weight:700; color:var(--ink-700);">PayTR Bildirim (Callback) URL — PayTR Paneli &gt; Ayarlar kısmına yapıştırın:</div>
-              <code id="adminPaytrCallbackUrl" style="display:block; font-size:0.75rem; color:var(--ginger-600); word-break:break-all; margin-top:2px;"></code>
-            </div>
-            <button type="button" class="btn-header" onclick="copyPaytrCallbackUrl()" style="padding:6px 12px; font-size:0.78rem; white-space:nowrap;">
-              📋 URL Kopyala
-            </button>
-          </div>
-
-          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
-            <label style="display:inline-flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:700; color:var(--ink-700); cursor:pointer;">
-              <input type="checkbox" id="adminPaytrTestMode" checked onchange="updatePaytrBadgePreview()" style="width:16px; height:16px; accent-color:#e67e22;">
-              <span>🧪 Test / Sandbox Modu (Canlıya geçmeden önce açık bırakın)</span>
-            </label>
-            <button type="button" class="btn-header btn-header-primary" id="btnSavePaytrConfig" onclick="savePaytrSettings()">
-              💾 PayTR Ayarlarını Kaydet
-            </button>
-          </div>
-        </div>
-
         <div class="store-discount-card" style="margin-bottom: 16px;">
           <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
             <div>
@@ -2059,6 +2000,65 @@
             </div>
           </div>
         </div>
+
+        <!-- PayTR Online Kredi / Banka Kartı Entegrasyonu (Şifre Korumalı) -->
+        <div id="adminPaytrConfigBox" style="background: #ffffff; border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 18px;">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size: 1.05rem; font-weight: 800; color: var(--ink-900);">💳 PayTR Online Kredi / Banka Kartı (3D Secure)</span>
+                <span id="adminPaytrStatusBadge" style="font-size:0.74rem; font-weight:700; padding:3px 10px; border-radius:999px; background:#f3f4f6; color:#4b5563;">⚪ Kapalı</span>
+              </div>
+              <div style="font-size: 0.82rem; color: var(--ink-500); margin-top: 3px;">
+                Kendi PayTR mağaza bilgilerinizi girerek web sitenizden doğrudan kredi/banka kartı ile tahsilat alabilirsiniz. Değişiklikleri kaydetmek için restoran admin şifresi istenir.
+              </div>
+            </div>
+            <div style="display:inline-flex; align-items:center; gap:10px;">
+              <label class="switch" title="Online kart ödemesini aç / kapat">
+                <input type="checkbox" id="adminPaytrEnabled" onchange="updatePaytrBadgePreview()">
+                <span class="slider"></span>
+              </label>
+              <label for="adminPaytrEnabled" id="adminPaytrToggleText" style="font-size:0.84rem; font-weight:700; cursor:pointer;">Kapalı</label>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:12px; margin-bottom:12px;">
+            <div>
+              <label class="form-label" for="adminPaytrMerchantId" style="font-size:0.78rem; margin-bottom:4px;">Mağaza No (Merchant ID)</label>
+              <input type="text" id="adminPaytrMerchantId" class="report-input" style="width:100%;" placeholder="Örn: 123456" autocomplete="off">
+            </div>
+            <div>
+              <label class="form-label" for="adminPaytrMerchantKey" style="font-size:0.78rem; margin-bottom:4px;">Mağaza Parolası (Merchant Key)</label>
+              <input type="password" id="adminPaytrMerchantKey" class="report-input" style="width:100%;" placeholder="Yeni key girin" autocomplete="new-password">
+              <div id="adminPaytrKeyHint" style="font-size:0.72rem; color:var(--ink-500); margin-top:3px;">Henüz kayıtlı değil</div>
+            </div>
+            <div>
+              <label class="form-label" for="adminPaytrMerchantSalt" style="font-size:0.78rem; margin-bottom:4px;">Mağaza Gizli Anahtarı (Merchant Salt)</label>
+              <input type="password" id="adminPaytrMerchantSalt" class="report-input" style="width:100%;" placeholder="Yeni salt girin" autocomplete="new-password">
+              <div id="adminPaytrSaltHint" style="font-size:0.72rem; color:var(--ink-500); margin-top:3px;">Henüz kayıtlı değil</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--sand-50); border:1px dashed var(--sand-300); border-radius:8px; margin-bottom:12px;">
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:0.76rem; font-weight:700; color:var(--ink-700);">PayTR Bildirim (Callback) URL — PayTR Paneli &gt; Ayarlar kısmına yapıştırın:</div>
+              <code id="adminPaytrCallbackUrl" style="display:block; font-size:0.75rem; color:var(--ginger-600); word-break:break-all; margin-top:2px;"></code>
+            </div>
+            <button type="button" class="btn-header" onclick="copyPaytrCallbackUrl()" style="padding:6px 12px; font-size:0.78rem; white-space:nowrap;">
+              📋 URL Kopyala
+            </button>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
+            <label style="display:inline-flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:700; color:var(--ink-700); cursor:pointer;">
+              <input type="checkbox" id="adminPaytrTestMode" checked onchange="updatePaytrBadgePreview()" style="width:16px; height:16px; accent-color:#e67e22;">
+              <span>🧪 Test / Sandbox Modu (Canlıya geçmeden önce açık bırakın)</span>
+            </label>
+            <button type="button" class="btn-header btn-header-primary" id="btnSavePaytrConfig" onclick="requestPaytrSaveWithPassword()">
+              🔒 Şifre ile PayTR Ayarlarını Kaydet
+            </button>
+          </div>
+        </div>
       </section>
     </main>
   </div>
@@ -2298,6 +2298,31 @@
           <button type="button" class="btn-header" onclick="closeResetConfirmModal()">Vazgeç</button>
           <button type="submit" class="btn-header" id="btnResetStep2Confirm" style="background: var(--danger); border-color: var(--danger); color: var(--white);">
             ⚠️ Kesin Olarak Sıfırla (2/2)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       6A-2. MODAL: PAYTR AYARLARI KAYIT ŞİFRE DOĞRULAMASI
+       ======================================================================== -->
+  <div id="paytrPasswordModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width: 440px;">
+      <h2 class="modal-title" style="margin-bottom: 6px;">🔒 PayTR Ayarlarını Onayla</h2>
+      <p style="font-size: 0.85rem; color: var(--ink-500); margin-bottom: 14px;">
+        Online ödeme ayarları kritik mağaza bilgisi içerdiğinden devam etmek için restoran admin şifrenizi girin.
+      </p>
+      <form id="paytrPasswordForm">
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label class="form-label" for="paytrConfirmAdminPassword">Restoran Admin Şifresi *</label>
+          <input type="password" id="paytrConfirmAdminPassword" class="form-input" placeholder="Admin şifrenizi girin" autocomplete="current-password" required>
+        </div>
+        <div id="paytrPasswordError" style="display: none; color: var(--danger); font-size: 0.82rem; font-weight: 700; margin-bottom: 10px;"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-header" onclick="closePaytrPasswordModal()">İptal</button>
+          <button type="submit" class="btn-header btn-header-primary" id="btnConfirmPaytrPassword">
+            💾 Doğrula ve Kaydet
           </button>
         </div>
       </form>
@@ -3411,6 +3436,87 @@
       }
     }
 
+    window.closePaytrPasswordModal = function() {
+      const modal = document.getElementById("paytrPasswordModal");
+      const passInput = document.getElementById("paytrConfirmAdminPassword");
+      const errBox = document.getElementById("paytrPasswordError");
+      if (modal) modal.classList.remove("open");
+      if (passInput) passInput.value = "";
+      if (errBox) {
+        errBox.style.display = "none";
+        errBox.textContent = "";
+      }
+    };
+
+    window.requestPaytrSaveWithPassword = function() {
+      const modal = document.getElementById("paytrPasswordModal");
+      const passInput = document.getElementById("paytrConfirmAdminPassword");
+      const errBox = document.getElementById("paytrPasswordError");
+      if (passInput) passInput.value = "";
+      if (errBox) {
+        errBox.style.display = "none";
+        errBox.textContent = "";
+      }
+      if (modal) modal.classList.add("open");
+      setTimeout(() => { if (passInput) passInput.focus(); }, 60);
+    };
+
+    document.getElementById("paytrPasswordForm")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const passInput = document.getElementById("paytrConfirmAdminPassword");
+      const errBox = document.getElementById("paytrPasswordError");
+      const submitBtn = document.getElementById("btnConfirmPaytrPassword");
+      const entered = (passInput?.value || "").trim();
+      if (!entered) {
+        if (errBox) {
+          errBox.textContent = "Lütfen restoran admin şifrenizi girin.";
+          errBox.style.display = "block";
+        }
+        return;
+      }
+
+      const sb = window.getSupabaseClient ? window.getSupabaseClient() : null;
+      if (!sb) {
+        if (errBox) {
+          errBox.textContent = "Supabase bağlantısı hazır değil.";
+          errBox.style.display = "block";
+        }
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Doğrulanıyor...";
+      }
+      try {
+        const { data: userData } = await sb.auth.getUser();
+        const email = userData && userData.user ? userData.user.email : "";
+        if (!email) {
+          if (errBox) {
+            errBox.textContent = "Oturum bilgisi alınamadı. Lütfen yeniden giriş yapın.";
+            errBox.style.display = "block";
+          }
+          return;
+        }
+        const { error: authErr } = await sb.auth.signInWithPassword({ email, password: entered });
+        if (authErr) {
+          if (errBox) {
+            errBox.textContent = "❌ Hatalı restoran admin şifresi! Değişiklikler kaydedilmedi.";
+            errBox.style.display = "block";
+          }
+          if (passInput) passInput.select();
+          return;
+        }
+        closePaytrPasswordModal();
+        await savePaytrSettings();
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "💾 Doğrula ve Kaydet";
+        }
+      }
+    });
+
     window.savePaytrSettings = async function() {
       if (!window.StoreStatus || typeof StoreStatus.savePaytrConfig !== "function") return;
       const btn = document.getElementById("btnSavePaytrConfig");
@@ -3447,7 +3553,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = "💾 PayTR Ayarlarını Kaydet";
+          btn.textContent = "🔒 Şifre ile PayTR Ayarlarını Kaydet";
         }
       }
     };
@@ -4586,6 +4692,7 @@
         else if (activeReportSubtab === "products") loadProductRangeReport();
       } else if (tabName === "profile") {
         loadStoreProfileForm();
+        loadPaytrConfigPanel();
       }
     };
 
