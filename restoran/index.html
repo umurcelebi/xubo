@@ -349,9 +349,17 @@
     </div>
 
     <!-- Restoran Kartları -->
-    <div class="section-head">
+    <div class="section-head" style="flex-wrap: wrap; gap: 10px;">
       <h2 class="section-title">Kayıtlı Restoranlar</h2>
-      <button class="btn" onclick="loadRestaurants()" style="font-size: 0.8rem; padding: 6px 12px;">🔄 Yenile</button>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <input type="text" id="masterSearchInput" class="form-input" placeholder="🔍 Mağaza adı, slug veya domain ara..." oninput="applyMasterFilters()" style="width: 240px; padding: 6px 12px; font-size: 0.82rem;">
+        <select id="masterStatusFilter" class="form-input" onchange="applyMasterFilters()" style="width: 150px; padding: 6px 10px; font-size: 0.82rem;">
+          <option value="all">Tüm Durumlar</option>
+          <option value="active">● Sadece Yayında</option>
+          <option value="inactive">○ Sadece Kapalı</option>
+        </select>
+        <button class="btn" onclick="loadRestaurants()" style="font-size: 0.8rem; padding: 6px 12px;">🔄 Yenile</button>
+      </div>
     </div>
 
     <div class="restaurants-grid" id="restaurantsContainer">
@@ -398,6 +406,18 @@
         <div class="form-group">
           <label class="form-label" for="newRestColor">Marka / Tema Rengi</label>
           <input type="color" id="newRestColor" value="#d86a1a" style="width: 100%; height: 38px; border-radius: 8px; background: none; border: 1px solid var(--card-border); cursor: pointer;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="newRestMenuTemplate">📋 Başlangıç Menüsü / Şablon</label>
+          <select id="newRestMenuTemplate" class="form-input">
+            <option value="">Boş Menü (Sadece 4 Başlangıç Kategorisi)</option>
+            <option value="__template_burger__">🍔 Hazır Burgerci Şablonu (4 Kategori, 7 Örnek Ürün)</option>
+            <option value="__template_pizza__">🍕 Hazır Pizzacı Şablonu (4 Kategori, 3 Boyutlu Pizzalar)</option>
+            <option value="we-smash-the-burger">🍔 We Smash The Burger Menüsünü Birebir Kopyala</option>
+            <option value="ginger-pizza">🍕 Ginger Pizza Menüsünü Birebir Kopyala</option>
+          </select>
+          <div class="form-hint">Seçerseniz yeni mağaza örnek ürünler veya seçilen şubenin menüsüyle hazır açılır.</div>
         </div>
 
         <div class="modal-actions">
@@ -649,11 +669,24 @@
         }
 
         cachedRestaurants = list;
-        renderRestaurants(list);
+        applyMasterFilters();
         updateKPIs(list);
       } catch (err) {
         console.error("Restoranlar yüklenemedi:", err);
       }
+    }
+
+    function applyMasterFilters() {
+      const q = (document.getElementById("masterSearchInput")?.value || "").trim().toLocaleLowerCase("tr-TR");
+      const status = document.getElementById("masterStatusFilter")?.value || "all";
+      const filtered = cachedRestaurants.filter(r => {
+        if (status === "active" && !r.is_active) return false;
+        if (status === "inactive" && r.is_active) return false;
+        if (!q) return true;
+        const hay = `${r.name || ""} ${r.slug || ""} ${r.custom_domain || ""} ${r.admin_email || ""}`.toLocaleLowerCase("tr-TR");
+        return hay.includes(q);
+      });
+      renderRestaurants(filtered);
     }
 
     function updateKPIs(list) {
@@ -839,6 +872,7 @@
       const address = document.getElementById("newRestAddress").value.trim();
       const customDomain = document.getElementById("newRestDomain").value.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
       const primaryColor = document.getElementById("newRestColor").value;
+      const menuTemplate = (document.getElementById("newRestMenuTemplate")?.value || "").trim();
 
       const btn = document.getElementById("btnSubmitCreate");
       btn.disabled = true;
@@ -861,6 +895,17 @@
         }
 
         const finalSlug = (data && data.slug) || slug;
+        if (menuTemplate && finalSlug) {
+          try {
+            await supabaseClient.rpc("clone_restaurant_menu", {
+              p_source_slug: menuTemplate,
+              p_target_slug: finalSlug,
+              p_replace_existing: true
+            });
+          } catch (cloneErr) {
+            console.warn("Şablon menü kopyalama uyarısı:", cloneErr);
+          }
+        }
         const clean = String(finalSlug || name).toLowerCase().replace(/[^a-z0-9]/g, "") || "restoran";
         const adminEmail = (data && data.admin_email) || ("admin@" + clean + ".com");
         const adminPass = (data && (data.admin_password || data.suggested_temp_password)) || (clean + "123");
