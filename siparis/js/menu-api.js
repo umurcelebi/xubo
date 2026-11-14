@@ -656,12 +656,19 @@ function findFallbackImageByName(name) {
   return match && match.image ? match.image : "";
 }
 
-// Supabase İstemcisi Başlatıcı (Varsa)
+// Supabase İstemcisi Başlatıcı (Tekil / Singleton)
 function getSupabaseClient() {
+  if (typeof window !== "undefined" && window.__gingerSharedSupabaseClient) {
+    return window.__gingerSharedSupabaseClient;
+  }
   const config = getSupabaseConfig();
   if (config && config.url && config.key && window.supabase) {
     try {
-      return window.supabase.createClient(config.url, config.key);
+      const client = window.supabase.createClient(config.url, config.key);
+      if (typeof window !== "undefined") {
+        window.__gingerSharedSupabaseClient = client;
+      }
+      return client;
     } catch (e) {
       console.warn("Supabase client init error, falling back to local:", e);
     }

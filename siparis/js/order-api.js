@@ -632,19 +632,31 @@ SoundAlert.bindAutoUnlock();
 // ============================================================================
 // 3. SİPARİŞ APİ (ORDER API)
 // ============================================================================
-function getSupabaseClient() {
-  if (typeof window !== "undefined" && typeof window.getSupabaseClient === "function") {
-    const shared = window.getSupabaseClient();
-    if (shared) return shared;
-  }
-  if (window.supabase && window.SUPABASE_CONFIG) {
-    try {
-      return window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
-    } catch (e) {
-      console.warn("Supabase init error:", e);
+function getOrderSupabaseClient() {
+  if (typeof window !== "undefined") {
+    if (window.__gingerSharedSupabaseClient) return window.__gingerSharedSupabaseClient;
+    if (typeof window.getSupabaseClient === "function" && window.getSupabaseClient !== getOrderSupabaseClient) {
+      const shared = window.getSupabaseClient();
+      if (shared) {
+        window.__gingerSharedSupabaseClient = shared;
+        return shared;
+      }
+    }
+    if (window.supabase && window.SUPABASE_CONFIG) {
+      try {
+        const client = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+        window.__gingerSharedSupabaseClient = client;
+        return client;
+      } catch (e) {
+        console.warn("Supabase init error:", e);
+      }
     }
   }
   return null;
+}
+
+if (typeof window !== "undefined" && typeof window.getSupabaseClient !== "function") {
+  window.getSupabaseClient = getOrderSupabaseClient;
 }
 
 function getOrdersStorageKey() {
@@ -823,7 +835,7 @@ const OrderAPI = {
     };
 
     let createdOrder = null;
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
 
     if (sb) {
       try {
@@ -983,7 +995,7 @@ const OrderAPI = {
 
   // Tek Bir Siparişi Getir (Canlı Takip İçin)
   async getOrder(orderId) {
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     if (sb) {
       try {
         const activeOrderId = localStorage.getItem(getActiveOrderStorageKey());
@@ -1025,7 +1037,7 @@ const OrderAPI = {
   // Aktif ve Arşivlenmemiş Siparişleri Listele (Mutfak / Admin İçin)
   async getOrders() {
     const slug = getRestaurantSlug();
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     if (sb) {
       try {
         let { data: orders, error } = await sb
@@ -1054,7 +1066,7 @@ const OrderAPI = {
   async archiveOrders(orderIds) {
     if (!orderIds || orderIds.length === 0) return { success: true };
 
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     if (sb) {
       const { error } = await sb
         .from("orders")
@@ -1084,7 +1096,7 @@ const OrderAPI = {
 
   // Sipariş Durumunu Güncelle (new -> preparing -> on_way -> delivered -> cancelled)
   async updateStatus(orderId, newStatus) {
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     if (sb) {
       try {
         await sb
@@ -1121,7 +1133,7 @@ const OrderAPI = {
   async getOrdersByDateRange(startDateStr, endDateStr) {
     const slug = getRestaurantSlug();
     const bounds = getIstanbulDateRangeBounds(startDateStr, endDateStr);
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
 
     if (sb) {
       try {
@@ -1214,7 +1226,7 @@ const OrderAPI = {
   // Müşteri Listesini Getir (Önce hafif public.customers tablosundan, yoksa siparişlerden üret)
   async getCustomers(searchQuery = "", sortBy = "total_spent") {
     const slug = getRestaurantSlug();
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     let customers = null;
 
     if (sb) {
@@ -1283,7 +1295,7 @@ const OrderAPI = {
     if (!normPhone) return { success: false };
 
     let synced = false;
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     if (sb) {
       try {
         const { error } = await sb
@@ -1334,7 +1346,7 @@ const OrderAPI = {
       localStorage.removeItem(getActiveOrderTokenStorageKey());
     }
 
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     if (!sb) {
       return {
         success: true,
@@ -1450,7 +1462,7 @@ const OrderAPI = {
 
   // Gerçek Zamanlı Dinleyici (Realtime WebSockets & Polling — Restoran İzoleli)
   subscribe(callback) {
-    const sb = getSupabaseClient();
+    const sb = getOrderSupabaseClient();
     const activeSlug = getRestaurantSlug();
     let channel = null;
 
