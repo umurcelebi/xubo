@@ -3629,7 +3629,6 @@
         ? (sizeKey === "small" ? "Small" : (sizeKey === "medium" ? "Medium" : "XL"))
         : (sizeKey === "small" ? "70 gr." : (sizeKey === "medium" ? "140 gr." : "210 gr."))) : "";
       showToast(`${isGinger ? "🍕" : "🍔"} ${item.name} ${sizeName ? '(' + sizeName + ')' : ''} sepete eklendi!`);
-      if (window.SoundAlert) SoundAlert.playBell();
     };
 
     // Ürünü Sepete Ekle
@@ -3659,7 +3658,6 @@
         ? (sizeKey === "small" ? "Small" : (sizeKey === "medium" ? "Medium" : "XL"))
         : (sizeKey === "small" ? "70 gr." : (sizeKey === "medium" ? "140 gr." : "210 gr."))) : "";
       showToast(`${isGinger ? "🍕" : "🍔"} ${item.name} ${sizeName ? '(' + sizeName + ')' : ''} sepete eklendi!`);
-      if (window.SoundAlert) SoundAlert.playBell();
     };
 
     // Sepet Çekmecesini Aç / Kapat
@@ -3998,7 +3996,6 @@
         }, items);
 
         closeCheckoutModal();
-        if (window.SoundAlert) SoundAlert.playBell();
         openTrackingModal(order.id);
         updateActiveOrderHeaderButton();
       } catch (err) {
