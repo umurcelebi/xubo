@@ -94,16 +94,33 @@ function createDefaultRejectionReasonItems() {
   }));
 }
 
+function isCorruptedReasonText(text) {
+  return /^\[object\s+[^\]]+\]$/i.test(String(text || "").trim());
+}
+
+function hasValidReasonInArray(arr) {
+  return Array.isArray(arr) && arr.some(item => {
+    const isObj = item && typeof item === "object";
+    const text = String(isObj ? (item.label ?? item.text ?? "") : (item ?? "")).trim();
+    return Boolean(text) && !isCorruptedReasonText(text);
+  });
+}
+
 function normalizeRejectionReasonItems(raw) {
   if (!Array.isArray(raw)) {
     return createDefaultRejectionReasonItems();
   }
   const seen = new Set();
   const list = [];
+  let hadCorrupted = false;
   raw.forEach(item => {
     const isObj = item && typeof item === "object";
     const text = String(isObj ? (item.label ?? item.text ?? "") : (item ?? "")).trim().slice(0, 120);
     if (!text) return;
+    if (isCorruptedReasonText(text)) {
+      hadCorrupted = true;
+      return;
+    }
     const key = text.toLocaleLowerCase("tr-TR");
     if (seen.has(key)) return;
     seen.add(key);
@@ -113,6 +130,9 @@ function normalizeRejectionReasonItems(raw) {
       isDefault: Boolean((isObj && item.isDefault) || DEFAULT_REJECTION_REASON_SET.has(key))
     });
   });
+  if (hadCorrupted && list.length === 0) {
+    return createDefaultRejectionReasonItems();
+  }
   return list;
 }
 
@@ -165,9 +185,11 @@ function normalizeStoreSettings(raw) {
   const cleanMinOrder = Number.isFinite(rawMinOrder) ? Math.max(0, Math.round(rawMinOrder * 100) / 100) : 0;
   const rawDeliveryFee = Number(src.delivery_fee);
   const cleanDeliveryFee = Number.isFinite(rawDeliveryFee) ? Math.max(0, Math.round(rawDeliveryFee * 100) / 100) : 0;
-  const rawReasons = Array.isArray(src.rejection_reasons)
+  const rawReasons = hasValidReasonInArray(src.rejection_reasons)
     ? src.rejection_reasons
-    : (src.weekly_hours && Array.isArray(src.weekly_hours.__rejection_reasons) ? src.weekly_hours.__rejection_reasons : null);
+    : (src.weekly_hours && hasValidReasonInArray(src.weekly_hours.__rejection_reasons)
+      ? src.weekly_hours.__rejection_reasons
+      : (Array.isArray(src.rejection_reasons) ? src.rejection_reasons : null));
 
   return {
     id: getStoreSettingsRowId(),
@@ -217,7 +239,14 @@ function getLocalStoreSettings() {
       localStorage.setItem(key, JSON.stringify(def));
       return def;
     }
-    return normalizeStoreSettings(JSON.parse(raw));
+    const parsed = JSON.parse(raw);
+    const normalized = normalizeStoreSettings(parsed);
+    const hadCorruptedLocal = parsed && Array.isArray(parsed.rejection_reasons) &&
+      parsed.rejection_reasons.some(item => isCorruptedReasonText(item && typeof item === "object" ? (item.label ?? item.text) : item));
+    if (hadCorruptedLocal) {
+      localStorage.setItem(key, JSON.stringify(normalized));
+    }
+    return normalized;
   } catch (e) {
     return createDefaultStoreSettings();
   }
@@ -687,6 +716,15 @@ const StoreStatus = {
 
     const handleStorage = (e) => {
       if (e.key === getStoreSettingsStorageKey()) {
+        try {
+          const parsed = e.newValue ? JSON.parse(e.newValue) : null;
+          const hasCorrupted = parsed && Array.isArray(parsed.rejection_reasons) &&
+            parsed.rejection_reasons.some(item => isCorruptedReasonText(item && typeof item === "object" ? (item.label ?? item.text) : item));
+          if (hasCorrupted) {
+            this.getSettings().then(callback);
+            return;
+          }
+        } catch (_) {}
         callback(getLocalStoreSettings());
       }
     };
