@@ -3060,8 +3060,18 @@
 
       <div class="footer-bottom">
         <div>© 2026 Ginger Pizza. Tüm hakları saklıdır.</div>
-        <div style="display: flex; gap: 16px; align-items: center;">
-          <span>Kadıköy, İstanbul · Butik Artisan Pizza</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center;">
+          <a href="javascript:void(0)" onclick="openDistanceSalesModal('sales')" style="color: inherit; opacity: 0.8; text-decoration: underline;">Mesafeli Satış Sözleşmesi</a>
+          <span>•</span>
+          <a href="javascript:void(0)" onclick="openDistanceSalesModal('refund')" style="color: inherit; opacity: 0.8; text-decoration: underline;">İptal &amp; İade Koşulları</a>
+          <span>•</span>
+          <a href="javascript:void(0)" onclick="openKvkkModal()" style="color: inherit; opacity: 0.8; text-decoration: underline;">KVKK</a>
+          <span>•</span>
+          <span style="display:inline-flex; align-items:center; gap:5px; vertical-align:middle;" aria-label="Desteklenen Ödeme Yöntemleri: Visa, Mastercard, Troy">
+            <span style="display:inline-block; padding:2px 6px; border-radius:4px; background:#fff; color:#1a1f71; font-weight:800; font-size:0.66rem; letter-spacing:0.4px; border:1px solid rgba(0,0,0,0.08);">VISA</span>
+            <span style="display:inline-block; padding:2px 6px; border-radius:4px; background:#fff; color:#eb001b; font-weight:800; font-size:0.66rem; letter-spacing:0.2px; border:1px solid rgba(0,0,0,0.08);">Mastercard</span>
+            <span style="display:inline-block; padding:2px 6px; border-radius:4px; background:#fff; color:#0073a8; font-weight:800; font-size:0.66rem; letter-spacing:0.4px; border:1px solid rgba(0,0,0,0.08);">TROY</span>
+          </span>
           <span>•</span>
           <a href="admin.html" style="color: inherit; opacity: 0.7; text-decoration: underline;">Yönetici Girişi</a>
         </div>
@@ -3191,7 +3201,7 @@
 
           <div class="form-group-modal">
             <label class="form-label-modal" for="custPhone">Telefon Numaranız *</label>
-            <input type="tel" id="custPhone" class="form-input-modal" placeholder="05XX XXX XX XX" required>
+            <input type="tel" id="custPhone" class="form-input-modal" placeholder="05XX XXX XX XX" inputmode="numeric" autocomplete="tel" maxlength="14" oninput="formatCustPhoneInput(this)" required>
           </div>
 
           <div class="form-group-modal" id="groupAddress">
@@ -3217,14 +3227,44 @@
                 <span>💵 Kapıda Nakit</span>
               </label>
             </div>
+            <div id="onlinePaymentLegalBox" style="display:none; margin-top:10px; padding:10px 12px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                <span style="font-size:0.76rem; font-weight:700; color:#1e293b;">🔒 256-bit SSL &amp; 3D Secure ile PayTR Güvencesi</span>
+                <span style="display:inline-flex; align-items:center; gap:4px;">
+                  <span style="padding:1px 6px; border-radius:4px; background:#fff; color:#1a1f71; font-weight:800; font-size:0.64rem; border:1px solid #cbd5e1;">VISA</span>
+                  <span style="padding:1px 6px; border-radius:4px; background:#fff; color:#eb001b; font-weight:800; font-size:0.64rem; border:1px solid #cbd5e1;">Mastercard</span>
+                  <span style="padding:1px 6px; border-radius:4px; background:#fff; color:#0073a8; font-weight:800; font-size:0.64rem; border:1px solid #cbd5e1;">TROY</span>
+                </span>
+              </div>
+              <label for="onlineDistanceTermsAccept" style="display:flex; align-items:flex-start; gap:8px; font-size:0.75rem; color:var(--ink-700); line-height:1.4; cursor:pointer;">
+                <input type="checkbox" id="onlineDistanceTermsAccept" style="width:16px; height:16px; margin-top:2px; accent-color:var(--ginger-600); cursor:pointer; flex-shrink:0;">
+                <span>
+                  <a href="javascript:void(0)" onclick="openDistanceSalesModal('sales')" style="color:var(--ginger-600); font-weight:700; text-decoration:underline;">Mesafeli Satış Sözleşmesi</a> ve <a href="javascript:void(0)" onclick="openDistanceSalesModal('refund')" style="color:var(--ginger-600); font-weight:700; text-decoration:underline;">İptal / İade Koşulları</a>'nı okudum, onaylıyorum.
+                </span>
+              </label>
+            </div>
           </div>
 
-          <div style="background: var(--sand-50); border: 1px dashed var(--sand-300); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 20px;">
+          <div style="background: var(--sand-50); border: 1px dashed var(--sand-300); padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 14px;">
             <div id="checkoutDiscountBreakdown" style="display:none; font-size: 0.8rem; color: #16883b; font-weight: 700; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--sand-200);"></div>
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <span style="font-size: 0.88rem; color: var(--ink-600); font-weight: 600;">Ödenecek Tutar</span>
               <span id="checkoutSummaryTotal" style="font-size: 1.25rem; font-weight: 800; color: var(--ginger-600);">0 ₺</span>
             </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; padding: 8px 10px; background: var(--sand-50); border-radius: 8px; border: 1px solid var(--sand-200);">
+            <label for="custRememberMe" style="display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--ink-700); cursor: pointer; user-select: none;">
+              <input type="checkbox" id="custRememberMe" style="width: 16px; height: 16px; accent-color: var(--ginger-600); cursor: pointer;">
+              <span>Sonraki siparişlerim için bilgilerimi bu cihazda hatırla</span>
+            </label>
+            <button type="button" id="btnClearRememberedCust" onclick="clearSavedCustomerProfile()" style="display: none; border: none; background: transparent; color: #b4232c; font-size: 0.74rem; font-weight: 700; cursor: pointer; text-decoration: underline; white-space: nowrap; font-family: inherit;">
+              Bilgilerimi Sil
+            </button>
+          </div>
+
+          <div style="font-size: 0.74rem; line-height: 1.45; color: var(--ink-500); margin-bottom: 16px; padding: 0 2px;">
+            ℹ️ Kişisel verileriniz, siparişinizin hazırlanması, teslimi ve süreç bilgilendirmesi amacıyla 6698 sayılı KVKK (m. 5/2-c sözleşmenin ifası) kapsamında işlenmektedir. Detaylı bilgi için <a href="javascript:void(0)" onclick="openKvkkModal()" style="color: var(--ginger-600); font-weight: 700; text-decoration: underline;">KVKK Aydınlatma Metni</a>'ni inceleyebilirsiniz.
           </div>
 
           <div style="display: flex; gap: 10px;">
@@ -3262,6 +3302,62 @@
     </div>
   </div>
 
+  <!-- KVKK Aydınlatma Metni Modalı -->
+  <div class="modal-backdrop" id="kvkkModalBackdrop" onclick="handleModalBackdropClick(event, 'kvkkModalBackdrop')">
+    <div class="modal-dialog-box" role="dialog" aria-modal="true" aria-labelledby="kvkkModalTitle" style="max-width: 560px;">
+      <div class="modal-top">
+        <div>
+          <h2 class="modal-heading" id="kvkkModalTitle">🛡️ KVKK Aydınlatma Metni</h2>
+          <div style="font-size: 0.76rem; color: var(--ink-500); margin-top: 2px;">6698 Sayılı Kişisel Verilerin Korunması Kanunu Kapsamında Bilgilendirme</div>
+        </div>
+        <button type="button" class="btn-close-drawer" onclick="closeKvkkModal()">✕</button>
+      </div>
+      <div class="modal-content-inner" id="kvkkModalBody" style="font-size: 0.82rem; line-height: 1.6; color: var(--ink-700); max-height: 68vh; overflow-y: auto;">
+      </div>
+      <div style="padding: 12px 20px 18px; border-top: 1px solid var(--sand-200); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-primary" onclick="closeKvkkModal()" style="padding: 10px 22px; font-size: 0.85rem;">Anladım / Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mesafeli Satış Sözleşmesi & İptal/İade Koşulları Modalı -->
+  <div class="modal-backdrop" id="distanceSalesModalBackdrop" onclick="handleModalBackdropClick(event, 'distanceSalesModalBackdrop')">
+    <div class="modal-dialog-box" role="dialog" aria-modal="true" aria-labelledby="distanceSalesModalTitle" style="max-width: 600px;">
+      <div class="modal-top">
+        <div>
+          <h2 class="modal-heading" id="distanceSalesModalTitle">📜 Mesafeli Satış Sözleşmesi &amp; İade Koşulları</h2>
+          <div style="font-size: 0.76rem; color: var(--ink-500); margin-top: 2px;">6502 Sayılı Tüketicinin Korunması Hakkında Kanun Kapsamında</div>
+        </div>
+        <button type="button" class="btn-close-drawer" onclick="closeDistanceSalesModal()">✕</button>
+      </div>
+      <div class="modal-content-inner" id="distanceSalesModalBody" style="font-size: 0.82rem; line-height: 1.6; color: var(--ink-700); max-height: 68vh; overflow-y: auto;">
+      </div>
+      <div style="padding: 12px 20px 18px; border-top: 1px solid var(--sand-200); display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-primary" onclick="closeDistanceSalesModal()" style="padding: 10px 22px; font-size: 0.85rem;">Anladım / Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PayTR 3D Secure Güvenli Ödeme iFrame Modalı -->
+  <div class="modal-backdrop" id="paytrModalBackdrop">
+    <div class="modal-dialog-box" role="dialog" aria-modal="true" aria-labelledby="paytrModalTitle" style="max-width: 640px; width: 96%; max-height: 94vh; display: flex; flex-direction: column;">
+      <div class="modal-top" style="flex-shrink: 0;">
+        <div>
+          <h2 class="modal-heading" id="paytrModalTitle">🔒 Güvenli Kart Ödemesi</h2>
+          <div style="font-size: 0.78rem; color: var(--ink-500); margin-top: 2px;" id="paytrModalMeta">Ödeme sayfası yükleniyor...</div>
+        </div>
+        <button type="button" onclick="cancelPaytrModal()" style="border: 1px solid var(--sand-300); background: var(--sand-50); color: var(--ink-800); border-radius: 999px; padding: 6px 12px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: inherit;">
+          ✕ Vazgeç
+        </button>
+      </div>
+      <div id="paytrTestModeBanner" style="display:none; background:#fef3c7; color:#92400e; font-size:0.76rem; font-weight:700; padding:8px 16px; border-bottom:1px solid #fde68a; text-align:center; flex-shrink:0;">
+        🧪 Test / Sandbox Modu Aktif — Gerçek kartınızdan tahsilat yapılmaz.
+      </div>
+      <div class="modal-content-inner" id="paytrModalBody" style="padding: 12px; overflow-y: auto; flex: 1; background: #fff;">
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Bildirimi -->
   <div class="toast-pill" id="toastPill">
     <span id="toastText">Ürün sepete eklendi!</span>
@@ -3272,10 +3368,11 @@
        Menu API & Dinamik Veri Yükleyici
        ======================================================================== -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://www.paytr.com/js/iframeResizer.min.js" defer></script>
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/menu-api.js?v=20261114b"></script>
-  <script src="js/store-status.js?v=20261114c"></script>
-  <script src="js/order-api.js?v=20261114h"></script>
+  <script src="js/store-status.js?v=20261114d"></script>
+  <script src="js/order-api.js?v=20261114k"></script>
   <script>
     let menuData = [];
     const cardSelectedSizes = {};
@@ -3807,6 +3904,119 @@
         if (modalId === "checkoutModalBackdrop") closeCheckoutModal();
         if (modalId === "trackingModalBackdrop") closeTrackingModal();
         if (modalId === "itemCustomizerBackdrop") closeItemCustomizerModal();
+        if (modalId === "kvkkModalBackdrop") closeKvkkModal();
+      }
+    };
+
+    // ========================================================================
+    // CİHAZ İÇİ MÜŞTERİ BİLGİSİ HATIRLAMA & KVKK AYDINLATMA METNİ
+    // ========================================================================
+    function getSavedCustomerProfileKey() {
+      const slug = typeof window.getActiveRestaurantSlug === "function" ? window.getActiveRestaurantSlug() : "ginger-pizza";
+      return slug === "ginger-pizza" ? "ginger_saved_customer_profile_v1" : `ginger_saved_customer_profile_v1_${slug}`;
+    }
+
+    function loadSavedCustomerProfileIntoForm() {
+      const nameEl = document.getElementById("custName");
+      const phoneEl = document.getElementById("custPhone");
+      const addrEl = document.getElementById("custAddress");
+      const rememberEl = document.getElementById("custRememberMe");
+      const clearBtn = document.getElementById("btnClearRememberedCust");
+
+      let saved = null;
+      try {
+        const raw = localStorage.getItem(getSavedCustomerProfileKey());
+        if (raw) saved = JSON.parse(raw);
+      } catch (e) {}
+
+      if (saved && (saved.name || saved.phone || saved.address)) {
+        if (nameEl && !nameEl.value.trim() && saved.name) nameEl.value = saved.name;
+        if (phoneEl && !phoneEl.value.trim() && saved.phone) {
+          phoneEl.value = (window.OrderAPI && typeof OrderAPI.formatTrPhone === "function")
+            ? OrderAPI.formatTrPhone(saved.phone)
+            : saved.phone;
+        }
+        if (addrEl && !addrEl.value.trim() && saved.address) addrEl.value = saved.address;
+        if (rememberEl) rememberEl.checked = true;
+        if (clearBtn) clearBtn.style.display = "inline-block";
+      } else {
+        if (clearBtn) clearBtn.style.display = "none";
+      }
+    }
+
+    function saveOrClearCustomerProfileAfterOrder(name, phone, address) {
+      const rememberEl = document.getElementById("custRememberMe");
+      const clearBtn = document.getElementById("btnClearRememberedCust");
+      const key = getSavedCustomerProfileKey();
+      if (rememberEl && rememberEl.checked) {
+        let prevAddr = "";
+        try {
+          const prev = JSON.parse(localStorage.getItem(key) || "null");
+          if (prev && prev.address) prevAddr = prev.address;
+        } catch (e) {}
+        const nextProfile = {
+          name: String(name || "").trim(),
+          phone: String(phone || "").trim(),
+          address: currentDeliveryType === "delivery" ? String(address || "").trim() : prevAddr
+        };
+        try { localStorage.setItem(key, JSON.stringify(nextProfile)); } catch (e) {}
+        if (clearBtn) clearBtn.style.display = "inline-block";
+      } else {
+        try { localStorage.removeItem(key); } catch (e) {}
+        if (clearBtn) clearBtn.style.display = "none";
+      }
+    }
+
+    window.clearSavedCustomerProfile = function() {
+      try { localStorage.removeItem(getSavedCustomerProfileKey()); } catch (e) {}
+      const nameEl = document.getElementById("custName");
+      const phoneEl = document.getElementById("custPhone");
+      const addrEl = document.getElementById("custAddress");
+      const rememberEl = document.getElementById("custRememberMe");
+      const clearBtn = document.getElementById("btnClearRememberedCust");
+      if (nameEl) nameEl.value = "";
+      if (phoneEl) phoneEl.value = "";
+      if (addrEl) addrEl.value = "";
+      if (rememberEl) rememberEl.checked = false;
+      if (clearBtn) clearBtn.style.display = "none";
+    };
+
+    window.openKvkkModal = function() {
+      const bodyEl = document.getElementById("kvkkModalBody");
+      const modal = document.getElementById("kvkkModalBackdrop");
+      const info = window.__ACTIVE_RESTAURANT_INFO__ || {};
+      const restName = escapeHtml(info.name || "İşletme");
+      const restAddr = escapeHtml(info.address || "Sipariş verilen işletme adresi");
+      const restPhone = escapeHtml(info.phone || "");
+
+      if (bodyEl) {
+        bodyEl.innerHTML = `
+          <p style="margin-top:0;"><strong>1. Veri Sorumlusu:</strong><br>
+          6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca kişisel verileriniz, veri sorumlusu sıfatıyla <strong>${restName}</strong> tarafından aşağıda açıklanan kapsamda işlenmektedir.<br>
+          <span style="color:var(--ink-500); font-size:0.78rem;">Adres: ${restAddr}${restPhone ? " · Tel: " + restPhone : ""}</span></p>
+
+          <p><strong>2. İşlenen Kişisel Verileriniz:</strong><br>
+          Sipariş oluşturma sırasında yalnızca adınız-soyadınız, telefon numaranız, teslimat adresiniz (gel-al hariç), sipariş notunuz ve sipariş detaylarınız işlenir.</p>
+
+          <p><strong>3. İşleme Amaçları ve Hukuki Sebepler (KVKK m. 5):</strong><br>
+          Kişisel verileriniz; siparişinizin alınması, hazırlanması, kurye aracılığıyla adresinize teslimi ve olası iptal/durum bilgilendirmelerinin yapılması amacıyla <strong>KVKK m. 5/2-c ("Bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması")</strong> ve yasal yükümlülüklerin yerine getirilmesi için <strong>KVKK m. 5/2-ç</strong> hukuki sebeplerine dayanılarak işlenmektedir. Ticari pazarlama/kampanya iletileri açık onayınız olmadıkça gönderilmez.</p>
+
+          <p><strong>4. Kişisel Verilerin Aktarılması ve Bulut Altyapısı (KVKK m. 8 &amp; m. 9):</strong><br>
+          Verileriniz üçüncü kişi/kurumlara ticari amaçla satılmaz veya paylaşılmaz. Yalnızca sipariş sisteminin çalışması amacıyla güvenli bulut veritabanı altyapısında (Avrupa Bölgesi — Frankfurt sunucularında, erişim ve satır düzeyi güvenlik kurallarıyla korunarak) saklanır. "Bilgilerimi bu cihazda hatırla" seçeneğini işaretlemeniz halinde bilgileriniz yalnızca kendi tarayıcınızın yerel belleğinde tutulur ve istediğiniz an "Bilgilerimi Sil" butonuyla temizlenebilir.</p>
+
+          <p style="margin-bottom:0;"><strong>5. KVKK m. 11 Kapsamındaki Haklarınız:</strong><br>
+          Kanun'un 11. maddesi uyarınca kişisel verilerinizin işlenip işlenmediğini öğrenme, düzeltilmesini veya yasal saklama şartları dışında silinmesini/yok edilmesini talep etme haklarına sahipsiniz. Taleplerinizi yukarıdaki işletme iletişim kanallarından iletebilirsiniz.</p>
+        `;
+      }
+      if (modal) modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+    };
+
+    window.closeKvkkModal = function() {
+      const modal = document.getElementById("kvkkModalBackdrop");
+      if (modal) modal.classList.remove("open");
+      if (!document.querySelector(".modal-backdrop.open")) {
+        document.body.style.overflow = "";
       }
     };
 
@@ -3830,6 +4040,7 @@
 
       closeCartDrawer();
       renderCheckoutPaymentMethods();
+      loadSavedCustomerProfileIntoForm();
 
       const modal = document.getElementById("checkoutModalBackdrop");
       updateCheckoutTotalsUI();
@@ -3941,7 +4152,27 @@
           </label>
         `;
       }).join("");
+      syncOnlinePaymentUIState();
     };
+
+    function syncOnlinePaymentUIState() {
+      const isOnline = currentPaymentMethod === "online_card";
+      const legalBox = document.getElementById("onlinePaymentLegalBox");
+      if (legalBox) {
+        legalBox.style.display = isOnline ? "block" : "none";
+      }
+      const btn = document.getElementById("btnSubmitOrder");
+      if (btn && !btn.disabled) {
+        btn.innerHTML = isOnline
+          ? `<span>💳 Güvenli Ödemeye Geç</span>`
+          : `<span>Siparişi Onayla &amp; Gönder</span>`;
+      } else if (btn) {
+        const span = btn.querySelector("span");
+        if (span) {
+          span.textContent = isOnline ? "💳 Güvenli Ödemeye Geç" : "Siparişi Onayla & Gönder";
+        }
+      }
+    }
 
     window.setPaymentMethod = function(method) {
       currentPaymentMethod = method;
@@ -3951,13 +4182,216 @@
         const inp = card.querySelector('input[type="radio"]');
         if (inp) inp.checked = isMatch;
       });
+      syncOnlinePaymentUIState();
+    };
+
+    window.openDistanceSalesModal = function(tab = "sales") {
+      const bodyEl = document.getElementById("distanceSalesModalBody");
+      const titleEl = document.getElementById("distanceSalesModalTitle");
+      const modal = document.getElementById("distanceSalesModalBackdrop");
+      const info = window.__ACTIVE_RESTAURANT_INFO__ || {};
+      const restName = escapeHtml(info.name || "İşletme");
+      const restAddr = escapeHtml(info.address || "Sipariş verilen işletme adresi");
+      const restPhone = escapeHtml(info.phone || "");
+
+      if (titleEl) {
+        titleEl.textContent = tab === "refund"
+          ? "↩️ İptal, İade ve Teslimat Koşulları"
+          : "📜 Mesafeli Satış Sözleşmesi & Ön Bilgilendirme";
+      }
+      if (bodyEl) {
+        bodyEl.innerHTML = `
+          <p style="margin-top:0;"><strong>1. Satıcı (İşletme) Bilgileri:</strong><br>
+          Unvan: <strong>${restName}</strong><br>
+          Adres: ${restAddr}${restPhone ? "<br>Telefon: " + restPhone : ""}</p>
+
+          <p><strong>2. Sözleşmenin Konusu ve Ödeme:</strong><br>
+          İşbu ön bilgilendirme ve mesafeli satış sözleşmesi, Alıcı'nın Satıcı'ya ait internet sipariş sayfası üzerinden elektronik ortamda siparişini verdiği yiyecek/içecek ürünlerinin satışı ve teslimatına ilişkin tarafların hak ve yükümlülüklerini 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümlerince düzenler. Online kredi/banka kartı ödemeleri <strong>PayTR</strong> 256-bit SSL ve 3D Secure altyapısı üzerinden gerçekleştirilir; kart bilgileriniz tarafımızca kaydedilmez.</p>
+
+          <p><strong>3. Teslimat Süresi ve Koşulları:</strong><br>
+          Siparişiniz mutfak yoğunluğu ve hava/trafik koşullarına bağlı olarak ortalama 25-45 dakika içerisinde belirttiğiniz adrese teslim edilir veya "Gel-Al" seçeneğinde işletmeden teslim alınır. Sipariş anında seçilen ürünler taze olarak hazırlanır.</p>
+
+          <p><strong>4. Cayma Hakkı İstisnası, İptal ve İade Koşulları:</strong><br>
+          Mesafeli Sözleşmeler Yönetmeliği'nin <strong>15/1-ç</strong> maddesi uyarınca; <em>"Çabuk bozulabilen veya son kullanma tarihi geçebilecek malların (gıda/sıcak yemek) teslimine ilişkin sözleşmelerde"</em> ürün hazırlanmaya başlandıktan sonra cayma hakkı kullanılamaz.<br>
+          Ancak; siparişin işletme tarafından iptal edilmesi/reddedilmesi, ürünün hatalı veya eksik teslim edilmesi ya da hazırlanma aşamasına geçilmeden işletmeyle iletişime geçilerek iptal onayının alınması halinde, ödenen tutar herhangi bir kesinti olmaksızın PayTR üzerinden ödeme yapılan karta banka prosedürlerine bağlı olarak genellikle <strong>1-7 iş günü</strong> içinde iade edilir.</p>
+
+          <p style="margin-bottom:0;"><strong>5. Uyuşmazlık Çözümü:</strong><br>
+          Şikayet ve taleplerinizde Satıcı iletişim kanalları üzerinden doğrudan destek alabilir, yasal sınırlar dahilinde Tüketici Hakem Heyetlerine başvurabilirsiniz.</p>
+        `;
+      }
+      if (modal) modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+    };
+
+    window.closeDistanceSalesModal = function() {
+      const modal = document.getElementById("distanceSalesModalBackdrop");
+      if (modal) modal.classList.remove("open");
+      if (!document.querySelector(".modal-backdrop.open")) {
+        document.body.style.overflow = "";
+      }
+    };
+
+    let activePaytrOrder = null;
+    let activePaytrPollTimer = null;
+
+    function stopPaytrWatcher() {
+      if (activePaytrPollTimer) {
+        clearInterval(activePaytrPollTimer);
+        activePaytrPollTimer = null;
+      }
+    }
+
+    function openPaytrPaymentModal(order, initRes) {
+      const modal = document.getElementById("paytrModalBackdrop");
+      const body = document.getElementById("paytrModalBody");
+      const meta = document.getElementById("paytrModalMeta");
+      const testBanner = document.getElementById("paytrTestModeBanner");
+
+      activePaytrOrder = order;
+      if (meta) {
+        meta.textContent = `Sipariş #${order.order_number || String(order.id).slice(-4)} · Tutar: ${order.total_amount} ₺`;
+      }
+      if (testBanner) {
+        testBanner.style.display = initRes && initRes.test_mode ? "block" : "none";
+      }
+      if (body) {
+        const safeUrl = escapeHtml(initRes.iframe_url);
+        body.innerHTML = `
+          <iframe
+            id="paytriframe"
+            src="${safeUrl}"
+            frameborder="0"
+            scrolling="auto"
+            style="width: 100%; min-height: 540px; border: none; border-radius: 8px; background: #fff;"
+          ></iframe>
+        `;
+        const iframeEl = document.getElementById("paytriframe");
+        if (iframeEl) {
+          iframeEl.addEventListener("load", () => {
+            if (typeof window.iFrameResize === "function") {
+              try { window.iFrameResize({}, "#paytriframe"); } catch (e) {}
+            }
+          });
+        }
+      }
+
+      if (modal) modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+
+      stopPaytrWatcher();
+      activePaytrPollTimer = setInterval(async () => {
+        if (!activePaytrOrder || document.hidden) return;
+        try {
+          const latest = await OrderAPI.getOrder(activePaytrOrder.id);
+          if (!latest) return;
+          if (latest.payment_status === "paid" || (latest.status && latest.status !== "pending_payment" && latest.status !== "cancelled")) {
+            await finishPaytrSuccess(activePaytrOrder.id);
+          } else if (latest.payment_status === "payment_failed") {
+            await finishPaytrFailure(activePaytrOrder.id, latest.payment_error || "");
+          }
+        } catch (e) {}
+      }, 2500);
+    }
+
+    window.cancelPaytrModal = function() {
+      stopPaytrWatcher();
+      const pendingId = activePaytrOrder ? activePaytrOrder.id : null;
+      activePaytrOrder = null;
+      const modal = document.getElementById("paytrModalBackdrop");
+      const body = document.getElementById("paytrModalBody");
+      if (modal) modal.classList.remove("open");
+      if (body) body.innerHTML = "";
+      if (!document.querySelector(".modal-backdrop.open")) {
+        document.body.style.overflow = "";
+      }
+      if (pendingId && window.OrderAPI && OrderAPI.getActiveOrderId() === pendingId) {
+        OrderAPI.clearActiveOrderId();
+        updateActiveOrderHeaderButton();
+      }
+      showToast("Ödeme iptal edildi, sepetiniz korundu.");
+    };
+
+    async function finishPaytrSuccess(orderId) {
+      stopPaytrWatcher();
+      const targetId = orderId || (activePaytrOrder && activePaytrOrder.id) || OrderAPI.getActiveOrderId();
+      activePaytrOrder = null;
+
+      const modal = document.getElementById("paytrModalBackdrop");
+      const body = document.getElementById("paytrModalBody");
+      if (modal) modal.classList.remove("open");
+      if (body) body.innerHTML = "";
+
+      if (window.Cart && typeof Cart.clear === "function") {
+        Cart.clear();
+      }
+      syncCartBadges();
+      renderCartDrawer();
+      updateActiveOrderHeaderButton();
+      showToast("Ödemeniz onaylandı! Siparişiniz mutfağa iletildi.");
+      if (targetId) {
+        openTrackingModal(targetId);
+      }
+    }
+
+    async function finishPaytrFailure(orderId, explicitError = "") {
+      stopPaytrWatcher();
+      const targetId = orderId || (activePaytrOrder && activePaytrOrder.id) || null;
+      activePaytrOrder = null;
+
+      const modal = document.getElementById("paytrModalBackdrop");
+      const body = document.getElementById("paytrModalBody");
+      if (modal) modal.classList.remove("open");
+      if (body) body.innerHTML = "";
+
+      let reasonMsg = String(explicitError || "").trim();
+      if (!reasonMsg && targetId && window.OrderAPI) {
+        try {
+          const failedOrder = await OrderAPI.getOrder(targetId);
+          if (failedOrder && failedOrder.payment_error) {
+            reasonMsg = failedOrder.payment_error;
+          }
+        } catch (e) {}
+      }
+
+      if (targetId && window.OrderAPI && OrderAPI.getActiveOrderId() === targetId) {
+        OrderAPI.clearActiveOrderId();
+        updateActiveOrderHeaderButton();
+      }
+
+      alert(
+        "Kart ödemesi tamamlanamadı" +
+        (reasonMsg ? `: ${reasonMsg}` : ".") +
+        "\n\nSepetiniz korundu; tekrar kartla deneyebilir veya kapıda ödeme seçebilirsiniz."
+      );
+      if (window.Cart && Cart.getItems().length > 0) {
+        openCheckoutModal();
+      }
+    }
+
+    window.formatCustPhoneInput = function(inputEl) {
+      if (!inputEl) return;
+      let digits = String(inputEl.value || "").replace(/[^0-9]/g, "");
+      if (digits.startsWith("0090")) digits = "0" + digits.slice(4);
+      else if (digits.length > 10 && digits.startsWith("90")) digits = "0" + digits.slice(2);
+      else if (digits.length > 0 && !digits.startsWith("0") && /^[23458]/.test(digits)) digits = "0" + digits;
+      digits = digits.slice(0, 11);
+      let formatted = digits;
+      if (digits.length > 4 && digits.length <= 7) {
+        formatted = `${digits.slice(0, 4)} ${digits.slice(4)}`;
+      } else if (digits.length > 7 && digits.length <= 9) {
+        formatted = `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7)}`;
+      } else if (digits.length > 9) {
+        formatted = `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 9)} ${digits.slice(9, 11)}`;
+      }
+      inputEl.value = formatted;
     };
 
     window.handleCheckoutSubmit = async function(event) {
       event.preventDefault();
 
       const name = document.getElementById("custName").value.trim();
-      const phone = document.getElementById("custPhone").value.trim();
+      const phoneInputEl = document.getElementById("custPhone");
+      let phone = phoneInputEl.value.trim();
       const address = currentDeliveryType === "delivery" ? document.getElementById("custAddress").value.trim() : "Restorandan Gel-Al";
       const notes = document.getElementById("custNotes").value.trim();
       const items = Cart.getItems();
@@ -3965,6 +4399,16 @@
       if (!name || !phone) {
         alert("Lütfen adınızı ve telefon numaranızı eksiksiz girin.");
         return;
+      }
+
+      if (window.OrderAPI && typeof OrderAPI.isValidTrPhone === "function" && !OrderAPI.isValidTrPhone(phone)) {
+        alert("Lütfen başında 0 olacak şekilde 11 haneli geçerli bir telefon numarası girin (Örn: 0532 123 45 67).");
+        phoneInputEl.focus();
+        return;
+      }
+      if (window.OrderAPI && typeof OrderAPI.formatTrPhone === "function") {
+        phone = OrderAPI.formatTrPhone(phone);
+        phoneInputEl.value = phone;
       }
 
       if (currentDeliveryType === "delivery" && !address) {
@@ -3977,6 +4421,15 @@
         return;
       }
 
+      if (currentPaymentMethod === "online_card") {
+        const termsChk = document.getElementById("onlineDistanceTermsAccept");
+        if (termsChk && !termsChk.checked) {
+          alert("Online kart ödemesi için Mesafeli Satış Sözleşmesi ve İptal/İade Koşulları'nı onaylamanız gerekmektedir.");
+          termsChk.focus();
+          return;
+        }
+      }
+
       if (currentDeliveryType === "delivery" && window.StoreStatus) {
         const discCheck = StoreStatus.calculateDiscount(Cart.getTotal(), currentStoreStatus.settings);
         const minOrder = Math.max(0, Number(discCheck.minOrderAmount) || 0);
@@ -3987,9 +4440,12 @@
       }
 
       const submitBtn = document.getElementById("btnSubmitOrder");
+      const selectedMethod = currentPaymentMethod;
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.innerHTML = `<span>Sipariş İletiliyor...</span>`;
+        submitBtn.innerHTML = selectedMethod === "online_card"
+          ? `<span>Ödeme Ekranı Hazırlanıyor...</span>`
+          : `<span>Sipariş İletiliyor...</span>`;
       }
 
       try {
@@ -3999,14 +4455,35 @@
           deliveryType: currentDeliveryType,
           address,
           notes,
-          paymentMethod: currentPaymentMethod
+          paymentMethod: selectedMethod
         }, items);
+
+        saveOrClearCustomerProfileAfterOrder(name, phone, address);
+
+        if (selectedMethod === "online_card") {
+          const paytrInitRes = await OrderAPI.initPaytrPayment(order);
+          closeCheckoutModal();
+          openPaytrPaymentModal(order, paytrInitRes);
+          return;
+        }
 
         closeCheckoutModal();
         openTrackingModal(order.id);
         updateActiveOrderHeaderButton();
       } catch (err) {
         console.error("Order creation error:", err);
+        if (selectedMethod === "online_card" && window.OrderAPI) {
+          const activeId = OrderAPI.getActiveOrderId();
+          if (activeId) {
+            try {
+              const maybeDraft = await OrderAPI.getOrder(activeId);
+              if (maybeDraft && maybeDraft.status === "pending_payment") {
+                OrderAPI.clearActiveOrderId();
+                updateActiveOrderHeaderButton();
+              }
+            } catch (e) {}
+          }
+        }
         if (err && (err.code === "STORE_CLOSED" || err.isStoreClosed)) {
           await refreshStoreStatus();
           alert(err.message);
@@ -4018,7 +4495,7 @@
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = `<span>Siparişi Onayla & Gönder</span>`;
+          syncOnlinePaymentUIState();
         }
       }
     };
@@ -4128,6 +4605,14 @@
 
       // Durum Konfigürasyonu
       const statusConfigs = {
+        pending_payment: {
+          badgeText: "⏳ Ödeme Doğrulanıyor",
+          badgeBg: "rgba(243, 156, 18, 0.16)",
+          badgeColor: "#b8500c",
+          title: "Online Ödeme Onayı Bekleniyor",
+          desc: "Banka/PayTR onayı ulaştığında siparişiniz otomatik olarak mutfağa iletilecektir.",
+          stepIndex: 0
+        },
         new: {
           badgeText: "🔔 Sipariş Alındı",
           badgeBg: "rgba(230, 126, 34, 0.15)",
@@ -4185,15 +4670,20 @@
       const items = order.items || [];
       const paymentLabel = window.StoreStatus
         ? StoreStatus.getPaymentMethodLabel(order.payment_method, currentStoreStatus.settings)
-        : (order.payment_method === "door_cash" ? "Kapıda Nakit" : "Kapıda Kredi Kartı");
+        : (order.payment_method === "door_cash" ? "Kapıda Nakit" : (order.payment_method === "online_card" ? "Online Kredi Kartı" : "Kapıda Kredi Kartı"));
+      const onlinePaidTag = order.payment_status === "paid"
+        ? ` <span style="display:inline-block; padding:1px 6px; border-radius:999px; background:#dcfce7; color:#166534; font-size:0.72rem; font-weight:800;">✓ Ödendi</span>`
+        : "";
       const deliveryLabel = isTakeaway ? "Restorandan Gel-Al" : "Adrese Paket Servis";
 
       body.innerHTML = `
         <div class="tracking-status-hero">
           ${status === 'cancelled' ? `
-            <h3 class="tracking-status-title" style="color: #c0392b;">✕ Sipariş İptal Edildi</h3>
+            <h3 class="tracking-status-title" style="color: #c0392b;">✕ ${order.payment_status === 'payment_failed' ? 'Kart Ödemesi Başarısız' : 'Sipariş İptal Edildi'}</h3>
             <p class="tracking-status-desc" style="margin-top: 10px; font-size: 0.96rem; font-weight: 700; color: var(--ink-900);">
-              ${cancelReason ? `İptal Nedeni: ${escapeHtml(cancelReason)}` : 'Detaylı bilgi için restoranımızla iletişime geçebilirsiniz.'}
+              ${order.payment_status === 'payment_failed'
+                ? (order.payment_error ? escapeHtml(order.payment_error) : 'Kart ödemesi banka tarafından onaylanmadı.')
+                : (cancelReason ? `İptal Nedeni: ${escapeHtml(cancelReason)}` : 'Detaylı bilgi için restoranımızla iletişime geçebilirsiniz.')}
             </p>
           ` : `
             <span class="tracking-badge-live" style="background:${cfg.badgeBg}; color:${cfg.badgeColor};">
@@ -4204,7 +4694,7 @@
           `}
         </div>
 
-        ${status !== 'cancelled' ? `
+        ${status !== 'cancelled' && status !== 'pending_payment' ? `
           <div class="tracking-stepper-wrap">
             <div class="tracking-stepper-track">
               <div class="tracking-stepper-progress" style="width: ${progressPercent}%;"></div>
@@ -4256,7 +4746,7 @@
             <span style="color: var(--ginger-600);">${order.total_amount} ₺</span>
           </div>
           <div style="font-size: 0.78rem; color: var(--ink-500); margin-top: 6px;">
-            Teslimat: <strong>${deliveryLabel}</strong> · Ödeme: <strong>${paymentLabel}</strong>
+            Teslimat: <strong>${deliveryLabel}</strong> · Ödeme: <strong>${paymentLabel}</strong>${onlinePaidTag}
           </div>
           ${order.delivery_address && !isTakeaway ? `
             <div style="font-size: 0.78rem; color: var(--ink-600); margin-top: 4px;">
@@ -4563,7 +5053,49 @@
       applyFilters();
     }
 
+    // PayTR iFrame içi dönüş mesajı dinleyicisi
+    window.addEventListener("message", (event) => {
+      if (event.origin !== window.location.origin) return;
+      const msg = event.data;
+      if (!msg || msg.type !== "XUBO_PAYTR_RESULT") return;
+      if (msg.status === "ok") {
+        finishPaytrSuccess(msg.oid);
+      } else if (msg.status === "fail") {
+        finishPaytrFailure(msg.oid);
+      }
+    });
+
     document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paytrStatusParam = urlParams.get("paytr_status");
+      const paytrOidParam = urlParams.get("oid");
+
+      if (window.self !== window.top && (paytrStatusParam === "ok" || paytrStatusParam === "fail")) {
+        try {
+          window.top.postMessage({ type: "XUBO_PAYTR_RESULT", status: paytrStatusParam, oid: paytrOidParam }, window.location.origin);
+        } catch (e) {}
+        document.body.innerHTML = paytrStatusParam === "ok"
+          ? `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:260px; padding:24px; text-align:center; font-family:sans-serif; color:#166534;">
+               <div style="font-size:2.4rem; margin-bottom:10px;">✅</div>
+               <div style="font-size:1.1rem; font-weight:800; margin-bottom:6px;">Ödemeniz Başarıyla Alındı</div>
+               <div style="font-size:0.88rem; color:#4b5563;">Sipariş takip ekranına yönlendiriliyorsunuz...</div>
+             </div>`
+          : `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:260px; padding:24px; text-align:center; font-family:sans-serif; color:#b91c1c;">
+               <div style="font-size:2.4rem; margin-bottom:10px;">❌</div>
+               <div style="font-size:1.1rem; font-weight:800; margin-bottom:6px;">Ödeme Tamamlanamadı</div>
+               <div style="font-size:0.88rem; color:#4b5563;">Ödeme ekranına geri yönlendiriliyorsunuz...</div>
+             </div>`;
+        return;
+      }
+
+      if (paytrStatusParam) {
+        urlParams.delete("paytr_status");
+        urlParams.delete("oid");
+        const cleanQuery = urlParams.toString();
+        const cleanUrl = window.location.pathname + (cleanQuery ? `?${cleanQuery}` : "") + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+
       if (typeof window.ensureRestaurantConfigReady === "function") {
         await window.ensureRestaurantConfigReady();
       }
@@ -4572,6 +5104,12 @@
       loadMenuFromAPI();
       syncCartBadges();
       updateActiveOrderHeaderButton();
+
+      if (paytrStatusParam === "ok") {
+        await finishPaytrSuccess(paytrOidParam);
+      } else if (paytrStatusParam === "fail") {
+        await finishPaytrFailure(paytrOidParam);
+      }
 
       if (window.StoreStatus) {
         StoreStatus.subscribe((newSettings) => {

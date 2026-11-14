@@ -34,12 +34,30 @@ const CUSTOMERS_STORAGE_KEY = "ginger_pizza_customers_v1";
 function normalizePhone(rawPhone) {
   let digits = String(rawPhone || "").replace(/[^0-9]/g, "");
   if (!digits) return "";
-  if (digits.length === 12 && digits.startsWith("90")) {
+  if (digits.length === 14 && digits.startsWith("0090")) {
+    digits = "0" + digits.slice(4);
+  } else if (digits.length === 12 && digits.startsWith("90")) {
     digits = "0" + digits.slice(2);
-  } else if (digits.length === 10 && digits.startsWith("5")) {
+  } else if (digits.length === 10 && /^[23458]/.test(digits)) {
     digits = "0" + digits;
   }
   return digits;
+}
+
+function formatTrPhone(rawPhone) {
+  const norm = normalizePhone(rawPhone);
+  if (norm.length === 11 && /^0[23458][0-9]{9}$/.test(norm)) {
+    return `${norm.slice(0, 4)} ${norm.slice(4, 7)} ${norm.slice(7, 9)} ${norm.slice(9, 11)}`;
+  }
+  return String(rawPhone || "").trim();
+}
+
+function isValidTrPhone(rawPhone) {
+  const norm = normalizePhone(rawPhone);
+  if (!/^0[23458][0-9]{9}$/.test(norm)) return false;
+  if (/^0[23458](\d)\1{8}$/.test(norm)) return false;
+  if (/0{7}$/.test(norm)) return false;
+  return true;
 }
 
 function getIstanbulTodayStr() {
@@ -814,6 +832,13 @@ function reconcileLocalCustomerStatusChange(order, oldStatus, newStatus) {
 const OrderAPI = {
   // Yeni Sipariş Oluştur
   async createOrder(customerData, cartItems) {
+    if (!isValidTrPhone(customerData && customerData.phone)) {
+      const phoneErr = new Error("Lütfen geçerli bir telefon numarası girin (Örn: 05XX XXX XX XX).");
+      phoneErr.code = "ORDER_VALIDATION_ERROR";
+      throw phoneErr;
+    }
+    const formattedPhone = formatTrPhone(customerData.phone);
+
     // 0. Dükkan Açık/Kapalı & Yoğun Modu Ön Kontrolü (Türkiye Saati)
     let liveSettings = null;
     if (window.StoreStatus) {
@@ -836,7 +861,7 @@ const OrderAPI = {
     const orderPayload = {
       restaurant_slug: restaurantSlug,
       customer_name: customerData.name,
-      customer_phone: customerData.phone,
+      customer_phone: formattedPhone,
       delivery_type: customerData.deliveryType || "delivery", // 'delivery' veya 'takeaway'
       delivery_address: customerData.address || "Gel-Al Siparişi",
       order_notes: customerData.notes || "",
@@ -858,7 +883,7 @@ const OrderAPI = {
           p_restaurant_slug: restaurantSlug,
           p_customer: {
             name: customerData.name,
-            phone: customerData.phone,
+            phone: formattedPhone,
             deliveryType: customerData.deliveryType || "delivery",
             address: customerData.address || "Gel-Al Siparişi",
             notes: customerData.notes || "",
@@ -890,7 +915,7 @@ const OrderAPI = {
               dbClosedErr.code = "STORE_CLOSED";
               throw dbClosedErr;
             }
-            if (/^(ITEM_UNAVAILABLE|INVALID_MENU_ITEM|EMPTY_CART|INVALID_CUSTOMER|RESTAURANT_NOT_FOUND):/i.test(rpcMsg)) {
+            if (/^(ITEM_UNAVAILABLE|INVALID_MENU_ITEM|EMPTY_CART|INVALID_CUSTOMER|RESTAURANT_NOT_FOUND|INVALID_PAYMENT_METHOD|INVALID_ORDER_AMOUNT|MIN_ORDER_NOT_MET|RATE_LIMIT_EXCEEDED):/i.test(rpcMsg)) {
               const valErr = new Error(rpcMsg.replace(/^[A-Z_]+:\s*/, ""));
               valErr.code = "ORDER_VALIDATION_ERROR";
               throw valErr;
@@ -974,8 +999,13 @@ const OrderAPI = {
       }
     }
 
-    // Supabase yoksa veya hata verdiyse yerel depolamaya kaydet
+    // Supabase yoksa veya hata verdiyse yerel depolamaya kaydet (online kart hariç)
     if (!createdOrder) {
+      if (orderPayload.payment_method === "online_card") {
+        const payErr = new Error("Online kart ödemesi başlatılamadı. Lütfen internet bağlantınızı kontrol edip tekrar deneyin veya kapıda ödeme seçin.");
+        payErr.code = "ORDER_VALIDATION_ERROR";
+        throw payErr;
+      }
       const localOrders = getLocalOrders();
       const orderNumber = 1000 + localOrders.length + 1;
       createdOrder = {
@@ -1002,9 +1032,49 @@ const OrderAPI = {
     if (createdOrder.tracking_token) {
       localStorage.setItem(getActiveOrderTokenStorageKey(), String(createdOrder.tracking_token));
     }
-    Cart.clear();
+
+    // Online kart ödemesinde sepeti ödeme onaylanana kadar koru
+    const isPendingOnlinePayment =
+      createdOrder.payment_method === "online_card" &&
+      (createdOrder.payment_status === "pending_payment" || createdOrder.status === "pending_payment");
+    if (!isPendingOnlinePayment) {
+      Cart.clear();
+    }
 
     return createdOrder;
+  },
+
+  // PayTR iFrame Token Başlatıcı (Edge Function: paytr-init)
+  async initPaytrPayment(order) {
+    if (!order || !order.id || !order.tracking_token) {
+      throw new Error("Ödeme başlatmak için sipariş bilgisi eksik.");
+    }
+    const cfg = (typeof window !== "undefined" && window.SUPABASE_CONFIG) ? window.SUPABASE_CONFIG : {};
+    const baseUrl = String(cfg.url || "").replace(/\/+$/, "");
+    const anonKey = String(cfg.anonKey || "").trim();
+    if (!baseUrl || !anonKey) {
+      throw new Error("Supabase yapılandırması eksik.");
+    }
+
+    const res = await fetch(`${baseUrl}/functions/v1/paytr-init`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": anonKey,
+        "Authorization": `Bearer ${anonKey}`
+      },
+      body: JSON.stringify({
+        order_id: order.id,
+        tracking_token: order.tracking_token,
+        return_url: typeof window !== "undefined" ? window.location.href : ""
+      })
+    });
+
+    const payload = await res.json().catch(() => null);
+    if (!res.ok || !payload || !payload.success || !payload.iframe_url) {
+      throw new Error((payload && payload.error) || `PayTR ödeme ekranı başlatılamadı (HTTP ${res.status}).`);
+    }
+    return payload;
   },
 
   // Tek Bir Siparişi Getir (Canlı Takip İçin)
@@ -1058,6 +1128,7 @@ const OrderAPI = {
           .from("orders")
           .select("*, order_items(*)")
           .eq("restaurant_slug", slug)
+          .neq("status", "pending_payment")
           .or("is_archived.is.null,is_archived.eq.false")
           .order("created_at", { ascending: false })
           .limit(100);
@@ -1073,7 +1144,7 @@ const OrderAPI = {
       }
     }
 
-    return getLocalOrders().filter(o => !o.is_archived && (o.restaurant_slug || "ginger-pizza") === slug);
+    return getLocalOrders().filter(o => !o.is_archived && o.status !== "pending_payment" && (o.restaurant_slug || "ginger-pizza") === slug);
   },
 
   // Tamamlanan Siparişleri Arşivle (Gün Sonu Temizliği)
@@ -1276,10 +1347,12 @@ const OrderAPI = {
     return this.getOrdersByDateRange(dateStr, dateStr);
   },
 
-  // Sipariş listesini ürün ve boyut kırılımına göre özetle (İptaller hariç)
+  // Sipariş listesini ürün ve boyut kırılımına göre özetle (İptaller ve ödenmemiş çevrimiçi taslaklar hariç)
   aggregateProductReport(orders) {
     const map = new Map();
-    const validOrders = (Array.isArray(orders) ? orders : []).filter(o => o && o.status !== "cancelled");
+    const validOrders = (Array.isArray(orders) ? orders : []).filter(
+      o => o && o.status !== "cancelled" && o.status !== "pending_payment" && o.payment_status !== "payment_failed"
+    );
 
     for (const order of validOrders) {
       const items = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
@@ -1352,7 +1425,7 @@ const OrderAPI = {
             .from("orders")
             .select("restaurant_slug, customer_name, customer_phone, delivery_address, total_amount, status, created_at")
             .eq("restaurant_slug", slug)
-            .neq("status", "cancelled")
+            .not("status", "in", "(cancelled,pending_payment)")
             .order("created_at", { ascending: false })
             .limit(1500);
 
@@ -1599,7 +1672,10 @@ const OrderAPI = {
       if (channel && sb) sb.removeChannel(channel);
       window.removeEventListener("ginger-orders-updated", localHandler);
     };
-  }
+  },
+  normalizePhone,
+  formatTrPhone,
+  isValidTrPhone
 };
 
 window.Cart = Cart;

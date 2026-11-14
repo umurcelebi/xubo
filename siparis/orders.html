@@ -14,8 +14,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js?v=20261114c"></script>
-  <script src="js/store-status.js?v=20261114c"></script>
-  <script src="js/order-api.js?v=20261114h"></script>
+  <script src="js/store-status.js?v=20261114d"></script>
+  <script src="js/order-api.js?v=20261114k"></script>
 
   <style>
     :root {
@@ -999,8 +999,8 @@
       <div class="archive-summary-card" style="margin-bottom: 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
           <strong style="font-size:0.86rem; color:var(--ink);">🌐 Ethernet Ağ Yazıcısı (IP / Port)</strong>
-          <button type="button" class="btn-kds" onclick="downloadPrintBridgeScript()" style="padding:4px 10px; font-size:0.74rem;" title="Kasa bilgisayarında arka planda çalışacak yerel köprü dosyasını indir">
-            📥 Köprü Dosyasını İndir
+          <button type="button" class="btn-kds" onclick="downloadPrintBridgeScript()" style="padding:4px 10px; font-size:0.74rem;" title="Tek tıkla kurulum ve başlatma için Windows .bat dosyasını indir">
+            📥 Tek Tıkla Kurulum İndir (.bat)
           </button>
         </div>
         <div class="archive-stat-row" style="align-items:center; margin-bottom:8px;">
@@ -1204,9 +1204,11 @@
         const autoCut = options.autoCut !== false;
         const sep = "-".repeat(cols);
         const deliveryLabel = order.delivery_type === "takeaway" ? "GEL-AL" : "PAKET SERVIS";
-        const payLabel = window.StoreStatus
+        const basePayLabel = window.StoreStatus
           ? StoreStatus.getPaymentMethodLabel(order.payment_method, kdsStoreSettings).toLocaleUpperCase("tr-TR")
-          : (order.payment_method === "door_cash" ? "KAPIDA NAKIT" : "KAPIDA KART");
+          : (order.payment_method === "door_cash" ? "KAPIDA NAKIT" : (order.payment_method === "online_card" ? "ONLINE KREDI KARTI" : "KAPIDA KART"));
+        const isOnlinePaid = order.payment_status === "paid" || order.payment_method === "online_card";
+        const payLabel = isOnlinePaid ? `${basePayLabel} (ODENDI)` : basePayLabel;
 
         const buf = [];
         // ESC @ -> Yazıcıyı sıfırla
@@ -1260,6 +1262,9 @@
         buf.push(0x1B, 0x61, 0x01); // Ortala
         pushLine(buf, sep);
         pushLine(buf, `ODEME: ${payLabel}`);
+        if (isOnlinePaid) {
+          pushLine(buf, "** ONLINE ODENDI - TAHSILAT YOK **");
+        }
 
         if (autoCut) {
           // Bıçak hizası için 4 satır kağıt ilerlet + ESC/POS Auto-Cut komutu (GS V 66 0)
@@ -1562,7 +1567,7 @@
         const bridgeUp = await ThermalPrinter.checkBridgeHealth();
         refreshBridgeStatusIndicator();
         if (!bridgeUp) {
-          alert(`✅ IP ve Port kaydedildi (${ip}:${port}), ancak yerel yazıcı köprüsü (127.0.0.1:19100) henüz açık değil.\n\n1) "📥 Köprü Dosyasını İndir" butonuna basın\n2) Kasa bilgisayarında çalıştırın: node xubo-yazici-koprusu.js`);
+          alert(`✅ IP ve Port kaydedildi (${ip}:${port}), ancak yerel yazıcı köprüsü (127.0.0.1:19100) henüz açık değil.\n\n1) "📥 Tek Tıkla Kurulum İndir (.bat)" butonuna basın\n2) İnen xubo-yazici-koprusu.bat dosyasına çift tıklayın (Node.js yoksa otomatik kurar ve köprüyü başlatır).`);
           return;
         }
         await ThermalPrinter.pingNetwork(ip, port);
@@ -1602,6 +1607,8 @@
         "const LISTEN_PORT = Number(process.env.PORT) || 19100;",
         "const MAX_BODY_BYTES = 256 * 1024;",
         "const SOCKET_TIMEOUT_MS = 3500;",
+        "const PRINT_RETRY_COUNT = 2;",
+        "const PRINT_RETRY_DELAY_MS = 500;",
         "function isAllowedPrinterHost(rawHost) {",
         "  const host = String(rawHost || '').trim();",
         "  if (!host) return false;",
@@ -1647,6 +1654,7 @@
         "  return new Promise(function(resolve, reject) {",
         "    const socket = new net.Socket();",
         "    let settled = false;",
+        "    let connected = false;",
         "    function finish(err, result) {",
         "      if (settled) return;",
         "      settled = true;",
@@ -1654,9 +1662,10 @@
         "      if (err) reject(err); else resolve(result);",
         "    }",
         "    socket.setTimeout(SOCKET_TIMEOUT_MS);",
-        "    socket.once('timeout', function() { finish(new Error('Zaman asimi (' + host + ':' + port + ')')); });",
-        "    socket.once('error', function(err) { finish(new Error('Baglanti hatasi (' + host + ':' + port + '): ' + err.message)); });",
+        "    socket.once('timeout', function() { const e = new Error('Zaman asimi (' + host + ':' + port + ')'); e.retryable = !connected; finish(e); });",
+        "    socket.once('error', function(err) { const e = new Error('Baglanti hatasi (' + host + ':' + port + '): ' + err.message); e.retryable = !connected; finish(e); });",
         "    socket.connect(port, host, function() {",
+        "      connected = true;",
         "      if (!dataBuffer || dataBuffer.length === 0) { socket.end(); finish(null, { host: host, port: port, bytesSent: 0 }); return; }",
         "      socket.write(dataBuffer, function(writeErr) {",
         "        if (writeErr) { finish(new Error(writeErr.message)); return; }",
@@ -1664,6 +1673,22 @@
         "      });",
         "    });",
         "  });",
+        "}",
+        "async function sendTcpToPrinterWithRetry(host, port, dataBuffer, maxRetries, delayMs) {",
+        "  const retries = typeof maxRetries === 'number' ? maxRetries : PRINT_RETRY_COUNT;",
+        "  const waitMs = typeof delayMs === 'number' ? delayMs : PRINT_RETRY_DELAY_MS;",
+        "  let lastErr;",
+        "  for (let attempt = 0; attempt <= retries; attempt++) {",
+        "    try {",
+        "      return await sendTcpToPrinter(host, port, dataBuffer);",
+        "    } catch (err) {",
+        "      lastErr = err;",
+        "      if (!err.retryable || attempt === retries) throw err;",
+        "      console.warn('[' + new Date().toLocaleTimeString('tr-TR') + '] Yazici mesgul (' + host + ':' + port + '), ' + waitMs + ' ms sonra tekrar deneniyor (' + (attempt + 1) + '/' + retries + ')...');",
+        "      await new Promise(function(r) { setTimeout(r, waitMs); });",
+        "    }",
+        "  }",
+        "  throw lastErr;",
         "}",
         "const server = http.createServer(async function(req, res) {",
         "  if (req.method === 'OPTIONS') {",
@@ -1692,7 +1717,7 @@
         "      if (reqPath === '/ping') { await sendTcpToPrinter(host, port, null); sendJson(res, 200, { ok: true, host: host, port: port }); return; }",
         "      if (!body.dataBase64) { sendJson(res, 400, { ok: false, error: 'dataBase64 zorunlu' }); return; }",
         "      const buf = Buffer.from(body.dataBase64, 'base64');",
-        "      const result = await sendTcpToPrinter(host, port, buf);",
+        "      const result = await sendTcpToPrinterWithRetry(host, port, buf);",
         "      console.log('[' + new Date().toLocaleTimeString('tr-TR') + '] Yazdirildi -> ' + host + ':' + port + ' (' + result.bytesSent + ' bayt)');",
         "      sendJson(res, 200, Object.assign({ ok: true }, result));",
         "    } catch (err) {",
@@ -1707,11 +1732,92 @@
         "  console.log('Xubo Ethernet Yazici Koprusu hazir: http://' + LISTEN_HOST + ':' + LISTEN_PORT);",
         "});"
       ];
-      const blob = new Blob([lines.join("\n") + "\n"], { type: "application/javascript;charset=utf-8" });
+      const jsSource = lines.join("\n") + "\n";
+      const jsBytes = new TextEncoder().encode(jsSource);
+      let bin = "";
+      for (let i = 0; i < jsBytes.length; i++) {
+        bin += String.fromCharCode(jsBytes[i]);
+      }
+      const jsBase64 = btoa(bin);
+      const b64EchoLines = [];
+      for (let i = 0; i < jsBase64.length; i += 76) {
+        b64EchoLines.push("  echo " + jsBase64.slice(i, i + 76));
+      }
+
+      const batLines = [
+        "@echo off",
+        "chcp 65001 >nul",
+        "title Xubo Ethernet Yazici Koprusu Kurulum ve Baslatici",
+        "setlocal",
+        "",
+        "set \"BRIDGE_DIR=%LOCALAPPDATA%\\XuboPrintBridge\"",
+        "set \"BRIDGE_JS=%BRIDGE_DIR%\\xubo-yazici-koprusu.js\"",
+        "set \"B64_FILE=%BRIDGE_DIR%\\bridge.b64\"",
+        "set \"STARTUP_BAT=%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\xubo-yazici-koprusu-baslat.bat\"",
+        "",
+        "if not exist \"%BRIDGE_DIR%\" mkdir \"%BRIDGE_DIR%\"",
+        "(",
+        ...b64EchoLines,
+        ") > \"%B64_FILE%\"",
+        "",
+        "powershell -NoProfile -Command \"[IO.File]::WriteAllBytes('%BRIDGE_JS%', [Convert]::FromBase64String((Get-Content -Raw '%B64_FILE%')))\" >nul 2>&1",
+        "if errorlevel 1 (",
+        "  certutil -f -decode \"%B64_FILE%\" \"%BRIDGE_JS%\" >nul 2>&1",
+        ")",
+        "if exist \"%B64_FILE%\" del /f /q \"%B64_FILE%\"",
+        "",
+        "if not exist \"%BRIDGE_JS%\" (",
+        "  echo [HATA] Kopru dosyasi olusturulamadi.",
+        "  pause",
+        "  exit /b 1",
+        ")",
+        "",
+        "set \"NODE_EXE=\"",
+        "for /f \"delims=\" %%i in ('where node 2^>nul') do if not defined NODE_EXE set \"NODE_EXE=%%i\"",
+        "if not defined NODE_EXE if exist \"%ProgramFiles%\\nodejs\\node.exe\" set \"NODE_EXE=%ProgramFiles%\\nodejs\\node.exe\"",
+        "if not defined NODE_EXE if exist \"%LOCALAPPDATA%\\Programs\\nodejs\\node.exe\" set \"NODE_EXE=%LOCALAPPDATA%\\Programs\\nodejs\\node.exe\"",
+        "",
+        "if not defined NODE_EXE (",
+        "  echo Node.js bulunamadi. Otomatik kuruluyor...",
+        "  where winget >nul 2>&1",
+        "  if not errorlevel 1 (",
+        "    winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements",
+        "    for /f \"delims=\" %%i in ('where node 2^>nul') do if not defined NODE_EXE set \"NODE_EXE=%%i\"",
+        "    if not defined NODE_EXE if exist \"%ProgramFiles%\\nodejs\\node.exe\" set \"NODE_EXE=%ProgramFiles%\\nodejs\\node.exe\"",
+        "    if not defined NODE_EXE if exist \"%LOCALAPPDATA%\\Programs\\nodejs\\node.exe\" set \"NODE_EXE=%LOCALAPPDATA%\\Programs\\nodejs\\node.exe\"",
+        "  )",
+        ")",
+        "",
+        "if not defined NODE_EXE (",
+        "  echo.",
+        "  echo [HATA] Node.js otomatik kurulamadi. Lutfen acilan sayfadan Node.js LTS indirip kurun, ardindan bu dosyayi tekrar calistirin.",
+        "  start \"\" \"https://nodejs.org/en/download\"",
+        "  pause",
+        "  exit /b 1",
+        ")",
+        "",
+        "(",
+        "  echo @echo off",
+        "  echo powershell -NoProfile -WindowStyle Hidden -Command \"Start-Process -FilePath '%NODE_EXE%' -ArgumentList '\\\"%BRIDGE_JS%\\\"' -WindowStyle Hidden\"",
+        ") > \"%STARTUP_BAT%\"",
+        "",
+        "powershell -NoProfile -Command \"Get-CimInstance Win32_Process -Filter \\\"Name='node.exe'\\\" | Where-Object { $_.CommandLine -like '*xubo-yazici-koprusu.js*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }\" >nul 2>&1",
+        "",
+        "powershell -NoProfile -WindowStyle Hidden -Command \"Start-Process -FilePath '%NODE_EXE%' -ArgumentList '\\\"%BRIDGE_JS%\\\"' -WindowStyle Hidden\"",
+        "timeout /t 1 /nobreak >nul",
+        "",
+        "echo.",
+        "echo [OK] Kurulum tamamlandi! Kopru arka planda gizli olarak calisiyor (http://127.0.0.1:19100).",
+        "echo [OK] Bilgisayar her acildiginda otomatik ve gizli olarak baslayacak.",
+        "echo Bu pencere 4 saniye icinde kapanacaktir...",
+        "timeout /t 4 >nul"
+      ];
+
+      const blob = new Blob([batLines.join("\r\n") + "\r\n"], { type: "application/x-bat;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "xubo-yazici-koprusu.js";
+      a.download = "xubo-yazici-koprusu.bat";
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -1808,9 +1914,11 @@
       printArea.style.setProperty("--receipt-max-width", paperWidth === "80" ? "76mm" : "56mm");
 
       const deliveryLabel = order.delivery_type === "takeaway" ? "GEL-AL" : "PAKET SERVİS";
-      const payLabel = window.StoreStatus
+      const isOnlinePaid = order.payment_status === "paid" || order.payment_method === "online_card";
+      const payLabelBase = window.StoreStatus
         ? StoreStatus.getPaymentMethodLabel(order.payment_method, kdsStoreSettings).toLocaleUpperCase("tr-TR")
-        : (order.payment_method === "door_cash" ? "KAPIDA NAKİT" : "KAPIDA KART");
+        : (order.payment_method === "door_cash" ? "KAPIDA NAKİT" : (order.payment_method === "online_card" ? "ONLINE KREDİ KARTI" : "KAPIDA KART"));
+      const payLabel = isOnlinePaid ? `${payLabelBase} (ÖDENDİ — TAHSİLAT YOK)` : payLabelBase;
 
       printArea.innerHTML = `
         <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px;">
@@ -1996,7 +2104,12 @@
 
           <div class="order-total-row">
             <div>
-              <div class="payment-tag">${escapeHtml(paymentLabel)}</div>
+              <div class="payment-tag">
+                ${escapeHtml(paymentLabel)}
+                ${order.payment_status === "paid"
+                  ? '<span style="display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; font-size:0.68rem; font-weight:800; background:rgba(46,204,113,0.18); color:#6ee7a0; border:1px solid rgba(46,204,113,0.4);">✓ ÖDENDİ</span>'
+                  : ''}
+              </div>
               ${Number(order.discount_amount) > 0 ? `
                 <div style="font-size:0.72rem; color:#6ee7a0; font-weight:700; margin-top:2px;">
                   🎁 %${escapeHtml(order.discount_percent || 0)} İndirim (-${escapeHtml(order.discount_amount)} ₺)
@@ -2026,7 +2139,7 @@
       const newOrders = allOrders.filter(o => o.status === "new");
       const prepOrders = allOrders.filter(o => o.status === "preparing");
       const wayOrders = allOrders.filter(o => o.status === "on_way");
-      const doneOrders = allOrders.filter(o => o.status === "delivered" || o.status === "cancelled");
+      const doneOrders = allOrders.filter(o => o.status === "delivered" || (o.status === "cancelled" && o.payment_status !== "payment_failed"));
 
       document.getElementById("countNew").textContent = newOrders.length;
       document.getElementById("countPrep").textContent = prepOrders.length;
@@ -2070,11 +2183,11 @@
         }
       });
 
-      const isFreshNewOrder = Boolean(
-        latestBrandNewOrder &&
-        latestBrandNewOrder.created_at &&
-        (Date.now() - new Date(latestBrandNewOrder.created_at).getTime() < 90000)
+      const freshTs = Math.max(
+        latestBrandNewOrder && latestBrandNewOrder.created_at ? new Date(latestBrandNewOrder.created_at).getTime() : 0,
+        latestBrandNewOrder && latestBrandNewOrder.updated_at ? new Date(latestBrandNewOrder.updated_at).getTime() : 0
       );
+      const isFreshNewOrder = Boolean(freshTs && (Date.now() - freshTs < 90000));
 
       if (hasBrandNew && soundEnabled && latestBrandNewOrder && (hasInitialOrderLoadDone || isFreshNewOrder)) {
         if (window.SoundAlert && typeof SoundAlert.ringForOrder === "function") {

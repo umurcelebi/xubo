@@ -110,6 +110,7 @@ function createDefaultStoreSettings() {
     online_discount_percent: 0,
     min_order_amount: 0,
     delivery_fee: 0,
+    accepts_online_payment: false,
     payment_methods: createDefaultPaymentMethods(),
     rejection_reasons: [...DEFAULT_REJECTION_REASONS],
     updated_at: new Date().toISOString()
@@ -155,6 +156,7 @@ function normalizeStoreSettings(raw) {
     online_discount_percent: clampedPercent,
     min_order_amount: cleanMinOrder,
     delivery_fee: cleanDeliveryFee,
+    accepts_online_payment: Boolean(src.accepts_online_payment),
     payment_methods: normalizePaymentMethods(src.payment_methods),
     rejection_reasons: normalizeRejectionReasons(rawReasons),
     updated_at: src.updated_at || new Date().toISOString()
@@ -322,11 +324,27 @@ const StoreStatus = {
   },
 
   getEnabledPaymentMethods(settings) {
-    return this.getPaymentMethods(settings).filter(m => m.enabled);
+    const s = settings ? normalizeStoreSettings(settings) : getLocalStoreSettings();
+    const list = (s.payment_methods || []).filter(m => m.enabled && m.id !== "online_card");
+    if (s.accepts_online_payment) {
+      return [
+        {
+          id: "online_card",
+          label: "Online Kredi / Banka Kartı",
+          icon: "💳",
+          enabled: true,
+          isDefault: true,
+          isOnline: true
+        },
+        ...list
+      ];
+    }
+    return list;
   },
 
   getPaymentMethodLabel(methodId, settings) {
     const id = String(methodId || "").trim();
+    if (id === "online_card") return "Online Kredi Kartı";
     const list = this.getPaymentMethods(settings);
     const found = list.find(m => m.id === id);
     if (found) return found.label;
@@ -337,12 +355,42 @@ const StoreStatus = {
 
   getPaymentMethodDisplay(methodId, settings) {
     const id = String(methodId || "").trim();
+    if (id === "online_card") return "💳 Online Kredi Kartı";
     const list = this.getPaymentMethods(settings);
     const found = list.find(m => m.id === id);
     if (found) return `${found.icon ? found.icon + " " : ""}${found.label}`.trim();
     if (id === "door_cash") return "💵 Kapıda Nakit";
     if (id === "door_card") return "💳 Kapıda Kredi Kartı";
     return id || "Kapıda Kredi Kartı";
+  },
+
+  async getPaytrConfigStatus(restaurantSlug) {
+    const slug = String(restaurantSlug || getStoreSettingsRowId()).trim().toLowerCase();
+    const sb = getStoreSupabaseClient();
+    if (!sb) throw new Error("Supabase bağlantısı bulunamadı.");
+    const { data, error } = await sb.rpc("get_restaurant_paytr_config_status", {
+      p_restaurant_slug: slug
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  async savePaytrConfig(payload) {
+    const slug = String((payload && payload.restaurant_slug) || getStoreSettingsRowId()).trim().toLowerCase();
+    const sb = getStoreSupabaseClient();
+    if (!sb) throw new Error("Supabase bağlantısı bulunamadı.");
+    const { data, error } = await sb.rpc("save_restaurant_paytr_config", {
+      p_restaurant_slug: slug,
+      p_is_enabled: Boolean(payload && payload.is_enabled),
+      p_test_mode: payload && payload.test_mode !== undefined ? Boolean(payload.test_mode) : true,
+      p_merchant_id: String((payload && payload.merchant_id) || "").trim(),
+      p_merchant_key: payload && payload.merchant_key ? String(payload.merchant_key).trim() : null,
+      p_merchant_salt: payload && payload.merchant_salt ? String(payload.merchant_salt).trim() : null
+    });
+    if (error) throw error;
+    const current = getLocalStoreSettings();
+    saveLocalStoreSettings({ ...current, accepts_online_payment: Boolean(data && data.is_enabled) });
+    return data;
   },
 
   evaluate(rawSettings, now = new Date()) {
@@ -513,6 +561,7 @@ const StoreStatus = {
           online_discount_percent: normalized.online_discount_percent,
           min_order_amount: normalized.min_order_amount,
           delivery_fee: normalized.delivery_fee,
+          accepts_online_payment: normalized.accepts_online_payment,
           payment_methods: normalized.payment_methods,
           rejection_reasons: normalized.rejection_reasons,
           updated_at: normalized.updated_at
@@ -525,7 +574,7 @@ const StoreStatus = {
           .single();
 
         // Veritabanında yeni sütunlar henüz yoksa uyumlu kolonlarla tekrar dene
-        if (error && /(online_discount|payment_methods|min_order_amount|delivery_fee|rejection_reasons)/i.test(String(error.message || ""))) {
+        if (error && /(online_discount|payment_methods|min_order_amount|delivery_fee|rejection_reasons|accepts_online_payment)/i.test(String(error.message || ""))) {
           const errMsg = String(error.message || "");
           const retryPayload = { ...payload };
           if (/online_discount/i.test(errMsg)) {
@@ -534,6 +583,9 @@ const StoreStatus = {
           }
           if (/payment_methods/i.test(errMsg)) {
             delete retryPayload.payment_methods;
+          }
+          if (/accepts_online_payment/i.test(errMsg)) {
+            delete retryPayload.accepts_online_payment;
           }
           if (/(min_order_amount|delivery_fee)/i.test(errMsg)) {
             delete retryPayload.min_order_amount;
@@ -547,11 +599,12 @@ const StoreStatus = {
             .upsert([retryPayload], { onConflict: "id" })
             .select()
             .single();
-          if (retry.error && /(online_discount|payment_methods|min_order_amount|delivery_fee|rejection_reasons)/i.test(String(retry.error.message || ""))) {
+          if (retry.error && /(online_discount|payment_methods|min_order_amount|delivery_fee|rejection_reasons|accepts_online_payment)/i.test(String(retry.error.message || ""))) {
             delete retryPayload.online_discount_enabled;
             delete retryPayload.online_discount_percent;
             delete retryPayload.min_order_amount;
             delete retryPayload.delivery_fee;
+            delete retryPayload.accepts_online_payment;
             delete retryPayload.payment_methods;
             delete retryPayload.rejection_reasons;
             retry = await sb.from("store_settings").upsert([retryPayload], { onConflict: "id" }).select().single();

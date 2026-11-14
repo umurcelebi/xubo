@@ -1631,6 +1631,65 @@
           </div>
         </div>
 
+        <!-- PayTR Online Kredi / Banka Kartı Entegrasyonu (Restoran Bazlı) -->
+        <div id="adminPaytrConfigBox" class="payment-methods-box" style="margin-top: 12px;">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; margin-bottom: 10px;">
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <span style="font-size: 0.92rem; font-weight: 800; color: var(--ink-900);">💳 PayTR Online Kredi / Banka Kartı (3D Secure)</span>
+                <span id="adminPaytrStatusBadge" style="font-size:0.74rem; font-weight:700; padding:3px 10px; border-radius:999px; background:#f3f4f6; color:#4b5563;">⚪ Kapalı</span>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--ink-500); margin-top: 3px;">
+                Kendi PayTR mağaza bilgilerinizi girerek web sitenizden doğrudan kredi/banka kartı ile tahsilat alabilirsiniz.
+              </div>
+            </div>
+            <div style="display:inline-flex; align-items:center; gap:10px;">
+              <label class="switch" title="Online kart ödemesini aç / kapat">
+                <input type="checkbox" id="adminPaytrEnabled" onchange="updatePaytrBadgePreview()">
+                <span class="slider"></span>
+              </label>
+              <label for="adminPaytrEnabled" id="adminPaytrToggleText" style="font-size:0.84rem; font-weight:700; cursor:pointer;">Kapalı</label>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:10px; margin-bottom:10px;">
+            <div>
+              <label class="form-label" for="adminPaytrMerchantId" style="font-size:0.78rem; margin-bottom:4px;">Mağaza No (Merchant ID)</label>
+              <input type="text" id="adminPaytrMerchantId" class="report-input" style="width:100%;" placeholder="Örn: 123456" autocomplete="off">
+            </div>
+            <div>
+              <label class="form-label" for="adminPaytrMerchantKey" style="font-size:0.78rem; margin-bottom:4px;">Mağaza Parolası (Merchant Key)</label>
+              <input type="password" id="adminPaytrMerchantKey" class="report-input" style="width:100%;" placeholder="Yeni key girin" autocomplete="new-password">
+              <div id="adminPaytrKeyHint" style="font-size:0.72rem; color:var(--ink-500); margin-top:3px;">Henüz kayıtlı değil</div>
+            </div>
+            <div>
+              <label class="form-label" for="adminPaytrMerchantSalt" style="font-size:0.78rem; margin-bottom:4px;">Mağaza Gizli Anahtarı (Merchant Salt)</label>
+              <input type="password" id="adminPaytrMerchantSalt" class="report-input" style="width:100%;" placeholder="Yeni salt girin" autocomplete="new-password">
+              <div id="adminPaytrSaltHint" style="font-size:0.72rem; color:var(--ink-500); margin-top:3px;">Henüz kayıtlı değil</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:var(--sand-50); border:1px dashed var(--sand-300); border-radius:8px; margin-bottom:10px;">
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:0.76rem; font-weight:700; color:var(--ink-700);">PayTR Bildirim (Callback) URL — PayTR Paneli &gt; Ayarlar kısmına yapıştırın:</div>
+              <code id="adminPaytrCallbackUrl" style="display:block; font-size:0.75rem; color:var(--ginger-600); word-break:break-all; margin-top:2px;"></code>
+            </div>
+            <button type="button" class="btn-header" onclick="copyPaytrCallbackUrl()" style="padding:6px 12px; font-size:0.78rem; white-space:nowrap;">
+              📋 URL Kopyala
+            </button>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
+            <label style="display:inline-flex; align-items:center; gap:8px; font-size:0.82rem; font-weight:700; color:var(--ink-700); cursor:pointer;">
+              <input type="checkbox" id="adminPaytrTestMode" checked onchange="updatePaytrBadgePreview()" style="width:16px; height:16px; accent-color:#e67e22;">
+              <span>🧪 Test / Sandbox Modu (Canlıya geçmeden önce açık bırakın)</span>
+            </label>
+            <button type="button" class="btn-header btn-header-primary" id="btnSavePaytrConfig" onclick="savePaytrSettings()">
+              💾 PayTR Ayarlarını Kaydet
+            </button>
+          </div>
+        </div>
+
         <div class="store-discount-card" style="margin-bottom: 16px;">
           <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
             <div>
@@ -2486,8 +2545,8 @@
   <!-- Menu API, Dükkan Durumu & Sipariş/Rapor API -->
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/menu-api.js?v=20261114b"></script>
-  <script src="js/store-status.js?v=20261114c"></script>
-  <script src="js/order-api.js?v=20261114h"></script>
+  <script src="js/store-status.js?v=20261114d"></script>
+  <script src="js/order-api.js?v=20261114k"></script>
 
   <script>
     // ========================================================================
@@ -3254,6 +3313,145 @@
       showToast("Varsayılan reddetme seçenekleri geri yüklendi.");
     };
 
+    function renderPaytrConfigState(cfg) {
+      const enabledEl = document.getElementById("adminPaytrEnabled");
+      const testEl = document.getElementById("adminPaytrTestMode");
+      const idEl = document.getElementById("adminPaytrMerchantId");
+      const keyEl = document.getElementById("adminPaytrMerchantKey");
+      const saltEl = document.getElementById("adminPaytrMerchantSalt");
+      const keyHint = document.getElementById("adminPaytrKeyHint");
+      const saltHint = document.getElementById("adminPaytrSaltHint");
+      const cbEl = document.getElementById("adminPaytrCallbackUrl");
+
+      const baseUrl = String((window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.url) || "").replace(/\/+$/, "");
+      if (cbEl) cbEl.textContent = baseUrl ? `${baseUrl}/functions/v1/paytr-callback` : "";
+
+      if (cfg) {
+        if (enabledEl) enabledEl.checked = Boolean(cfg.is_enabled);
+        if (testEl) testEl.checked = cfg.test_mode !== false;
+        if (idEl && document.activeElement !== idEl) idEl.value = cfg.merchant_id || "";
+        if (keyEl) {
+          keyEl.value = "";
+          keyEl.placeholder = cfg.has_merchant_key
+            ? `Kayıtlı (${cfg.masked_key || "••••••••"}) — değiştirmek için yazın`
+            : "Mağaza Parolası (Merchant Key)";
+        }
+        if (saltEl) {
+          saltEl.value = "";
+          saltEl.placeholder = cfg.has_merchant_salt
+            ? `Kayıtlı (${cfg.masked_salt || "••••••••"}) — değiştirmek için yazın`
+            : "Mağaza Gizli Anahtarı (Merchant Salt)";
+        }
+        if (keyHint) {
+          keyHint.textContent = cfg.has_merchant_key
+            ? `✓ Kayıtlı (${cfg.masked_key})`
+            : "Henüz kayıtlı değil";
+          keyHint.style.color = cfg.has_merchant_key ? "var(--success)" : "var(--ink-500)";
+        }
+        if (saltHint) {
+          saltHint.textContent = cfg.has_merchant_salt
+            ? `✓ Kayıtlı (${cfg.masked_salt})`
+            : "Henüz kayıtlı değil";
+          saltHint.style.color = cfg.has_merchant_salt ? "var(--success)" : "var(--ink-500)";
+        }
+      }
+      window.updatePaytrBadgePreview();
+    }
+
+    window.updatePaytrBadgePreview = function() {
+      const enabled = Boolean(document.getElementById("adminPaytrEnabled")?.checked);
+      const testMode = Boolean(document.getElementById("adminPaytrTestMode")?.checked);
+      const badge = document.getElementById("adminPaytrStatusBadge");
+      const toggleText = document.getElementById("adminPaytrToggleText");
+      if (toggleText) toggleText.textContent = enabled ? "Açık" : "Kapalı";
+      if (!badge) return;
+      if (!enabled) {
+        badge.textContent = "⚪ Kapalı";
+        badge.style.background = "#f3f4f6";
+        badge.style.color = "#4b5563";
+      } else if (testMode) {
+        badge.textContent = "🟡 Aktif (Test / Sandbox Modu)";
+        badge.style.background = "#fef3c7";
+        badge.style.color = "#92400e";
+      } else {
+        badge.textContent = "🟢 Aktif (Canlı Mod)";
+        badge.style.background = "#dcfce7";
+        badge.style.color = "#166534";
+      }
+    };
+
+    window.copyPaytrCallbackUrl = async function() {
+      const url = document.getElementById("adminPaytrCallbackUrl")?.textContent?.trim() || "";
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("PayTR Bildirim URL kopyalandı!");
+      } catch (e) {
+        showToast("URL seçip kopyalayabilirsiniz: " + url);
+      }
+    };
+
+    async function loadPaytrConfigPanel() {
+      const box = document.getElementById("adminPaytrConfigBox");
+      if (!window.StoreStatus || typeof StoreStatus.getPaytrConfigStatus !== "function") {
+        if (box) box.style.display = "none";
+        return;
+      }
+      const slug = typeof window.getActiveRestaurantSlug === "function" ? window.getActiveRestaurantSlug() : "ginger-pizza";
+      try {
+        const cfg = await StoreStatus.getPaytrConfigStatus(slug);
+        if (box) box.style.display = "";
+        renderPaytrConfigState(cfg);
+      } catch (err) {
+        if (/UNAUTHORIZED/i.test(String(err && err.message || ""))) {
+          if (box) box.style.display = "none";
+        } else {
+          renderPaytrConfigState(null);
+        }
+      }
+    }
+
+    window.savePaytrSettings = async function() {
+      if (!window.StoreStatus || typeof StoreStatus.savePaytrConfig !== "function") return;
+      const btn = document.getElementById("btnSavePaytrConfig");
+      const isEnabled = Boolean(document.getElementById("adminPaytrEnabled")?.checked);
+      const testMode = Boolean(document.getElementById("adminPaytrTestMode")?.checked);
+      const merchantId = (document.getElementById("adminPaytrMerchantId")?.value || "").trim();
+      const merchantKey = (document.getElementById("adminPaytrMerchantKey")?.value || "").trim();
+      const merchantSalt = (document.getElementById("adminPaytrMerchantSalt")?.value || "").trim();
+      const slug = typeof window.getActiveRestaurantSlug === "function" ? window.getActiveRestaurantSlug() : "ginger-pizza";
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Kaydediliyor...";
+      }
+      try {
+        const updated = await StoreStatus.savePaytrConfig({
+          restaurant_slug: slug,
+          is_enabled: isEnabled,
+          test_mode: testMode,
+          merchant_id: merchantId,
+          merchant_key: merchantKey || null,
+          merchant_salt: merchantSalt || null
+        });
+        renderPaytrConfigState(updated);
+        adminStoreSettings = await StoreStatus.getSettings();
+        showToast(
+          updated.is_enabled
+            ? `PayTR ayarları kaydedildi! (${updated.test_mode ? "Test Modu" : "Canlı Mod"})`
+            : "PayTR ayarları kaydedildi (Şu anda kapalı)."
+        );
+      } catch (err) {
+        const msg = String((err && err.message) || "PayTR ayarları kaydedilemedi.").replace(/^[A-Z_]+:\s*/, "");
+        alert(msg);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "💾 PayTR Ayarlarını Kaydet";
+        }
+      }
+    };
+
     async function loadStoreControlPanel() {
       if (!window.StoreStatus) return;
       adminStoreSettings = await StoreStatus.getSettings();
@@ -3264,6 +3462,7 @@
       renderWeeklyHoursEditor();
       try { renderPaymentMethodsEditor(); } catch (e) { console.warn("Payment methods render skipped:", e); }
       try { renderRejectionReasonsEditor(); } catch (e) { console.warn("Rejection reasons render skipped:", e); }
+      try { await loadPaytrConfigPanel(); } catch (e) { console.warn("PayTR config render skipped:", e); }
 
       if (!storeSubscriptionActive) {
         storeSubscriptionActive = true;
@@ -4540,6 +4739,7 @@
     };
 
     const STATUS_TR = {
+      pending_payment: "Ödeme Bekliyor",
       new: "Yeni",
       preparing: "Hazırlanıyor",
       on_way: "Yolda",
@@ -4551,7 +4751,7 @@
       if (window.StoreStatus) {
         return StoreStatus.getPaymentMethodLabel(methodId, adminStoreSettings);
       }
-      const fallback = { door_card: "Kapıda Kart", door_cash: "Kapıda Nakit", online: "Online" };
+      const fallback = { online_card: "Online Kredi Kartı", door_card: "Kapıda Kart", door_cash: "Kapıda Nakit", online: "Online" };
       return fallback[methodId] || methodId || "—";
     }
 
@@ -4561,18 +4761,20 @@
       const tbody = document.getElementById("reportDailyTableBody");
       if (tbody) tbody.innerHTML = `<tr><td colspan="7" class="report-empty-cell">Siparişler getiriliyor...</td></tr>`;
 
-      const orders = await OrderAPI.getOrdersByDate(dateStr);
+      const rawOrders = await OrderAPI.getOrdersByDate(dateStr);
+      const orders = (rawOrders || []).filter(o => o && o.status !== "pending_payment");
       cachedDailyOrders = orders;
 
-      const valid = orders.filter(o => o.status !== "cancelled");
-      const cancelled = orders.filter(o => o.status === "cancelled");
+      const valid = orders.filter(o => o.status !== "cancelled" && o.payment_status !== "payment_failed");
+      const cancelled = orders.filter(o => o.status === "cancelled" || o.payment_status === "payment_failed");
       const netRevenue = valid.reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const totalDiscount = valid.reduce((s, o) => s + (Number(o.discount_amount) || 0), 0);
       const deliveryCount = valid.filter(o => o.delivery_type !== "takeaway").length;
       const takeawayCount = valid.filter(o => o.delivery_type === "takeaway").length;
+      const onlineSum = valid.filter(o => o.payment_method === "online_card").reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const cardSum = valid.filter(o => (o.payment_method || "door_card") === "door_card").reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
       const cashSum = valid.filter(o => o.payment_method === "door_cash").reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
-      const otherSum = valid.filter(o => o.payment_method && o.payment_method !== "door_card" && o.payment_method !== "door_cash").reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
+      const otherSum = valid.filter(o => o.payment_method && !["door_card", "door_cash", "online_card"].includes(o.payment_method)).reduce((s, o) => s + (Number(o.total_amount) || 0), 0);
 
       document.getElementById("kpiDailyOrders").textContent = String(valid.length);
       document.getElementById("kpiDailyDeliverySplit").textContent = `${deliveryCount} Kurye • ${takeawayCount} Gel-Al`;
@@ -4580,9 +4782,12 @@
       document.getElementById("kpiDailyAvgOrder").textContent = valid.length > 0
         ? `Ort. ${formatTry(netRevenue / valid.length)}`
         : "İptaller hariç";
-      document.getElementById("kpiDailyPaymentSplit").textContent = otherSum > 0
-        ? `💳 ${formatTry(cardSum)} / 💵 ${formatTry(cashSum)} / 🎫 ${formatTry(otherSum)}`
-        : `💳 ${formatTry(cardSum)} / 💵 ${formatTry(cashSum)}`;
+      const payParts = [];
+      if (onlineSum > 0) payParts.push(`🌐 Online ${formatTry(onlineSum)}`);
+      payParts.push(`💳 ${formatTry(cardSum)}`);
+      payParts.push(`💵 ${formatTry(cashSum)}`);
+      if (otherSum > 0) payParts.push(`🎫 ${formatTry(otherSum)}`);
+      document.getElementById("kpiDailyPaymentSplit").textContent = payParts.join(" / ");
       document.getElementById("kpiDailyCancelled").textContent = String(cancelled.length);
       document.getElementById("kpiDailyDiscountSum").textContent = totalDiscount > 0
         ? `Online indirim: -${formatTry(totalDiscount)}`
@@ -4600,8 +4805,13 @@
         const typeLabel = o.delivery_type === "takeaway" ? "🏃 Gel-Al" : "🛵 Kurye";
         const addr = escapeReportHtml(o.delivery_address || "Gel-Al Siparişi");
         const payLabel = getAdminPaymentLabel(o.payment_method);
+        const payBadge = o.payment_status === "paid"
+          ? `<div style="font-size:0.72rem; color:var(--success); font-weight:800;">✓ Online Ödendi</div>`
+          : (o.payment_status === "payment_failed"
+            ? `<div style="font-size:0.72rem; color:var(--danger); font-weight:700;">✕ Ödeme Başarısız</div>`
+            : "");
         const stKey = STATUS_TR[o.status] ? o.status : "new";
-        const stText = STATUS_TR[stKey];
+        const stText = o.payment_status === "payment_failed" ? "Ödeme Başarısız" : STATUS_TR[stKey];
         const discText = Number(o.discount_amount) > 0
           ? `<div style="font-size:0.74rem; color:var(--success); font-weight:700;">(-${formatTry(o.discount_amount)})</div>`
           : "";
@@ -4619,7 +4829,7 @@
               <div style="font-size:0.78rem; font-weight:700; color:var(--ink-700);">${typeLabel}</div>
               <div style="font-size:0.78rem; color:var(--ink-500); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${addr}">${addr}</div>
             </td>
-            <td style="font-size:0.84rem; font-weight:600;">${escapeReportHtml(payLabel)}</td>
+            <td style="font-size:0.84rem; font-weight:600;">${escapeReportHtml(payLabel)}${payBadge}</td>
             <td>
               <div style="font-weight:700; color:var(--ink-900);">${formatTry(o.total_amount)}</div>
               ${discText}
