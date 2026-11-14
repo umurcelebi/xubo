@@ -991,8 +991,33 @@
           </div>
         </div>
         <div class="archive-stat-row" style="align-items:center;">
-          <span>🔌 Direkt ESC/POS Bıçak Bağlantısı</span>
+          <span>🔌 Aktif Yazıcı Çıkışı</span>
           <strong id="printerDirectStatusText" style="font-size:0.78rem; color:var(--ink-muted);">Tarayıcı Sürücüsü (Standart)</strong>
+        </div>
+      </div>
+
+      <div class="archive-summary-card" style="margin-bottom: 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+          <strong style="font-size:0.86rem; color:var(--ink);">🌐 Ethernet Ağ Yazıcısı (IP / Port)</strong>
+          <button type="button" class="btn-kds" onclick="downloadPrintBridgeScript()" style="padding:4px 10px; font-size:0.74rem;" title="Kasa bilgisayarında arka planda çalışacak yerel köprü dosyasını indir">
+            📥 Köprü Dosyasını İndir
+          </button>
+        </div>
+        <div class="archive-stat-row" style="align-items:center; margin-bottom:8px;">
+          <span>Köprü Servisi (127.0.0.1:19100)</span>
+          <strong id="printerBridgeStatusText" style="font-size:0.76rem; color:var(--ink-muted);">Kontrol ediliyor...</strong>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 92px; gap:8px; margin-bottom:10px;">
+          <input type="text" id="printerNetIpInput" class="kds-mode-note-input" style="margin-bottom:0;" placeholder="Yazıcı IP (Örn: 192.168.1.200)" inputmode="decimal">
+          <input type="number" id="printerNetPortInput" class="kds-mode-note-input" style="margin-bottom:0;" value="9100" min="1" max="65535" placeholder="Port">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr auto; gap:8px;">
+          <button type="button" id="btnSaveNetPrinter" class="btn-kds btn-kds-sound active" onclick="saveAndTestNetworkPrinter()" style="justify-content:center; padding:8px 10px; font-size:0.78rem;">
+            💾 Kaydet &amp; Bağlantıyı Test Et
+          </button>
+          <button type="button" class="btn-kds" onclick="clearNetworkPrinterConfig()" style="padding:8px 12px; font-size:0.78rem;" title="Ethernet IP ayarını kaldır">
+            Temizle
+          </button>
         </div>
       </div>
 
@@ -1006,7 +1031,7 @@
       </div>
 
       <div class="archive-warn-box" style="margin-bottom:14px; font-size:0.76rem;">
-        💡 <strong>İpucu:</strong> USB/Seri eşleştirme yaparsanız tarayıcı yazdırma penceresi hiç açılmaz, fiş basılıp <code>GS V</code> komutuyla otomatik kesilir. Standart Windows/Mac sürücüsü kullanıyorsanız da fiş sonuna bıçak boşluğu ve sayfa sonu kesme tetikleyicisi otomatik eklenir.
+        💡 <strong>İpucu:</strong> Ethernet yazıcı IP &amp; Port (<code>9100</code>) kaydedip kasa PC'de yerel köprüyü (<code>node xubo-yazici-koprusu.js</code>) açık bıraktığınızda, yeni sipariş geldiğinde Chrome/Edge üzerinden önizleme ekranı hiç açılmadan fiş basılır ve otomatik kesilir.
       </div>
 
       <div class="archive-modal-actions">
@@ -1101,6 +1126,25 @@
       } catch (e) {
         return "58";
       }
+    }
+
+    function getPrinterNetworkConfig() {
+      try {
+        const ip = (localStorage.getItem(getPrinterPrefKey("net_ip")) || "").trim();
+        const rawPort = Number(localStorage.getItem(getPrinterPrefKey("net_port")) || 9100);
+        const port = Number.isInteger(rawPort) && rawPort >= 1 && rawPort <= 65535 ? rawPort : 9100;
+        return { ip, port };
+      } catch (e) {
+        return { ip: "", port: 9100 };
+      }
+    }
+
+    function uint8ToBase64(bytes) {
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
     }
 
     function getReceiptStoreMeta() {
@@ -1338,13 +1382,66 @@
         return false;
       }
 
+      const BRIDGE_URL = "http://127.0.0.1:19100";
+
+      async function bridgeFetchJson(path, options = {}, timeoutMs = 3000) {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+        try {
+          const res = await fetch(BRIDGE_URL + path, {
+            ...options,
+            signal: controller ? controller.signal : undefined
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || data.ok === false) {
+            throw new Error(data.error || ("HTTP " + res.status));
+          }
+          return data;
+        } finally {
+          if (timer) clearTimeout(timer);
+        }
+      }
+
+      async function checkBridgeHealth() {
+        try {
+          await bridgeFetchJson("/health", { method: "GET" }, 1500);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      async function pingNetwork(host, port) {
+        return await bridgeFetchJson("/ping", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ host, port })
+        }, 4000);
+      }
+
+      async function printViaNetwork(bytes, host, port) {
+        return await bridgeFetchJson("/print", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            host,
+            port,
+            dataBase64: uint8ToBase64(bytes)
+          })
+        }, 4500);
+      }
+
       return {
         isConnected: () => Boolean(conn),
         getStatusLabel: () => {
+          const netCfg = getPrinterNetworkConfig();
+          if (netCfg.ip) return `🌐 Ethernet (${netCfg.ip}:${netCfg.port})`;
           if (!conn) return "Tarayıcı Sürücüsü (Standart)";
           return conn.mode === "usb" ? `🔌 USB Bağlı (${conn.label})` : `📡 COM/Seri Bağlı`;
         },
         getShortBadge: () => {
+          const netCfg = getPrinterNetworkConfig();
+          if (netCfg.ip) return `IP:${netCfg.ip}`;
           if (!conn) return "";
           return conn.mode === "usb" ? "USB" : "COM";
         },
@@ -1352,13 +1449,38 @@
         connectUsb,
         connectSerial,
         tryAutoReconnect,
-        printBytes
+        printBytes,
+        checkBridgeHealth,
+        pingNetwork,
+        printViaNetwork
       };
     })();
+
+    function refreshBridgeStatusIndicator() {
+      const bridgeEl = document.getElementById("printerBridgeStatusText");
+      if (!bridgeEl) return;
+      bridgeEl.textContent = "Kontrol ediliyor...";
+      bridgeEl.style.color = "var(--ink-muted)";
+      ThermalPrinter.checkBridgeHealth().then(ok => {
+        if (ok) {
+          bridgeEl.textContent = "🟢 Çalışıyor (Hazır)";
+          bridgeEl.style.color = "#6ee7a0";
+        } else {
+          bridgeEl.textContent = "🟠 Kapalı — Köprüyü Başlatın";
+          bridgeEl.style.color = "#ffb37a";
+        }
+      });
+    }
 
     function syncPrinterModalUi() {
       const autoCut = isPrinterAutoCutEnabled();
       const paperWidth = getPrinterPaperWidth();
+      const netCfg = getPrinterNetworkConfig();
+
+      const ipEl = document.getElementById("printerNetIpInput");
+      const portEl = document.getElementById("printerNetPortInput");
+      if (ipEl && document.activeElement !== ipEl) ipEl.value = netCfg.ip || "";
+      if (portEl && document.activeElement !== portEl) portEl.value = String(netCfg.port || 9100);
 
       const btnCut = document.getElementById("btnPrinterToggleCut");
       if (btnCut) {
@@ -1374,7 +1496,7 @@
       const statusEl = document.getElementById("printerDirectStatusText");
       if (statusEl) {
         statusEl.textContent = ThermalPrinter.getStatusLabel();
-        statusEl.style.color = ThermalPrinter.isConnected() ? "#6ee7a0" : "var(--ink-muted)";
+        statusEl.style.color = (netCfg.ip || ThermalPrinter.isConnected()) ? "#6ee7a0" : "var(--ink-muted)";
       }
 
       const btnOpen = document.getElementById("btnOpenPrinterModal");
@@ -1398,6 +1520,7 @@
 
     window.openKdsPrinterModal = function() {
       syncPrinterModalUi();
+      refreshBridgeStatusIndicator();
       const backdrop = document.getElementById("kdsPrinterModalBackdrop");
       if (backdrop) backdrop.classList.add("open");
     };
@@ -1405,6 +1528,194 @@
     window.closeKdsPrinterModal = function() {
       const backdrop = document.getElementById("kdsPrinterModalBackdrop");
       if (backdrop) backdrop.classList.remove("open");
+    };
+
+    window.saveAndTestNetworkPrinter = async function() {
+      const ipEl = document.getElementById("printerNetIpInput");
+      const portEl = document.getElementById("printerNetPortInput");
+      const btn = document.getElementById("btnSaveNetPrinter");
+      const ip = ipEl ? ipEl.value.trim() : "";
+      const port = portEl ? Number(portEl.value || 9100) : 9100;
+
+      if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip) || ip.split(".").some(n => Number(n) > 255)) {
+        alert("Lütfen geçerli bir IPv4 adresi girin (Örn: 192.168.1.200).");
+        if (ipEl) ipEl.focus();
+        return;
+      }
+      if (!Number.isInteger(port) || port < 1 || port > 65535) {
+        alert("Port numarası 1 ile 65535 arasında olmalıdır (varsayılan: 9100).");
+        if (portEl) portEl.focus();
+        return;
+      }
+
+      try {
+        localStorage.setItem(getPrinterPrefKey("net_ip"), ip);
+        localStorage.setItem(getPrinterPrefKey("net_port"), String(port));
+      } catch (e) {}
+      syncPrinterModalUi();
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "⏳ Test ediliyor...";
+      }
+      try {
+        const bridgeUp = await ThermalPrinter.checkBridgeHealth();
+        refreshBridgeStatusIndicator();
+        if (!bridgeUp) {
+          alert(`✅ IP ve Port kaydedildi (${ip}:${port}), ancak yerel yazıcı köprüsü (127.0.0.1:19100) henüz açık değil.\n\n1) "📥 Köprü Dosyasını İndir" butonuna basın\n2) Kasa bilgisayarında çalıştırın: node xubo-yazici-koprusu.js`);
+          return;
+        }
+        await ThermalPrinter.pingNetwork(ip, port);
+        alert(`✅ Ethernet yazıcıya başarıyla ulaşıldı (${ip}:${port})!\n\nArtık fişler önizleme açılmadan doğrudan bu yazıcıdan basılıp otomatik kesilecek.`);
+      } catch (err) {
+        alert(`IP kaydedildi (${ip}:${port}) fakat yazıcıya ulaşılamadı:\n${err.message || err}`);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "💾 Kaydet & Bağlantıyı Test Et";
+        }
+      }
+    };
+
+    window.clearNetworkPrinterConfig = function() {
+      try {
+        localStorage.removeItem(getPrinterPrefKey("net_ip"));
+        localStorage.removeItem(getPrinterPrefKey("net_port"));
+      } catch (e) {}
+      const ipEl = document.getElementById("printerNetIpInput");
+      const portEl = document.getElementById("printerNetPortInput");
+      if (ipEl) ipEl.value = "";
+      if (portEl) portEl.value = "9100";
+      syncPrinterModalUi();
+    };
+
+    window.downloadPrintBridgeScript = function() {
+      const lines = [
+        "#!/usr/bin/env node",
+        "/**",
+        " * Xubo Yerel Ethernet Termal Yazici Koprusu (127.0.0.1:19100 -> Yazici IP:9100)",
+        " * Calistirma: node xubo-yazici-koprusu.js",
+        " */",
+        "const http = require('http');",
+        "const net = require('net');",
+        "const LISTEN_HOST = '127.0.0.1';",
+        "const LISTEN_PORT = Number(process.env.PORT) || 19100;",
+        "const MAX_BODY_BYTES = 256 * 1024;",
+        "const SOCKET_TIMEOUT_MS = 3500;",
+        "function isAllowedPrinterHost(rawHost) {",
+        "  const host = String(rawHost || '').trim();",
+        "  if (!host) return false;",
+        "  if (host === 'localhost') return true;",
+        "  const parts = host.split('.');",
+        "  if (parts.length !== 4) return false;",
+        "  const nums = parts.map(function(p) { return /^\\d{1,3}$/.test(p) ? Number(p) : -1; });",
+        "  if (nums.some(function(n) { return n < 0 || n > 255; })) return false;",
+        "  const a = nums[0], b = nums[1];",
+        "  return a === 127 || a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31);",
+        "}",
+        "function parsePort(rawPort) {",
+        "  const port = Number(rawPort || 9100);",
+        "  return Number.isInteger(port) && port >= 1 && port <= 65535 ? port : null;",
+        "}",
+        "function sendJson(res, statusCode, payload) {",
+        "  res.writeHead(statusCode, {",
+        "    'Content-Type': 'application/json; charset=utf-8',",
+        "    'Access-Control-Allow-Origin': '*',",
+        "    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',",
+        "    'Access-Control-Allow-Headers': 'Content-Type, Access-Control-Request-Private-Network',",
+        "    'Access-Control-Allow-Private-Network': 'true',",
+        "    'Cache-Control': 'no-store'",
+        "  });",
+        "  res.end(JSON.stringify(payload));",
+        "}",
+        "function readJsonBody(req) {",
+        "  return new Promise(function(resolve, reject) {",
+        "    const chunks = [];",
+        "    let total = 0;",
+        "    req.on('data', function(chunk) {",
+        "      total += chunk.length;",
+        "      if (total > MAX_BODY_BYTES) { reject(new Error('Istek cok buyuk')); req.destroy(); return; }",
+        "      chunks.push(chunk);",
+        "    });",
+        "    req.on('end', function() {",
+        "      try { const raw = Buffer.concat(chunks).toString('utf8').trim(); resolve(raw ? JSON.parse(raw) : {}); } catch (e) { reject(new Error('Gecersiz JSON')); }",
+        "    });",
+        "    req.on('error', reject);",
+        "  });",
+        "}",
+        "function sendTcpToPrinter(host, port, dataBuffer) {",
+        "  return new Promise(function(resolve, reject) {",
+        "    const socket = new net.Socket();",
+        "    let settled = false;",
+        "    function finish(err, result) {",
+        "      if (settled) return;",
+        "      settled = true;",
+        "      try { socket.destroy(); } catch (e) {}",
+        "      if (err) reject(err); else resolve(result);",
+        "    }",
+        "    socket.setTimeout(SOCKET_TIMEOUT_MS);",
+        "    socket.once('timeout', function() { finish(new Error('Zaman asimi (' + host + ':' + port + ')')); });",
+        "    socket.once('error', function(err) { finish(new Error('Baglanti hatasi (' + host + ':' + port + '): ' + err.message)); });",
+        "    socket.connect(port, host, function() {",
+        "      if (!dataBuffer || dataBuffer.length === 0) { socket.end(); finish(null, { host: host, port: port, bytesSent: 0 }); return; }",
+        "      socket.write(dataBuffer, function(writeErr) {",
+        "        if (writeErr) { finish(new Error(writeErr.message)); return; }",
+        "        socket.end(function() { finish(null, { host: host, port: port, bytesSent: dataBuffer.length }); });",
+        "      });",
+        "    });",
+        "  });",
+        "}",
+        "const server = http.createServer(async function(req, res) {",
+        "  if (req.method === 'OPTIONS') {",
+        "    res.writeHead(204, {",
+        "      'Access-Control-Allow-Origin': '*',",
+        "      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',",
+        "      'Access-Control-Allow-Headers': 'Content-Type, Access-Control-Request-Private-Network',",
+        "      'Access-Control-Allow-Private-Network': 'true',",
+        "      'Access-Control-Max-Age': '86400'",
+        "    });",
+        "    res.end();",
+        "    return;",
+        "  }",
+        "  const reqPath = (req.url || '/').split('?')[0];",
+        "  if (req.method === 'GET' && reqPath === '/health') {",
+        "    sendJson(res, 200, { ok: true, service: 'xubo-print-bridge', version: '1.0.0' });",
+        "    return;",
+        "  }",
+        "  if (req.method === 'POST' && (reqPath === '/ping' || reqPath === '/print')) {",
+        "    try {",
+        "      const body = await readJsonBody(req);",
+        "      const host = String(body.host || '').trim();",
+        "      const port = parsePort(body.port);",
+        "      if (!isAllowedPrinterHost(host)) { sendJson(res, 400, { ok: false, error: 'Gecersiz yerel ag IP adresi' }); return; }",
+        "      if (!port) { sendJson(res, 400, { ok: false, error: 'Gecersiz port' }); return; }",
+        "      if (reqPath === '/ping') { await sendTcpToPrinter(host, port, null); sendJson(res, 200, { ok: true, host: host, port: port }); return; }",
+        "      if (!body.dataBase64) { sendJson(res, 400, { ok: false, error: 'dataBase64 zorunlu' }); return; }",
+        "      const buf = Buffer.from(body.dataBase64, 'base64');",
+        "      const result = await sendTcpToPrinter(host, port, buf);",
+        "      console.log('[' + new Date().toLocaleTimeString('tr-TR') + '] Yazdirildi -> ' + host + ':' + port + ' (' + result.bytesSent + ' bayt)');",
+        "      sendJson(res, 200, Object.assign({ ok: true }, result));",
+        "    } catch (err) {",
+        "      console.warn('Hata:', err.message);",
+        "      sendJson(res, 502, { ok: false, error: err.message });",
+        "    }",
+        "    return;",
+        "  }",
+        "  sendJson(res, 404, { ok: false, error: 'Not found' });",
+        "});",
+        "server.listen(LISTEN_PORT, LISTEN_HOST, function() {",
+        "  console.log('Xubo Ethernet Yazici Koprusu hazir: http://' + LISTEN_HOST + ':' + LISTEN_PORT);",
+        "});"
+      ];
+      const blob = new Blob([lines.join("\n") + "\n"], { type: "application/javascript;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "xubo-yazici-koprusu.js";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
 
     window.togglePrinterAutoCut = function() {
@@ -1468,7 +1779,19 @@
       const autoCut = isPrinterAutoCutEnabled();
       const paperWidth = getPrinterPaperWidth();
 
-      // 1) Direkt USB / Seri ESC/POS Yazıcı bağlıysa penceresiz bas + bıçak kesimi gönder
+      // 1) Ethernet IP / Port (Yerel Köprü üzerinden önizlemesiz bas + otomatik kes)
+      const netCfg = getPrinterNetworkConfig();
+      if (netCfg.ip) {
+        try {
+          const bytes = ThermalPrinter.buildReceiptBytes(order, storeMeta, { autoCut, paperWidth });
+          await ThermalPrinter.printViaNetwork(bytes, netCfg.ip, netCfg.port);
+          return;
+        } catch (err) {
+          console.warn("Ethernet bridge print failed, falling back:", err);
+        }
+      }
+
+      // 2) Direkt USB / Seri ESC/POS Yazıcı bağlıysa penceresiz bas + bıçak kesimi gönder
       if (ThermalPrinter.isConnected()) {
         try {
           const bytes = ThermalPrinter.buildReceiptBytes(order, storeMeta, { autoCut, paperWidth });
@@ -1480,7 +1803,7 @@
         }
       }
 
-      // 2) Standart Tarayıcı Yazdırma (Sayfa sonu kesici tetikleyici & bıçak boşluğu ile)
+      // 3) Standart Tarayıcı Yazdırma (Sayfa sonu kesici tetikleyici & bıçak boşluğu ile)
       const printArea = document.getElementById("printArea");
       printArea.style.setProperty("--receipt-max-width", paperWidth === "80" ? "76mm" : "56mm");
 
