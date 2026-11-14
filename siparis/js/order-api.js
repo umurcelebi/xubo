@@ -1108,14 +1108,31 @@ const OrderAPI = {
     return { success: true };
   },
 
+  cleanItemNotes(notes) {
+    return String(notes || "").replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
+  },
+
   getCancelReason(order) {
     if (!order) return "";
     if (typeof order.cancel_reason === "string" && order.cancel_reason.trim()) {
       return order.cancel_reason.trim();
     }
-    const notes = String(order.order_notes || "");
-    const m = notes.match(/\[İptal Nedeni:\s*([^\]]+)\]/i);
-    return m ? m[1].trim() : "";
+    const notesMatch = String(order.order_notes || "").match(/\[İptal Nedeni:\s*([^\]]+)\]/i);
+    if (notesMatch && notesMatch[1]) {
+      return notesMatch[1].trim();
+    }
+    const items = Array.isArray(order.items) ? order.items : (Array.isArray(order.order_items) ? order.order_items : []);
+    for (const item of items) {
+      const m = String((item && item.item_notes) || "").match(/\[İptal Nedeni:\s*([^\]]+)\]/i);
+      if (m && m[1]) return m[1].trim();
+    }
+    if (order.id && typeof localStorage !== "undefined") {
+      try {
+        const cached = localStorage.getItem(`xubo_cancel_reason_${order.id}`);
+        if (cached && cached.trim()) return cached.trim();
+      } catch (e) {}
+    }
+    return "";
   },
 
   // Sipariş Durumunu Güncelle (new -> preparing -> on_way -> delivered -> cancelled)
@@ -1123,6 +1140,10 @@ const OrderAPI = {
     const cancelReason = (newStatus === "cancelled" && extra && typeof extra.cancelReason === "string")
       ? extra.cancelReason.trim().slice(0, 200)
       : "";
+
+    if (cancelReason && orderId && typeof localStorage !== "undefined") {
+      try { localStorage.setItem(`xubo_cancel_reason_${orderId}`, cancelReason); } catch (e) {}
+    }
 
     const sb = getOrderSupabaseClient();
     if (sb) {
@@ -1146,7 +1167,7 @@ const OrderAPI = {
               .maybeSingle();
             baseNotes = (curRow && curRow.order_notes) || "";
           }
-          const cleaned = String(baseNotes).replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
+          const cleaned = this.cleanItemNotes(baseNotes);
           const nextNotes = cleaned
             ? `${cleaned}\n[İptal Nedeni: ${cancelReason}]`
             : `[İptal Nedeni: ${cancelReason}]`;
@@ -1154,6 +1175,30 @@ const OrderAPI = {
             .from("orders")
             .update({ status: newStatus, order_notes: nextNotes, updated_at: new Date() })
             .eq("id", orderId);
+        }
+
+        // get_order_tracking() RPC order_items.item_notes döndürdüğü için ilk kaleme iptal nedenini yaz
+        if (cancelReason) {
+          try {
+            const { data: firstItem } = await sb
+              .from("order_items")
+              .select("id, item_notes")
+              .eq("order_id", orderId)
+              .limit(1)
+              .maybeSingle();
+            if (firstItem && firstItem.id) {
+              const cleanedItemNote = this.cleanItemNotes(firstItem.item_notes);
+              const nextItemNotes = cleanedItemNote
+                ? `${cleanedItemNote} [İptal Nedeni: ${cancelReason}]`
+                : `[İptal Nedeni: ${cancelReason}]`;
+              await sb
+                .from("order_items")
+                .update({ item_notes: nextItemNotes })
+                .eq("id", firstItem.id);
+            }
+          } catch (itemErr) {
+            console.warn("Cancel reason item_notes sync error:", itemErr);
+          }
         }
       } catch (e) {
         console.error("Update status error:", e);
@@ -1168,6 +1213,12 @@ const OrderAPI = {
       order.status = newStatus;
       if (cancelReason) {
         order.cancel_reason = cancelReason;
+        if (Array.isArray(order.items) && order.items[0]) {
+          const cleanedItemNote = this.cleanItemNotes(order.items[0].item_notes);
+          order.items[0].item_notes = cleanedItemNote
+            ? `${cleanedItemNote} [İptal Nedeni: ${cancelReason}]`
+            : `[İptal Nedeni: ${cancelReason}]`;
+        }
       }
       order.updated_at = new Date().toISOString();
       saveLocalOrders(localOrders);

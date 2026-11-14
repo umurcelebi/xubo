@@ -15,7 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/store-status.js?v=20261114c"></script>
-  <script src="js/order-api.js?v=20261114g"></script>
+  <script src="js/order-api.js?v=20261114h"></script>
 
   <style>
     :root {
@@ -1193,7 +1193,8 @@
 
         pushLine(buf, sep);
         (order.items || []).forEach(i => {
-          const left = `${i.quantity}x ${i.item_name}${i.size_label ? ` (${i.size_label})` : ""}${i.item_notes ? ` [${i.item_notes}]` : ""}`;
+          const cleanItemNote = String(i.item_notes || "").replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
+          const left = `${i.quantity}x ${i.item_name}${i.size_label ? ` (${i.size_label})` : ""}${cleanItemNote ? ` [${cleanItemNote}]` : ""}`;
           const right = `${i.total_price} TL`;
           pushWrapRow(buf, left, right, cols);
         });
@@ -1506,12 +1507,15 @@
         </div>
 
         <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 5px 0; margin-bottom: 6px; font-size: 11px;">
-          ${(order.items || []).map(i => `
+          ${(order.items || []).map(i => {
+            const cleanItemNote = String(i.item_notes || "").replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
+            return `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; margin-bottom: 4px;">
-              <span style="flex: 1;">${escapeHtml(i.quantity)}x ${escapeHtml(i.item_name)}${i.size_label ? ' (' + escapeHtml(i.size_label) + ')' : ''}${i.item_notes ? ' [' + escapeHtml(i.item_notes) + ']' : ''}</span>
+              <span style="flex: 1;">${escapeHtml(i.quantity)}x ${escapeHtml(i.item_name)}${i.size_label ? ' (' + escapeHtml(i.size_label) + ')' : ''}${cleanItemNote ? ' [' + escapeHtml(cleanItemNote) + ']' : ''}</span>
               <strong style="white-space: nowrap;">${escapeHtml(i.total_price)} TL</strong>
             </div>
-          `).join("")}
+          `;
+          }).join("")}
         </div>
 
         ${Number(order.discount_amount) > 0 ? `
@@ -1657,7 +1661,10 @@
                   <span class="item-qty">${escapeHtml(item.quantity)}x</span>
                   <span class="item-name">${escapeHtml(item.item_name)}</span>
                   ${item.size_label ? `<span class="item-size">(${escapeHtml(item.size_label)})</span>` : ''}
-                  ${item.item_notes ? `<div style="font-size:0.74rem; color:#ffb37a; margin-top:2px; line-height:1.35;">${escapeHtml(item.item_notes)}</div>` : ''}
+                  ${(() => {
+                    const cleanNote = String(item.item_notes || "").replace(/\s*\[İptal Nedeni:[^\]]*\]/gi, "").trim();
+                    return cleanNote ? `<div style="font-size:0.74rem; color:#ffb37a; margin-top:2px; line-height:1.35;">${escapeHtml(cleanNote)}</div>` : '';
+                  })()}
                 </div>
                 <span class="item-price">${escapeHtml(item.total_price || (item.unit_price * item.quantity))} ₺</span>
               </div>

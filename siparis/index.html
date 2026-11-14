@@ -3270,7 +3270,7 @@
   <script src="js/config.js?v=20261114c"></script>
   <script src="js/menu-api.js?v=20261114b"></script>
   <script src="js/store-status.js?v=20261114c"></script>
-  <script src="js/order-api.js?v=20261114g"></script>
+  <script src="js/order-api.js?v=20261114h"></script>
   <script>
     let menuData = [];
     const cardSelectedSizes = {};
@@ -3370,6 +3370,7 @@
     let currentDeliveryType = "delivery"; // 'delivery' veya 'takeaway'
     let currentPaymentMethod = "door_card"; // 'door_card' veya 'door_cash'
     let activeTrackingSubscription = null;
+    let activeTrackingPollTimer = null;
     let toastTimeout = null;
 
     // Toast Göster
@@ -4048,11 +4049,15 @@
 
       await loadAndRenderTracking(targetId);
 
-      // Gerçek zamanlı dinleyiciyi başlat
+      // Gerçek zamanlı dinleyici ve yedek periyodik kontrol (Anon kullanıcılar RLS nedeniyle realtime kaçırsa da 4 sn'de güncellenir)
       if (activeTrackingSubscription) activeTrackingSubscription();
       activeTrackingSubscription = OrderAPI.subscribe((payload) => {
         loadAndRenderTracking(targetId);
       });
+      if (activeTrackingPollTimer) clearInterval(activeTrackingPollTimer);
+      activeTrackingPollTimer = setInterval(() => {
+        loadAndRenderTracking(targetId);
+      }, 4000);
     };
 
     window.closeTrackingModal = function() {
@@ -4062,6 +4067,10 @@
       if (activeTrackingSubscription) {
         activeTrackingSubscription();
         activeTrackingSubscription = null;
+      }
+      if (activeTrackingPollTimer) {
+        clearInterval(activeTrackingPollTimer);
+        activeTrackingPollTimer = null;
       }
     };
 
@@ -4153,19 +4162,19 @@
 
       body.innerHTML = `
         <div class="tracking-status-hero">
-          <span class="tracking-badge-live" style="background:${cfg.badgeBg}; color:${cfg.badgeColor};">
-            ${cfg.badgeText}
-          </span>
-          <h3 class="tracking-status-title">${cfg.title}</h3>
-          <p class="tracking-status-desc">${cfg.desc}</p>
+          ${status === 'cancelled' ? `
+            <h3 class="tracking-status-title" style="color: #c0392b;">✕ Sipariş İptal Edildi</h3>
+            <p class="tracking-status-desc" style="margin-top: 10px; font-size: 0.96rem; font-weight: 700; color: var(--ink-900);">
+              ${cancelReason ? `İptal Nedeni: ${escapeHtml(cancelReason)}` : 'Detaylı bilgi için restoranımızla iletişime geçebilirsiniz.'}
+            </p>
+          ` : `
+            <span class="tracking-badge-live" style="background:${cfg.badgeBg}; color:${cfg.badgeColor};">
+              ${cfg.badgeText}
+            </span>
+            <h3 class="tracking-status-title">${cfg.title}</h3>
+            <p class="tracking-status-desc">${cfg.desc}</p>
+          `}
         </div>
-
-        ${status === 'cancelled' && cancelReason ? `
-          <div style="background: rgba(231, 76, 60, 0.08); border: 1px solid rgba(231, 76, 60, 0.28); border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; text-align: left;">
-            <div style="font-size: 0.76rem; font-weight: 800; color: #c0392b; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;">İptal Nedeni</div>
-            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink-900); line-height: 1.4;">🚫 ${escapeHtml(cancelReason)}</div>
-          </div>
-        ` : ''}
 
         ${status !== 'cancelled' ? `
           <div class="tracking-stepper-wrap">
